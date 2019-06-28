@@ -71,9 +71,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_treereco = datap["files_names"]["treeoriginreco"]
         self.n_treegen = datap["files_names"]["treeorigingen"]
         self.n_treeevt = datap["files_names"]["treeoriginevt"]
+        self.n_treetrkl = datap["files_names"]["treeorigintrkl"]
 
         #namefiles pkl
         self.n_reco = datap["files_names"]["namefile_reco"]
+        self.n_trkl = datap["files_names"]["namefile_trkl"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
         self.n_gen = datap["files_names"]["namefile_gen"]
@@ -89,6 +91,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.s_reco_skim = datap["sel_reco_skim"]
         self.s_gen_skim = datap["sel_gen_skim"]
 
+        #tracklets
+        self.sel_trl_do = datap["sel_trl_activate"]
+
         #bitmap
         self.b_trackcuts = datap["sel_reco_singletrac_unp"]
         self.b_std = datap["bitmap_sel"]["isstd"]
@@ -100,6 +105,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         #variables name
         self.v_all = datap["variables"]["var_all"]
         self.v_train = datap["variables"]["var_training"]
+        self.v_trkl = datap["variables"]["var_trkl"]
         self.v_evt = datap["variables"]["var_evt"][self.mcordata]
         self.v_gen = datap["variables"]["var_gen"]
         self.v_evtmatch = datap["variables"]["var_evt_match"]
@@ -119,6 +125,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             self.l_path = list_folders(self.d_pkl, self.n_reco, self.p_maxfiles)
 
         self.l_root = createlist(self.d_root, self.l_path, self.n_root)
+        self.l_trkl = createlist(self.d_pkl, self.l_path, self.n_trkl)
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
@@ -130,6 +137,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
 
         self.p_modelname = datap["analysis"]["modelname"]
+        self.p_rcut = datap["sel_p_Rcut"]
         self.lpt_anbinmin = datap["sel_skim_binmin"]
         self.lpt_anbinmax = datap["sel_skim_binmax"]
         self.p_nptbins = len(datap["sel_skim_binmax"])
@@ -200,6 +208,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevt = dfevt.reset_index(drop=True)
         pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"), protocol=4)
 
+        if self.sel_trl_do is True:
+            treetrkl = uproot.open(self.l_root[file_index])[self.n_treetrkl]
+            dftrkl = treetrkl.pandas.df(branches=self.v_trkl)
+            dftrkl = selectdfrunlist(dftrkl, self.runlist, "run_number")
+            dftrkl = pd.merge(dftrkl, dfevt, on=self.v_evtmatch)
+            pickle.dump(dftrkl, openfile(self.l_trkl[file_index], "wb"), protocol=4)
+
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
         dfreco = treereco.pandas.df(branches=self.v_all)
         dfreco = selectdfrunlist(dfreco, self.runlist, "run_number")
@@ -212,6 +227,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfreco[self.v_isstd] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                    self.b_std), dtype=int)
         dfreco = dfreco.reset_index(drop=True)
+
         if self.mcordata == "mc":
             dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                             self.b_mcsig), dtype=int)
@@ -221,7 +237,40 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                         self.b_mcsigfd), dtype=int)
             dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                          self.b_mcbkg), dtype=int)
-        pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
+        if self.sel_trl_do is True:
+            dfrecogrouped = dfreco.groupby(["ev_id", "run_number"])
+            dftrklgrouped = dftrkl.groupby(["ev_id", "run_number"])
+            dfreco_mult = pd.DataFrame()
+            for keys, df in dfrecogrouped:
+                trkl_evt = dftrklgrouped.get_group((keys[0], keys[1]))
+                detalist = df["eta_cand"].values
+                dphilist = df["phi_cand"].values
+                trkletalist = trkl_evt["TrackletEta"].values
+                trklphilist = trkl_evt["TrackletPhi"].values
+                multbarrellist = []
+                multoutlist = []
+                for i, _ in enumerate(detalist):
+                    deta = detalist[i]
+                    dphi = dphilist[i]
+                    arrayRtrkl = [math.sqrt((deta-trkleta)*\
+                                  (deta-trkleta) + (dphi-trklphi)*(dphi-trklphi)) \
+                            for trkleta, trklphi in zip(trkletalist, trklphilist)]
+                    trkl_evt["Rvalue"] = pd.Series(arrayRtrkl, index=trkl_evt.index)
+                    #trkl_evt_bar = trkl_evt[trkl_evt["Rvalue"] < self.p_rcut]
+                    #trkl_evt_out = trkl_evt[trkl_evt["Rvalue"] > self.p_rcut]
+                    #scatterplotetaphi(trkl_evt["TrackletEta"], trkl_evt["TrackletPhi"],\
+                    #    trkl_evt_out["TrackletEta"], trkl_evt_out["TrackletPhi"], \
+                    #    "plot", "%d_tracklets_event_barrel" % counterev, deta, dphi, self.p_rcut)
+
+                    multbarrel = len([R for R in arrayRtrkl if R < self.p_rcut])
+                    multout = len([R for R in arrayRtrkl if R > self.p_rcut])
+                    multbarrellist.append(multbarrel)
+                    multoutlist.append(multout)
+
+                df["multbarrel"] = pd.Series(multbarrellist, index=df.index)
+                df["multout"] = pd.Series(multoutlist, index=df.index)
+                dfreco_mult = pd.concat([dfreco_mult, df], axis=0)
+            pickle.dump(dfreco_mult, openfile(self.l_reco[file_index], "wb"), protocol=4)
 
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]

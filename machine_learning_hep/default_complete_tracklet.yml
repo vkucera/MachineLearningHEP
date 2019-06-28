@@ -1,0 +1,52 @@
+case: D0pp_multiplicity
+conversion:
+  mc: 
+    activate: true 
+  data:
+    activate: true
+skimming: 
+  mc:
+    activate: true
+  data:
+    activate: true
+merging: 
+  mc:
+    activate: true
+  data:
+    activate: true
+mergingperiods: 
+  mc:
+    activate: true
+  data:
+    activate: true
+
+ml_study:   
+  activate: true
+  doscancuts: false
+  applytodatamc: true
+  doroc: false
+  doboundary: false
+  docorrelation: false
+  docrossvalidation: false
+  dogridsearch: false
+  doimportance: false
+  dolearningcurve: false
+  dopca: false
+  dosignifopt: false
+  doefficiency: false
+  dotesting: true
+  dotraining: true
+  doscancuts: false
+
+analysis:
+  data:
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
+    histomass: false
+  mc:
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
+    histomass: false
+    efficiency: false

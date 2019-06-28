@@ -29,10 +29,10 @@ from optimiser import Optimiser
 
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
-    with open("default_complete.yaml", 'r') as run_config:
+    with open("default_complete_tracklet.yml", 'r') as run_config:
         data_config = yaml.load(run_config, Loader=yaml.FullLoader)
 
-    with open("data/database_ml_parameters.yml", 'r') as param_config:
+    with open("data/database_ml_parameters_tracklets.yml", 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     with open("data/config_model_parameters.yml", 'r') as mod_config:
