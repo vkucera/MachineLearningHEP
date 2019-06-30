@@ -107,7 +107,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         #variables name
         self.v_all = datap["variables"]["var_all"]
         self.v_train = datap["variables"]["var_training"]
-        self.v_trkl = datap["variables"]["var_trkl"]
         self.v_evt = datap["variables"]["var_evt"][self.mcordata]
         self.v_gen = datap["variables"]["var_gen"]
         self.v_evtmatch = datap["variables"]["var_evt_match"]
@@ -118,6 +117,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_ismcfd = datap["bitmap_sel"]["var_ismcfd"]
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
         self.v_var_binning = datap["var_binning"]
+        self.v_trkl = None
         #list of files names
 
         self.l_path = None
@@ -204,6 +204,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             self.n_trkl = datap["files_names"]["namefile_trkl"]
             self.p_rcut = datap["sel_p_Rcut"]
             self.l_trkl = createlist(self.d_pkl, self.l_path, self.n_trkl)
+            self.v_trkl = datap["variables"]["var_trkl"]
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
