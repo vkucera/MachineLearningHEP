@@ -31,7 +31,8 @@ from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
-from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
+from machine_learning_hep.utilities import create_folder_struc
+from machine_learning_hep.utilities import seldf_singlevar, openfile, add_mult_todf
 from machine_learning_hep.models import apply # pylint: disable=import-error
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -245,35 +246,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                          self.b_mcbkg), dtype=int)
         if self.sel_trl_do is True:
-            dfrecogrouped = dfreco.groupby(self.v_evtmatch)
-            dftrklgrouped = dftrkl.groupby(self.v_evtmatch)
-            dfreco_mult = pd.DataFrame()
-            for keys, df in dfrecogrouped:
-                trkl_evt = dftrklgrouped.get_group((keys[0], keys[1]))
-                detalist = df["eta_cand"].values
-                dphilist = df["phi_cand"].values
-                trkletalist = trkl_evt["TrackletEta"].values
-                trklphilist = trkl_evt["TrackletPhi"].values
-                multbarrellist = []
-                multoutlist = []
-                for i, _ in enumerate(detalist):
-                    deta = detalist[i]
-                    dphi = dphilist[i]
-                    arrayRtrkl = [math.sqrt((deta-trkleta)*\
-                                  (deta-trkleta) + (dphi-trklphi)*(dphi-trklphi)) \
-                            for trkleta, trklphi in zip(trkletalist, trklphilist)]
-                    trkl_evt["Rvalue"] = pd.Series(arrayRtrkl, index=trkl_evt.index)
-                    multbarrel = len([R for R in arrayRtrkl if R < self.p_rcut])
-                    multout = len([R for R in arrayRtrkl if R > self.p_rcut])
-                    multbarrellist.append(multbarrel)
-                    multoutlist.append(multout)
+            dfreco = add_mult_todf(dfreco, dftrkl, self.v_evtmatch,
+                                   "eta_cand", "phi_cand", "TrackletEta", "TrackletPhi",
+                                   "Rvalue", "multbarrel", "multout", self.p_rcut)
 
-                df["multbarrel"] = pd.Series(multbarrellist, index=df.index)
-                df["multout"] = pd.Series(multoutlist, index=df.index)
-                dfreco_mult = pd.concat([dfreco_mult, df], axis=0)
-            pickle.dump(dfreco_mult, openfile(self.l_reco[file_index], "wb"), protocol=4)
-        if self.sel_trl_do is False:
-            pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
+        pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
 
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]

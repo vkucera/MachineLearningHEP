@@ -15,6 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
+import math
 import pickle
 import bz2
 import gzip
@@ -134,3 +135,36 @@ def split_df_sigbkg(dataframe_, var_signal_):
 def createstringselection(var, low, high):
     string_selection = "dfselection_"+(("%s_%.1f_%.1f") % (var, low, high))
     return string_selection
+
+# pylint: disable=too-many-arguments
+def add_mult_todf(dfreco, dftrkl, var_evtmatch,
+                  netahf, nphihf, netatrkl, nphitrkl,
+                  nrvalue, multbarrel, multouter, rcut):
+
+    dfrecogrouped = dfreco.groupby(var_evtmatch)
+    dftrklgrouped = dftrkl.groupby(var_evtmatch)
+    dfreco_mult = pd.DataFrame()
+    for keys, df in dfrecogrouped:
+        trkl_evt = dftrklgrouped.get_group((keys[0], keys[1]))
+        detalist = df[netahf].values
+        dphilist = df[nphihf].values
+        trkletalist = trkl_evt[netatrkl].values
+        trklphilist = trkl_evt[nphitrkl].values
+        multbarrellist = []
+        multoutlist = []
+        for i, _ in enumerate(detalist):
+            deta = detalist[i]
+            dphi = dphilist[i]
+            arrayRtrkl = [math.sqrt((deta-trkleta)*\
+                          (deta-trkleta) + (dphi-trklphi)*(dphi-trklphi)) \
+                    for trkleta, trklphi in zip(trkletalist, trklphilist)]
+            trkl_evt[nrvalue] = pd.Series(arrayRtrkl, index=trkl_evt.index)
+            multbarrel = len([R for R in arrayRtrkl if R < rcut])
+            multout = len([R for R in arrayRtrkl if R > rcut])
+            multbarrellist.append(multbarrel)
+            multoutlist.append(multout)
+
+        df[multbarrel] = pd.Series(multbarrellist, index=df.index)
+        df[multouter] = pd.Series(multoutlist, index=df.index)
+        dfreco_mult = pd.concat([dfreco_mult, df], axis=0, sort=True)
+    return dfreco_mult
