@@ -1,18 +1,33 @@
-D0pp_multiplicity:
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+
+D0pp_multiplicity_barout:
   mass: 1.864
   sel_reco_unp: "pt_cand>2"
   sel_reco_singletrac_unp : null
   sel_gen_unp: "pt_cand>2 and abs(z_vtx_gen)<10"
-  sel_trl_activate: true
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
   sel_reco_skim: [null]
   sel_gen_skim: [null]
-  sel_p_Rcut: 1.0
   sel_skim_binmin: [0]
   sel_skim_binmax: [100]
   var_binning: multout
+  sel_trl_activate: true
+  sel_p_Rcut: 1.0
+
   
   bitmap_sel:
     use: True

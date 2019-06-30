@@ -271,6 +271,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 df["multout"] = pd.Series(multoutlist, index=df.index)
                 dfreco_mult = pd.concat([dfreco_mult, df], axis=0)
             pickle.dump(dfreco_mult, openfile(self.l_reco[file_index], "wb"), protocol=4)
+        if self.sel_trl_do is False:
+            pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
 
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
@@ -288,6 +290,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                        self.b_mcsigfd), dtype=int)
             dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                         self.b_mcbkg), dtype=int)
+            dfgen["multbarrel"] = dfgen["n_tracklets"]
+            dfgen["multout"] = dfgen["n_tracklets"]
             dfgen = dfgen.reset_index(drop=True)
             pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
 

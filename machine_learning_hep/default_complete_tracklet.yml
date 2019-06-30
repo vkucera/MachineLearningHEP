@@ -1,4 +1,4 @@
-case: D0pp_multiplicity
+case: D0pp_multiplicity_barout
 conversion:
   mc: 
     activate: true 
