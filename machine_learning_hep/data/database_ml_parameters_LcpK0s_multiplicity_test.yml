@@ -87,7 +87,7 @@ LcpK0s_multiplicity_test:
       fracmerge : [0.3] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/data/unmerged] #list of periods
+      unmerged_tree_dir: [/home/ginnocen/samplesMLexample/data/unmerged] #list of periods
       pkl: [LcpK0s_multiplicity/datapkl] #list of periods
       pkl_skimmed: [LcpK0s_multiplicity/datapklsk] #list of periods
       pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/datapklskML] #list of periods
@@ -102,7 +102,7 @@ LcpK0s_multiplicity_test:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/mc/unmerged] # this is pPb MC, #list of periods
+      unmerged_tree_dir: [/home/ginnocen/samplesMLexample/mc/unmerged] # this is pPb MC, #list of periods
       pkl: [LcpK0s_multiplicity/mcpkl] #list of periods
       pkl_skimmed: [LcpK0s_multiplicity/mcpklsk] #list of periods
       pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/mcpklskML] #list of periods
@@ -142,11 +142,15 @@ LcpK0s_multiplicity_test:
     data:
       pkl_skimmed_dec: [LcpK0s_multiplicity/datapklskdec] #list of periods
       pkl_skimmed_decmerged: [LcpK0s_multiplicity/datapklskdecmerged] #list of periods
+      pkl_skimmed_decmergedallp: LcpK0s_multiplicity/datapklskdecmergedall
       results: [LcpK0s_multiplicity/dataanalysis] #list of periods
+      resultsallp: LcpK0s_multiplicity/dataanalysisallp
     mc:
       pkl_skimmed_dec: [LcpK0s_multiplicity/mcpklskdec] #list of periods
       pkl_skimmed_decmerged: [LcpK0s_multiplicity/mcpklskdecmerged] #list of periods
+      pkl_skimmed_decmergedallp: LcpK0s_multiplicity/mcpklskdecmergedall
       results: [LcpK0s_multiplicity/mcanalysis] #list of periods
+      resultsallp: LcpK0s_multiplicity/mcanalysisallp
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpK0s_multiplicity_test_dfselection_n_tracklets_0.0_20.0.sav,
                      xgboost_classifierLcpK0s_multiplicity_test_dfselection_n_tracklets_20.0_100.0.sav] #list of nbins

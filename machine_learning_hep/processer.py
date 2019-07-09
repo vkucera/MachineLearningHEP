@@ -182,8 +182,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.f_evt_ml = os.path.join(self.d_pkl_ml, self.n_evt)
         self.f_evtorig_ml = os.path.join(self.d_pkl_ml, self.n_evtorig)
 
-        self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f.pkl" % \
-                           (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
+        self.lpt_recodec = [self.n_reco.replace(".pkl", "_%s%d_%d_%.2f.pkl" % \
+                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
                             self.lpt_probcutpre[i])) for i in range(self.p_nptbins)]
         self.mptfiles_recosk = [createlist(self.d_pklsk, self.l_path, \
                                 self.lpt_recosk[ipt]) for ipt in range(self.p_nptbins)]
