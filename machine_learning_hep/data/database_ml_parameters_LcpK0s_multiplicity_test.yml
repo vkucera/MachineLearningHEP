@@ -20,10 +20,10 @@ LcpK0s_multiplicity_test:
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
-  sel_reco_skim: [null,null]
-  sel_gen_skim: [null,null]
-  sel_skim_binmin: [ 0,20] #list of nbins
-  sel_skim_binmax: [20,100] #list of nbins
+  sel_reco_skim: [null,null,null]
+  sel_gen_skim: [null,null,null]
+  sel_skim_binmin: [ 0,20,60] #list of nbins
+  sel_skim_binmax: [20,60,100] #list of nbins
   var_binning: n_tracklets
   dofullevtmerge: false
 
@@ -79,33 +79,35 @@ LcpK0s_multiplicity_test:
 
   multi:
     data:
-      nperiods: 1
+      nperiods: 2
       nprocessesparallel: 50
-      maxfiles : [-1] #list of periods
-      chunksizeunp : [1000] #list of periods
-      chunksizeskim: [1000] #list of periods
-      fracmerge : [0.3] #list of periods
-      seedmerge: [12] #list of periods
-      period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/data/unmerged] #list of periods
-      pkl: [LcpK0s_multiplicity/datapkl] #list of periods
-      pkl_skimmed: [LcpK0s_multiplicity/datapklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/datapklskML] #list of periods
+      maxfiles : [-1,-1] #list of periods
+      chunksizeunp : [1000,1000] #list of periods
+      chunksizeskim: [1000,1000] #list of periods
+      fracmerge : [0.3,0.3] #list of periods
+      seedmerge: [12,12] #list of periods
+      period: [LHC18pp,LHC18pp] #list of periods
+      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/data/unmerged,
+                         /Users/gianmicheleinnocenti/samplesMLexample/data/unmerged] #list of periods
+      pkl: [LcpK0s_multiplicity/datapkl1, LcpK0s_multiplicity/datapkl2] #list of periods
+      pkl_skimmed: [LcpK0s_multiplicity/datapklsk1, LcpK0s_multiplicity/datapklsk2] #list of periods
+      pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/datapklskML1, LcpK0s_multiplicity/datapklskML2] #list of periods
       pkl_skimmed_merge_for_ml_all: LcpK0s_multiplicity/datapklskMLallperiods
       pkl_evtcounter_all: LcpK0s_multiplicity/datapklevtHC18ppallperiods
     mc:
       nperiods: 1
       nprocessesparallel: 50
-      maxfiles : [-1] #list of periods
-      chunksizeunp : [1000] #list of periods
-      chunksizeskim: [1000] #list of periods
-      fracmerge : [1.0] #list of periods
-      seedmerge: [12] #list of periods
-      period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/mc/unmerged] # this is pPb MC, #list of periods
-      pkl: [LcpK0s_multiplicity/mcpkl] #list of periods
-      pkl_skimmed: [LcpK0s_multiplicity/mcpklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/mcpklskML] #list of periods
+      maxfiles : [-1,-1] #list of periods
+      chunksizeunp : [1000,1000] #list of periods
+      chunksizeskim: [1000,1000] #list of periods
+      fracmerge : [1.0,1.0] #list of periods
+      seedmerge: [12,12] #list of periods
+      period: [LHC18pp,LHC18pp] #list of periods
+      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/mc/unmerged, 
+                          /Users/gianmicheleinnocenti/samplesMLexample/mc/unmerged] # this is pPb MC, #list of periods
+      pkl: [LcpK0s_multiplicity/mcpkl1,LcpK0s_multiplicity/mcpkl2] #list of periods
+      pkl_skimmed: [LcpK0s_multiplicity/mcpklsk1,LcpK0s_multiplicity/mcpklsk2] #list of periods
+      pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/mcpklskML1,LcpK0s_multiplicity/mcpklskML2] #list of periods
       pkl_skimmed_merge_for_ml_all: LcpK0s_multiplicity/mcpklskMLallperiods
       pkl_evtcounter_all: LcpK0s_multiplicity/mcpklevtHC18ppallperiods
   ml:
@@ -119,8 +121,8 @@ LcpK0s_multiplicity_test:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [ 0,20] #list of nbins
-    binmax: [20,100] #list of nbins
+    binmin: [ 0,20,60] #list of nbins
+    binmax: [20,60,100] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10 
     mlplot: LcpK0s_multiplicity/mlplot # to be removed
@@ -137,45 +139,46 @@ LcpK0s_multiplicity_test:
       bkg_data_fraction: 0.1 # fraction of real data used in the estimation
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1,1] #list of nbins
+      raahp: [1,1,1] #list of nbins
   analysis:
     data:
-      pkl_skimmed_dec: [LcpK0s_multiplicity/datapklskdec] #list of periods
-      pkl_skimmed_decmerged: [LcpK0s_multiplicity/datapklskdecmerged] #list of periods
+      pkl_skimmed_dec: [LcpK0s_multiplicity/datapklskdec1,LcpK0s_multiplicity/datapklskdec2] #list of periods
+      pkl_skimmed_decmerged: [LcpK0s_multiplicity/datapklskdecmerged1,LcpK0s_multiplicity/datapklskdecmerged2] #list of periods
       pkl_skimmed_decmergedallp: LcpK0s_multiplicity/datapklskdecmergedall
-      results: [LcpK0s_multiplicity/dataanalysis] #list of periods
+      results: [LcpK0s_multiplicity/dataanalysis1,LcpK0s_multiplicity/dataanalysis2] #list of periods
       resultsallp: LcpK0s_multiplicity/dataanalysisallp
     mc:
-      pkl_skimmed_dec: [LcpK0s_multiplicity/mcpklskdec] #list of periods
-      pkl_skimmed_decmerged: [LcpK0s_multiplicity/mcpklskdecmerged] #list of periods
+      pkl_skimmed_dec: [LcpK0s_multiplicity/mcpklskdec1,LcpK0s_multiplicity/mcpklskdec2] #list of periods
+      pkl_skimmed_decmerged: [LcpK0s_multiplicity/mcpklskdecmerged1,LcpK0s_multiplicity/mcpklskdecmerged2] #list of periods
       pkl_skimmed_decmergedallp: LcpK0s_multiplicity/mcpklskdecmergedall
-      results: [LcpK0s_multiplicity/mcanalysis] #list of periods
+      results: [LcpK0s_multiplicity/mcanalysis1,LcpK0s_multiplicity/mcanalysis2] #list of periods
       resultsallp: LcpK0s_multiplicity/mcanalysisallp
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpK0s_multiplicity_test_dfselection_n_tracklets_0.0_20.0.sav,
-                     xgboost_classifierLcpK0s_multiplicity_test_dfselection_n_tracklets_20.0_100.0.sav] #list of nbins
+                     xgboost_classifierLcpK0s_multiplicity_test_dfselection_n_tracklets_20.0_60.0.sav,
+                     xgboost_classifierLcpK0s_multiplicity_test_dfselection_n_tracklets_60.0_100.0.sav] #list of nbins
     probcutpresel: 
-      data: [0.3,0.3] #list of nbins
-      mc: [0.3,0.3] #list of nbins
+      data: [0.3,0.3,0.3] #list of nbins
+      mc: [0.3,0.3,0.3] #list of nbins
 
-    probcutoptimal: [0.5,0.5] #list of nbins
+    probcutoptimal: [0.5,0.5,0.5] #list of nbins
     mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
     #parameters for fitter
     usefit: true
-    sgnfunc: [kGaus,kGaus]
-    bkgfunc: [Pol2,Pol2]
+    sgnfunc: [kGaus,kGaus,kGaus]
+    bkgfunc: [Pol2,Pol2,Pol2]
     masspeak: 2.2864
-    massmin: [2.14,2.14]
-    massmax: [2.436,2.436]
-    rebin: [6,6]
-    includesecpeak: [0,0]
+    massmin: [2.14,2.14,2.14]
+    massmax: [2.436,2.436,2.436]
+    rebin: [6,6,6]
+    includesecpeak: [0,0,0]
     masssecpeak: 1.869
     FixedMean: false
     SetFixGaussianSigma: true
     SetInitialGaussianMean: true
     dolikelihood: true
-    sigmaarray: [0.01,0.01]
+    sigmaarray: [0.01,0.01,0.01]
     FixedSigma: true  
     fitcase: Lc

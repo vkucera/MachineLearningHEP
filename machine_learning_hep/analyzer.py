@@ -16,6 +16,10 @@
 main script for doing final stage analysis
 """
 import os
+from ROOT import TFile, TH1F, TCanvas  # pylint: disable=import-error, no-name-in-module
+import pickle
+from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 
 from machine_learning_hep.utilities import merge_method
 class Analyzer: # pylint: disable=too-many-instance-attributes, too-many-statements
@@ -31,6 +35,7 @@ class Analyzer: # pylint: disable=too-many-instance-attributes, too-many-stateme
         self.lpt_anbinmax = datap["sel_skim_binmax"]
         self.p_nptbins = len(datap["sel_skim_binmax"])
         self.p_dofullevtmerge = datap["dofullevtmerge"]
+        self.p_modelname = datap["analysis"]["modelname"]
 
         #directories
 
@@ -44,7 +49,7 @@ class Analyzer: # pylint: disable=too-many-instance-attributes, too-many-stateme
         self.d_recomergedper = datap["analysis"][self.mcordata]["pkl_skimmed_decmergedallp"]
         self.d_results = datap["analysis"][self.mcordata]["results"]
         self.d_resultsallp = datap["analysis"][self.mcordata]["resultsallp"]
-        self.lpt_probcut = datap["analysis"]["probcutpresel"][self.mcordata]
+        self.lpt_probcutfin = datap["analysis"]["probcutoptimal"]
         self.lpt_probcutpre = datap["analysis"]["probcutpresel"][self.mcordata]
         self.lpt_reco = [self.n_reco.replace(".pkl", "_%s%d_%d_%.2f.pkl" % \
                            (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
@@ -63,10 +68,53 @@ class Analyzer: # pylint: disable=too-many-instance-attributes, too-many-stateme
         self.lpt_recomergedp = [os.path.join(self.d_recomergedper, self.lpt_reco[ipt]) \
                               for ipt in range(self.p_nptbins)]
 
+        self.n_filemass = datap["files_names"]["histofilename"]
+        self.lpt_filemass = [self.n_filemass.replace(".root", "%d_%d_%.2f.root" % \
+                (self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt], \
+                 self.lpt_probcutfin[ipt])) for ipt in range(self.p_nptbins)]
+        self.mperpt_filemass = [[os.path.join(mydir, self.lpt_filemass[ipt]) \
+                                 for mydir in self.d_results] \
+                                 for ipt in range(self.p_nptbins)]
+        self.lptmerged_filemass = [os.path.join(self.d_resultsallp, filen)
+                                  for filen in self.lpt_filemass]
+        self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
+                       for ipt in range(self.p_nptbins)]
+
+        self.p_mass_fit_lim = datap["analysis"]['mass_fit_lim']
+        self.p_bin_width = datap["analysis"]['bin_width']
+        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
+                                    self.p_bin_width))
+
         for ipt in range(self.p_nptbins):
             merge_method(self.lptper_gen[ipt], self.lpt_genmergedp[ipt])
             merge_method(self.lptper_reco[ipt], self.lpt_recomergedp[ipt])
-        print(self.lpt_recomergedp[ipt])
+
+    def extractmass(self, filedf, seldf, histoname, nbins, minv, maxv):
+        df = pickle.load(openfile(filedf, "rb"))
+        df = df.query(seldf)
+        h_invmass = TH1F("hmass", "", nbins, minv, maxv)
+        fill_hist(h_invmass, df.inv_mass)
+        return h_invmass
+
     def histomass(self):
-        for indexp in range(self.prodnumber):
-            self.process_listsample[indexp].process_unpack_par()
+        for ipt in range(self.p_nptbins):
+            for indexp in range(self.prodnumber):
+                myfile = TFile.Open(self.mperpt_filemass[ipt][indexp], "recreate")
+                h_invmass = self.extractmass(self.lptper_reco[ipt][indexp],
+                                             self.l_selml[ipt],
+                                             "hmass", self.p_num_bins,
+                                             self.p_mass_fit_lim[0],
+                                             self.p_mass_fit_lim[1])
+
+                myfile.cd()
+                h_invmass.Write()
+
+            myfile = TFile.Open(self.lptmerged_filemass[ipt], "recreate")
+            h_invmass = self.extractmass(self.lpt_recomergedp[ipt],
+                                        self.l_selml[ipt],
+                                        "hmass", self.p_num_bins,
+                                        self.p_mass_fit_lim[0],
+                                        self.p_mass_fit_lim[1])
+
+            myfile.cd()
+            h_invmass.Write()

@@ -96,6 +96,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     dirpklskdec_mergedallpdata = data_param[case]["analysis"]["data"]["pkl_skimmed_decmergedallp"]
     dirresultsdata = data_param[case]["analysis"]["data"]["results"]
     dirresultsmc = data_param[case]["analysis"]["mc"]["results"]
+    dirresultsallpmc = data_param[case]["analysis"]["mc"]["resultsallp"]
+    dirresultsallpdata = data_param[case]["analysis"]["data"]["resultsallp"]
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
@@ -167,12 +169,12 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             exit()
 
     if dohistomassmc is True:
-        if checkdirlist(dirresultsmc) is True:
-            exit()
+        if checkdirlist(dirresultsmc) is True or checkdir(dirresultsallpmc) is True:
+            print("folder exists histo mc")
 
     if dohistomassdata is True:
-        if checkdirlist(dirresultsdata) is True:
-            print("folder exists")
+        if checkdirlist(dirresultsdata) is True or checkdir(dirresultsallpdata) is True:
+            print("folder exists histo data")
 
     #perform the analysis flow
     if dodownloadalice == 1:
@@ -243,9 +245,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     if domergeapplymc is True:
         mymultiprocessmc.multi_mergeapply_allperiods()
     if dohistomassmc is True:
-        mymultiprocessmc.multi_histomass()
-    if dohistomassdata is True:
-        mymultiprocessdata.multi_histomass()
+        an = Analyzer(data_param[case], run_param, "mc")
+        an.histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
 
