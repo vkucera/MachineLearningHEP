@@ -27,6 +27,7 @@ from multiprocesser import MultiProcesser  # pylint: disable=import-error
 #from machine_learning_hep.efficiencyan import analysis_eff
 from  machine_learning_hep.utilities import checkdirlist, checkdir
 from optimiser import Optimiser
+from analyzer import Analyzer
 
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
@@ -73,8 +74,6 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     doapplymc = data_config["analysis"]["mc"]["doapply"]
     domergeapplydata = data_config["analysis"]["data"]["domergeapply"]
     domergeapplymc = data_config["analysis"]["mc"]["domergeapply"]
-    domergeapplyallpdata = data_config["analysis"]["data"]["domergeapplyperiods"]
-    domergeapplyallpmc = data_config["analysis"]["mc"]["domergeapplyperiods"]
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
@@ -158,15 +157,12 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     if domergeapplymc is True:
         if checkdirlist(dirpklskdec_mergedmc) is True:
             exit()
+        if checkdir(dirpklskdec_mergedallpmc) is True:
+            exit()
 
     if domergeapplydata is True:
         if checkdirlist(dirpklskdec_mergeddata) is True:
             exit()
-    if domergeapplyallpmc is True:
-        if checkdir(dirpklskdec_mergedallpmc) is True:
-            exit()
-
-    if domergeapplyallpdata is True:
         if checkdir(dirpklskdec_mergedallpdata) is True:
             exit()
 
@@ -246,15 +242,14 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         mymultiprocessdata.multi_mergeapply_allperiods()
     if domergeapplymc is True:
         mymultiprocessmc.multi_mergeapply_allperiods()
-    if domergeapplyallpdata is True:
-        mymultiprocessdata.multi_mergeapply_allinone()
-    if domergeapplyallpmc is True:
-        mymultiprocessmc.multi_mergeapply_allinone()
     if dohistomassmc is True:
         mymultiprocessmc.multi_histomass()
     if dohistomassdata is True:
         mymultiprocessdata.multi_histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
+
+    an = Analyzer(data_param[case], run_param, "mc")
+
 
 do_entire_analysis()

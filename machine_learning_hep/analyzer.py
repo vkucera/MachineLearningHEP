@@ -45,7 +45,7 @@ class Analyzer: # pylint: disable=too-many-instance-attributes, too-many-stateme
         self.d_results = datap["analysis"][self.mcordata]["results"]
         self.d_resultsallp = datap["analysis"][self.mcordata]["resultsallp"]
         self.lpt_probcut = datap["analysis"]["probcutpresel"][self.mcordata]
-
+        self.lpt_probcutpre = datap["analysis"]["probcutpresel"][self.mcordata]
         self.lpt_reco = [self.n_reco.replace(".pkl", "_%s%d_%d_%.2f.pkl" % \
                            (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
                             self.lpt_probcutpre[i])) for i in range(self.p_nptbins)]
@@ -66,7 +66,7 @@ class Analyzer: # pylint: disable=too-many-instance-attributes, too-many-stateme
         for ipt in range(self.p_nptbins):
             merge_method(self.lptper_gen[ipt], self.lpt_genmergedp[ipt])
             merge_method(self.lptper_reco[ipt], self.lpt_recomergedp[ipt])
-
+        print(self.lpt_recomergedp[ipt])
     def histomass(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_unpack_par()

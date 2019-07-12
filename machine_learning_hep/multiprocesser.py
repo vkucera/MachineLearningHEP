@@ -67,7 +67,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                               for direc in self.dlper_pklml] \
                               for ipt in range(self.p_nptbins)]
         self.lpt_recoml_mergedallp = [os.path.join(self.d_pklml_mergedallp, self.lpt_recosk[ipt]) \
-                                    for ipt in range(self.p_nptbins)]
+                                for ipt in range(self.p_nptbins)]
         self.lpt_genml_mergedallp = [os.path.join(self.d_pklml_mergedallp, self.lpt_gensk[ipt]) \
                                     for ipt in range(self.p_nptbins)]
         self.f_evtml_mergedallp = os.path.join(self.d_pklml_mergedallp, self.n_evt)
@@ -129,9 +129,6 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
     def multi_mergeapply_allperiods(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_mergedec()
-
-    def multi_mergeapply_allinone(self):
-        print("MERGED ALL")
 
     def multi_histomass(self):
         for indexp in range(self.prodnumber):
