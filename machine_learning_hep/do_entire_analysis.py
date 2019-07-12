@@ -73,6 +73,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     doapplymc = data_config["analysis"]["mc"]["doapply"]
     domergeapplydata = data_config["analysis"]["data"]["domergeapply"]
     domergeapplymc = data_config["analysis"]["mc"]["domergeapply"]
+    domergeapplyallpdata = data_config["analysis"]["data"]["domergeapplyperiods"]
+    domergeapplyallpmc = data_config["analysis"]["mc"]["domergeapplyperiods"]
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
@@ -89,9 +91,10 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     dirpklmltotdata = data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
     dirpklskdecmc = data_param[case]["analysis"]["mc"]["pkl_skimmed_dec"]
     dirpklskdec_mergedmc = data_param[case]["analysis"]["mc"]["pkl_skimmed_decmerged"]
+    dirpklskdec_mergedallpmc = data_param[case]["analysis"]["mc"]["pkl_skimmed_decmergedallp"]
     dirpklskdecdata = data_param[case]["analysis"]["data"]["pkl_skimmed_dec"]
     dirpklskdec_mergeddata = data_param[case]["analysis"]["data"]["pkl_skimmed_decmerged"]
-
+    dirpklskdec_mergedallpdata = data_param[case]["analysis"]["data"]["pkl_skimmed_decmergedallp"]
     dirresultsdata = data_param[case]["analysis"]["data"]["results"]
     dirresultsmc = data_param[case]["analysis"]["mc"]["results"]
 
@@ -158,6 +161,13 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
 
     if domergeapplydata is True:
         if checkdirlist(dirpklskdec_mergeddata) is True:
+            exit()
+    if domergeapplyallpmc is True:
+        if checkdir(dirpklskdec_mergedallpmc) is True:
+            exit()
+
+    if domergeapplyallpdata is True:
+        if checkdir(dirpklskdec_mergedallpdata) is True:
             exit()
 
     if dohistomassmc is True:
