@@ -130,6 +130,9 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_mergedec()
 
+    def multi_mergeapply_allinone(self):
+        print("MERGED ALL")
+
     def multi_histomass(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_histomass()

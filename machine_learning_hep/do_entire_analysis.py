@@ -246,6 +246,10 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         mymultiprocessdata.multi_mergeapply_allperiods()
     if domergeapplymc is True:
         mymultiprocessmc.multi_mergeapply_allperiods()
+    if domergeapplyallpdata is True:
+        mymultiprocessdata.multi_mergeapply_allinone()
+    if domergeapplyallpmc is True:
+        mymultiprocessmc.multi_mergeapply_allinone()
     if dohistomassmc is True:
         mymultiprocessmc.multi_histomass()
     if dohistomassdata is True:
