@@ -15,35 +15,70 @@
 """
 main script for doing final stage analysis
 """
+import itertools
+
 # pylint: disable=too-many-lines
 import os
+
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import array
-import itertools
+
+from ROOT import (
+    TF1,
+    TH1D,
+    TH1F,
+    TH2F,
+    TArrow,
+    TCanvas,
+    TDirectory,
+    TFile,
+    TLatex,
+    TLegend,
+    TLine,
+    TPad,
+    TPaveLabel,
+    TPaveText,
+    TStyle,
+    TText,
+    gInterpreter,
+    gPad,
+    gROOT,
+    gStyle,
+    kBlack,
+    kBlue,
+    kGreen,
+    kOrange,
+    kRed,
+)
+
 # pylint: disable=import-error, no-name-in-module, unused-import
-from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
-from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
-from ROOT import gROOT, TDirectory, TPaveLabel
-from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
-from ROOT import TLatex
-from ROOT import gInterpreter, gPad
+from root_numpy import array2hist, hist2array
+
+from machine_learning_hep.analysis.analyzer import Analyzer
+
 # HF specific imports
 from machine_learning_hep.fitting.helpers import MLFitter
-from machine_learning_hep.logger import get_logger
 from machine_learning_hep.io import dump_yaml_from_dict
-from machine_learning_hep.utilities import folding, get_bins, make_latex_table, parallelizer
+from machine_learning_hep.logger import get_logger
 from machine_learning_hep.root import save_root_object
+from machine_learning_hep.utilities import (
+    folding,
+    get_bins,
+    make_latex_table,
+    parallelizer,
+)
 from machine_learning_hep.utilities_plot import plot_histograms
-from machine_learning_hep.analysis.analyzer import Analyzer
+
+
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
-class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
+class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
     species = "analyzer"
+
     def __init__(self, datap, case, typean, period):
         super().__init__(datap, case, typean, period)
         self.logger = get_logger()
         self.logger.warning("TEST")
-        #namefiles pkl
+        # namefiles pkl
         self.v_var_binning = datap["var_binning"]
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
@@ -58,43 +93,62 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.p_nbin2 = len(self.lvar2_binmin)
 
-        self.do_inel0 = datap["analysis"][self.typean].get("apply_inel0_sel", \
-                                  [None for _ in range(len(self.lvar2_binmin))])
+        self.do_inel0 = datap["analysis"][self.typean].get(
+            "apply_inel0_sel", [None for _ in range(len(self.lvar2_binmin))]
+        )
         self.inel0_var = datap["analysis"][self.typean].get("inel0_var", "n_tracklets")
 
-        self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
-                if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
-        self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
-                if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
+        self.d_resultsallpmc = (
+            datap["analysis"][typean]["mc"]["results"][period]
+            if period is not None
+            else datap["analysis"][typean]["mc"]["resultsallp"]
+        )
+        self.d_resultsallpdata = (
+            datap["analysis"][typean]["data"]["results"][period]
+            if period is not None
+            else datap["analysis"][typean]["data"]["resultsallp"]
+        )
 
         self.p_corrmb_typean = datap["analysis"][self.typean]["corresp_mb_typean"]
         if self.p_corrmb_typean is not None:
-            self.results_mb = datap["analysis"][self.p_corrmb_typean]["data"]["resultsallp"]
+            self.results_mb = datap["analysis"][self.p_corrmb_typean]["data"][
+                "resultsallp"
+            ]
 
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
         self.n_filemass_mc = os.path.join(self.d_resultsallpmc, n_filemass_name)
         self.n_filecross = datap["files_names"]["crossfilename"]
-        self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
+        self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
 
         # Output directories and filenames
         self.yields_filename = "yields"
-        self.fits_dirname = os.path.join(self.d_resultsallpdata, f"fits_{case}_{typean}")
+        self.fits_dirname = os.path.join(
+            self.d_resultsallpdata, f"fits_{case}_{typean}"
+        )
         self.yields_syst_filename = "yields_syst"
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
 
         self.n_fileff = datap["files_names"]["efffilename"]
         self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
-        self.p_bin_width = datap["analysis"][self.typean]['bin_width']
-        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
-                                    self.p_bin_width))
+        self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
+        self.p_num_bins = int(
+            round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / self.p_bin_width)
+        )
         self.p_nbx2 = datap["analysis"][self.typean].get("isNbx2", "")
         if "isNbx2" not in datap["analysis"][self.typean]:
             self.p_nbx2 = False
-        #parameter fitter
+        # parameter fitter
         self.sig_fmap = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
-        self.bkg_fmap = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
+        self.bkg_fmap = {
+            "kExpo": 0,
+            "kLin": 1,
+            "Pol2": 2,
+            "kNoBk": 3,
+            "kPow": 4,
+            "kPowEx": 5,
+        }
         # For initial fit in integrated mult bin
         self.init_fits_from = datap["analysis"][self.typean]["init_fits_from"]
         self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
@@ -108,36 +162,61 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         if not isinstance(self.rebins[0], list):
             self.rebins = [self.rebins for _ in range(self.p_nbin2)]
 
-        self.p_includesecpeaks = datap["analysis"][self.typean].get("includesecpeak", None)
+        self.p_includesecpeaks = datap["analysis"][self.typean].get(
+            "includesecpeak", None
+        )
         if self.p_includesecpeaks is None:
             self.p_includesecpeaks = [False for ipt in range(self.p_nptbins)]
         # Now we have a list, either the one given by the user or the default one just filled above
         self.p_includesecpeaks = self.p_includesecpeaks.copy()
         if not isinstance(self.p_includesecpeaks[0], list):
-            self.p_inculdesecpeaks = [self.p_includesecpeaks for _ in range(self.p_nbin2)]
+            self.p_inculdesecpeaks = [
+                self.p_includesecpeaks for _ in range(self.p_nbin2)
+            ]
 
-        self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
-                if self.p_includesecpeaks else None
+        self.p_masssecpeak = (
+            datap["analysis"][self.typean]["masssecpeak"]
+            if self.p_includesecpeaks
+            else None
+        )
 
-        self.p_fix_masssecpeaks = datap["analysis"][self.typean].get("fix_masssecpeak", None)
+        self.p_fix_masssecpeaks = datap["analysis"][self.typean].get(
+            "fix_masssecpeak", None
+        )
         if self.p_fix_masssecpeaks is None:
             self.p_fix_masssecpeaks = [False for ipt in range(self.p_nptbins)]
         # Now we have a list, either the one given by the user or the default one just filled above
         self.p_fix_masssecpeaks = self.p_fix_masssecpeaks.copy()
         if not isinstance(self.p_fix_masssecpeaks[0], list):
-            self.p_fix_masssecpeaks = [self.p_fix_masssecpeaks for _ in range(self.p_nbin2)]
+            self.p_fix_masssecpeaks = [
+                self.p_fix_masssecpeaks for _ in range(self.p_nbin2)
+            ]
 
-        self.p_widthsecpeak = datap["analysis"][self.typean]["widthsecpeak"] \
-                if self.p_includesecpeaks else None
-        self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
-                if self.p_includesecpeaks else None
+        self.p_widthsecpeak = (
+            datap["analysis"][self.typean]["widthsecpeak"]
+            if self.p_includesecpeaks
+            else None
+        )
+        self.p_fix_widthsecpeak = (
+            datap["analysis"][self.typean]["fix_widthsecpeak"]
+            if self.p_includesecpeaks
+            else None
+        )
         self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
-        self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
-        self.p_max_perc_sigma_diff = datap["analysis"][self.typean]["MaxPercSigmaDeviation"]
-        self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
+        self.p_use_user_gauss_sigma = datap["analysis"][self.typean][
+            "SetInitialGaussianSigma"
+        ]
+        self.p_max_perc_sigma_diff = datap["analysis"][self.typean][
+            "MaxPercSigmaDeviation"
+        ]
+        self.p_exclude_nsigma_sideband = datap["analysis"][self.typean][
+            "exclude_nsigma_sideband"
+        ]
         self.p_nsigma_signal = datap["analysis"][self.typean]["nsigma_signal"]
         self.p_fixingaussigma = datap["analysis"][self.typean]["SetFixGaussianSigma"]
-        self.p_use_user_gauss_mean = datap["analysis"][self.typean]["SetInitialGaussianMean"]
+        self.p_use_user_gauss_mean = datap["analysis"][self.typean][
+            "SetInitialGaussianMean"
+        ]
         self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
         self.p_fixedsigma = datap["analysis"][self.typean]["FixedSigma"]
@@ -151,7 +230,9 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.var2ranges = self.lvar2_binmin.copy()
         self.var2ranges.append(self.lvar2_binmax[-1])
         # More specific fit options
-        self.include_reflection = datap["analysis"][self.typean].get("include_reflection", False)
+        self.include_reflection = datap["analysis"][self.typean].get(
+            "include_reflection", False
+        )
         print(self.var2ranges)
 
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
@@ -170,35 +251,50 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.p_sigmav0 = datap["analysis"]["sigmav0"]
         self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
         self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1] * 10)
-        self.p_triggereffunc = datap["analysis"][self.typean].get("triggereffunc", [0] * 10)
+        self.p_triggereffunc = datap["analysis"][self.typean].get(
+            "triggereffunc", [0] * 10
+        )
 
-        self.apply_weights = \
-                datap["analysis"][self.typean]["triggersel"].get("usetriggcorrfunc", None) \
-                is not None
+        self.apply_weights = (
+            datap["analysis"][self.typean]["triggersel"].get("usetriggcorrfunc", None)
+            is not None
+        )
         self.root_objects = []
 
-        self.get_crossmb_from_path = datap["analysis"][self.typean].get("get_crossmb_from_path", \
-                                                                        None)
-        self.path_for_crossmb = datap["analysis"][self.typean].get("path_for_crossmb", None)
+        self.get_crossmb_from_path = datap["analysis"][self.typean].get(
+            "get_crossmb_from_path", None
+        )
+        self.path_for_crossmb = datap["analysis"][self.typean].get(
+            "path_for_crossmb", None
+        )
 
         # Take efficiencies from another analysis.
         self.path_file_eff = datap["analysis"][self.typean].get("path_eff", None)
         self.mult_bin_eff = datap["analysis"][self.typean].get("mult_bin_eff", None)
 
-        if (self.path_file_eff and not self.mult_bin_eff) or \
-                (not self.path_file_eff and self.mult_bin_eff):
+        if (self.path_file_eff and not self.mult_bin_eff) or (
+            not self.path_file_eff and self.mult_bin_eff
+        ):
             # That is incoherent
-            self.logger.fatal("Either both or none of the lists \"path_eff\" and \"mult_bin_eff\"" \
-                    "must be specified")
+            self.logger.fatal(
+                'Either both or none of the lists "path_eff" and "mult_bin_eff"'
+                "must be specified"
+            )
 
         if not self.path_file_eff:
             self.path_file_eff = [None] * self.p_nbin2
             self.mult_bin_eff = [None] * self.p_nbin2
 
-        if len(self.path_file_eff) != self.p_nbin2 or len(self.mult_bin_eff) != self.p_nbin2:
-            self.logger.fatal("Efficiencies are requested to be taken from another analysis. " \
-                              "Make sure lists \"path_eff\" and \"mult_bin_eff\" have the same " \
-                              "length as the number of those bins (%i).", self.p_nbin2)
+        if (
+            len(self.path_file_eff) != self.p_nbin2
+            or len(self.mult_bin_eff) != self.p_nbin2
+        ):
+            self.logger.fatal(
+                "Efficiencies are requested to be taken from another analysis. "
+                'Make sure lists "path_eff" and "mult_bin_eff" have the same '
+                "length as the number of those bins (%i).",
+                self.p_nbin2,
+            )
 
         # Fitting
         self.fitter = None
@@ -210,12 +306,18 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
 
-        self.fitter = MLFitter(self.case, self.datap, self.typean,
-                               self.n_filemass, self.n_filemass_mc)
+        self.fitter = MLFitter(
+            self.case, self.datap, self.typean, self.n_filemass, self.n_filemass_mc
+        )
         self.fitter.perform_pre_fits()
         self.fitter.perform_central_fits()
-        fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
-                                           None, [self.case, self.typean])
+        fileout_name = self.make_file_path(
+            self.d_resultsallpdata,
+            self.yields_filename,
+            "root",
+            None,
+            [self.case, self.typean],
+        )
         fileout = TFile(fileout_name, "RECREATE")
         self.fitter.draw_fits(self.d_resultsallpdata, fileout)
         fileout.Close()
@@ -223,14 +325,14 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
-
     def yield_syst(self):
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
         if not self.fitter:
-            self.fitter = MLFitter(self.case, self.datap, self.typean,
-                                   self.n_filemass, self.n_filemass_mc)
+            self.fitter = MLFitter(
+                self.case, self.datap, self.typean, self.n_filemass, self.n_filemass_mc
+            )
             if not self.fitter.load_fits(self.fits_dirname):
                 self.logger.error("Cannot load fits from dir %s", self.fits_dirname)
                 return
@@ -245,25 +347,27 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
-
     def get_efficiency(self, ibin1, ibin2):
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
-                                 self.case, self.typean), "read")
+        fileouteff = TFile.Open(
+            "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean),
+            "read",
+        )
         h = fileouteff.Get(f"eff_mult{ibin2}")
         return h.GetBinContent(ibin1 + 1), h.GetBinError(ibin1 + 1)
-
 
     def efficiency(self):
         self.loadstyle()
 
         lfileeff = TFile.Open(self.n_fileff)
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
-                                 self.case, self.typean), "recreate")
-        cEff = TCanvas('cEff', 'The Fit Canvas')
+        fileouteff = TFile.Open(
+            "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean),
+            "recreate",
+        )
+        cEff = TCanvas("cEff", "The Fit Canvas")
         cEff.SetCanvasSize(1900, 1500)
         cEff.SetWindowSize(500, 500)
 
-        legeff = TLegend(.5, .65, .7, .85)
+        legeff = TLegend(0.5, 0.65, 0.7, 0.85)
         legeff.SetBorderSize(0)
         legeff.SetFillColor(0)
         legeff.SetFillStyle(0)
@@ -271,34 +375,40 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         legeff.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
-                                            self.lvar2_binmin[imult], \
-                                            self.lvar2_binmax[imult])
+            stringbin2 = "_%s_%.2f_%.2f" % (
+                self.v_var2_binning_gen,
+                self.lvar2_binmin[imult],
+                self.lvar2_binmax[imult],
+            )
             h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
             h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
             h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
-            h_sel_pr.SetLineColor(imult+1)
+            h_sel_pr.SetLineColor(imult + 1)
             h_sel_pr.Draw("same")
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-            legeffstring = "%.1f #leq %s < %.1f" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legeffstring = "%.1f #leq %s < %.1f" % (
+                self.lvar2_binmin[imult],
+                self.p_latexbin2var,
+                self.lvar2_binmax[imult],
+            )
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s %s (1/GeV)" \
-                    % (self.p_latexnhadron, self.typean))
-            h_sel_pr.SetMinimum(0.)
+            h_sel_pr.GetYaxis().SetTitle(
+                "Acc x efficiency (prompt) %s %s (1/GeV)"
+                % (self.p_latexnhadron, self.typean)
+            )
+            h_sel_pr.SetMinimum(0.0)
             h_sel_pr.SetMaximum(1.5)
         legeff.Draw()
-        cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
-                                        self.case, self.typean))
+        cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc, self.case, self.typean))
 
-        cEffFD = TCanvas('cEffFD', 'The Fit Canvas')
+        cEffFD = TCanvas("cEffFD", "The Fit Canvas")
         cEffFD.SetCanvasSize(1900, 1500)
         cEffFD.SetWindowSize(500, 500)
 
-        legeffFD = TLegend(.5, .65, .7, .85)
+        legeffFD = TLegend(0.5, 0.65, 0.7, 0.85)
         legeffFD.SetBorderSize(0)
         legeffFD.SetFillColor(0)
         legeffFD.SetFillStyle(0)
@@ -306,48 +416,63 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         legeffFD.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
-                                            self.lvar2_binmin[imult], \
-                                            self.lvar2_binmax[imult])
+            stringbin2 = "_%s_%.2f_%.2f" % (
+                self.v_var2_binning_gen,
+                self.lvar2_binmin[imult],
+                self.lvar2_binmax[imult],
+            )
             h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
             h_sel_fd = lfileeff.Get("h_sel_fd" + stringbin2)
             h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
-            h_sel_fd.SetLineColor(imult+1)
+            h_sel_fd.SetLineColor(imult + 1)
             h_sel_fd.Draw("same")
             fileouteff.cd()
             h_sel_fd.SetName("eff_fd_mult%d" % imult)
             h_sel_fd.Write()
-            legeffFDstring = "%.1f #leq %s < %.1f" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legeffFDstring = "%.1f #leq %s < %.1f" % (
+                self.lvar2_binmin[imult],
+                self.p_latexbin2var,
+                self.lvar2_binmax[imult],
+            )
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s %s (1/GeV)" \
-                    % (self.p_latexnhadron, self.typean))
-            h_sel_fd.SetMinimum(0.)
+            h_sel_fd.GetYaxis().SetTitle(
+                "Acc x efficiency feed-down %s %s (1/GeV)"
+                % (self.p_latexnhadron, self.typean)
+            )
+            h_sel_fd.SetMinimum(0.0)
             h_sel_fd.SetMaximum(1.5)
         legeffFD.Draw()
-        cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc,
-                                            self.case, self.typean))
-
+        cEffFD.SaveAs(
+            "%s/EffFD%s%s.eps" % (self.d_resultsallpmc, self.case, self.typean)
+        )
 
     def plotter(self):
         gROOT.SetBatch(True)
         self.loadstyle()
 
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % \
-                                (self.d_resultsallpmc, self.case, self.typean))
-        yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
-                                             None, [self.case, self.typean])
+        fileouteff = TFile.Open(
+            "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
+        )
+        yield_filename = self.make_file_path(
+            self.d_resultsallpdata,
+            self.yields_filename,
+            "root",
+            None,
+            [self.case, self.typean],
+        )
         fileoutyield = TFile.Open(yield_filename, "READ")
-        fileoutcross = TFile.Open("%s/finalcross%s%s.root" % \
-                                  (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        fileoutcross = TFile.Open(
+            "%s/finalcross%s%s.root" % (self.d_resultsallpdata, self.case, self.typean),
+            "recreate",
+        )
 
-        cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
+        cCrossvsvar1 = TCanvas("cCrossvsvar1", "The Fit Canvas")
         cCrossvsvar1.SetCanvasSize(1900, 1500)
         cCrossvsvar1.SetWindowSize(500, 500)
         cCrossvsvar1.SetLogy()
 
-        legvsvar1 = TLegend(.5, .65, .7, .85)
+        legvsvar1 = TLegend(0.5, 0.65, 0.7, 0.85)
         legvsvar1.SetBorderSize(0)
         legvsvar1.SetFillColor(0)
         legvsvar1.SetFillStyle(0)
@@ -369,66 +494,90 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             heff = fileouteff.Get("eff_mult%d" % (bineff))
             hcross = fileoutyield.Get("hyields%d" % (imult))
             hcross.Divide(heff)
-            hcross.SetLineColor(imult+1)
+            hcross.SetLineColor(imult + 1)
             norm = 2 * self.p_br * self.p_nevents / (self.p_sigmamb * 1e12)
-            hcross.Scale(1./norm)
+            hcross.Scale(1.0 / norm)
             fileoutcross.cd()
-            hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron)
-            hcross.GetYaxis().SetTitle("d#sigma/d#it{p}_{T} (%s) %s" %
-                                       (self.p_latexnhadron, self.typean))
+            hcross.GetXaxis().SetTitle(
+                "#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron
+            )
+            hcross.GetYaxis().SetTitle(
+                "d#sigma/d#it{p}_{T} (%s) %s" % (self.p_latexnhadron, self.typean)
+            )
             hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e1, 1e10)
-            legvsvar1endstring = "%.1f < %s < %.1f" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legvsvar1endstring = "%.1f < %s < %.1f" % (
+                self.lvar2_binmin[imult],
+                self.p_latexbin2var,
+                self.lvar2_binmax[imult],
+            )
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
             hcross.Write()
-            listvalpt = [hcross.GetBinContent(ipt+1) for ipt in range(self.p_nptbins)]
+            listvalpt = [hcross.GetBinContent(ipt + 1) for ipt in range(self.p_nptbins)]
             listvalues.append(listvalpt)
-            listvalerrpt = [hcross.GetBinError(ipt+1) for ipt in range(self.p_nptbins)]
+            listvalerrpt = [
+                hcross.GetBinError(ipt + 1) for ipt in range(self.p_nptbins)
+            ]
             listvalueserr.append(listvalerrpt)
         legvsvar1.Draw()
-        cCrossvsvar1.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
-                                                      self.case, self.typean, self.v_var_binning))
+        cCrossvsvar1.SaveAs(
+            "%s/Cross%s%sVs%s.eps"
+            % (self.d_resultsallpdata, self.case, self.typean, self.v_var_binning)
+        )
 
-        cCrossvsvar2 = TCanvas('cCrossvsvar2', 'The Fit Canvas')
+        cCrossvsvar2 = TCanvas("cCrossvsvar2", "The Fit Canvas")
         cCrossvsvar2.SetCanvasSize(1900, 1500)
         cCrossvsvar2.SetWindowSize(500, 500)
         cCrossvsvar2.SetLogy()
 
-        legvsvar2 = TLegend(.5, .65, .7, .85)
+        legvsvar2 = TLegend(0.5, 0.65, 0.7, 0.85)
         legvsvar2.SetBorderSize(0)
         legvsvar2.SetFillColor(0)
         legvsvar2.SetFillStyle(0)
         legvsvar2.SetTextFont(42)
         legvsvar2.SetTextSize(0.035)
-        hcrossvsvar2 = [TH1F("hcrossvsvar2" + "pt%d" % ipt, "", \
-                        self.p_nbin2, array("d", self.var2ranges)) \
-                        for ipt in range(self.p_nptbins)]
+        hcrossvsvar2 = [
+            TH1F(
+                "hcrossvsvar2" + "pt%d" % ipt,
+                "",
+                self.p_nbin2,
+                array("d", self.var2ranges),
+            )
+            for ipt in range(self.p_nptbins)
+        ]
 
         for ipt in range(self.p_nptbins):
             print("pt", ipt)
             for imult in range(self.p_nbin2):
-                hcrossvsvar2[ipt].SetLineColor(ipt+1)
+                hcrossvsvar2[ipt].SetLineColor(ipt + 1)
                 hcrossvsvar2[ipt].GetXaxis().SetTitle("%s" % self.p_latexbin2var)
                 hcrossvsvar2[ipt].GetYaxis().SetTitle(self.p_latexnhadron)
-                binmulrange = self.var2ranges[imult+1]-self.var2ranges[imult]
+                binmulrange = self.var2ranges[imult + 1] - self.var2ranges[imult]
                 if self.p_dodoublecross is True:
-                    hcrossvsvar2[ipt].SetBinContent(imult+1, listvalues[imult][ipt]/binmulrange)
-                    hcrossvsvar2[ipt].SetBinError(imult+1, listvalueserr[imult][ipt]/binmulrange)
+                    hcrossvsvar2[ipt].SetBinContent(
+                        imult + 1, listvalues[imult][ipt] / binmulrange
+                    )
+                    hcrossvsvar2[ipt].SetBinError(
+                        imult + 1, listvalueserr[imult][ipt] / binmulrange
+                    )
                 else:
-                    hcrossvsvar2[ipt].SetBinContent(imult+1, listvalues[imult][ipt])
-                    hcrossvsvar2[ipt].SetBinError(imult+1, listvalueserr[imult][ipt])
+                    hcrossvsvar2[ipt].SetBinContent(imult + 1, listvalues[imult][ipt])
+                    hcrossvsvar2[ipt].SetBinError(imult + 1, listvalueserr[imult][ipt])
 
                 hcrossvsvar2[ipt].GetYaxis().SetRangeUser(1e4, 1e10)
-            legvsvar2endstring = "%.1f < %s < %.1f GeV/#it{c}" % \
-                   (self.lpt_finbinmin[ipt], "#it{p}_{T}", self.lpt_finbinmax[ipt])
+            legvsvar2endstring = "%.1f < %s < %.1f GeV/#it{c}" % (
+                self.lpt_finbinmin[ipt],
+                "#it{p}_{T}",
+                self.lpt_finbinmax[ipt],
+            )
             hcrossvsvar2[ipt].Draw("same")
             legvsvar2.AddEntry(hcrossvsvar2[ipt], legvsvar2endstring, "LEP")
         legvsvar2.Draw()
-        cCrossvsvar2.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
-                                                      self.case, self.typean, self.v_var2_binning))
-
+        cCrossvsvar2.SaveAs(
+            "%s/Cross%s%sVs%s.eps"
+            % (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning)
+        )
 
     @staticmethod
     def calculate_norm(hsel, hnovt, hvtxout, multmin, multmax):
@@ -453,22 +602,33 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
         return norm
 
-    def makenormyields(self): # pylint: disable=import-outside-toplevel, too-many-branches
+    def makenormyields(
+        self,
+    ):  # pylint: disable=import-outside-toplevel, too-many-branches
         gROOT.SetBatch(True)
         self.loadstyle()
-        #self.test_aliphysics()
-        #filedataval = TFile.Open(self.f_evtnorm)
-        yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
-                                             None, [self.case, self.typean])
+        # self.test_aliphysics()
+        # filedataval = TFile.Open(self.f_evtnorm)
+        yield_filename = self.make_file_path(
+            self.d_resultsallpdata,
+            self.yields_filename,
+            "root",
+            None,
+            [self.case, self.typean],
+        )
         gROOT.LoadMacro("HFPtSpectrum.C")
         from ROOT import HFPtSpectrum, HFPtSpectrum2, HFPtSpectrumRescaled
+
         histonorm = TH1F("histonorm", "histonorm", self.p_nbin2, 0, self.p_nbin2)
         for imult in range(self.p_nbin2):
             # Choose where efficiencies to take from. Either this mult. bin, another mult. bin
             # in this analysis or another mult. bin from another analysis specified explicitly
             # by the user.
-            fileouteff = f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root" \
-                          if not self.path_file_eff[imult]  else self.path_file_eff[imult]
+            fileouteff = (
+                f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root"
+                if not self.path_file_eff[imult]
+                else self.path_file_eff[imult]
+            )
             if not os.path.exists(fileouteff):
                 self.logger.fatal("Efficiency file %s could not be found", fileouteff)
             bineff = -1
@@ -485,79 +645,152 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             namehistoeffprompt = f"eff_mult{bineff}"
             namehistoefffeed = f"eff_fd_mult{bineff}"
             nameyield = "hyields%d" % imult
-            fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
-                (self.d_resultsallpdata, self.case, self.typean, imult)
-            if ((self.p_nbx2) and imult == 0):
-                fileoutcrossmultRescaled = "%s/finalcross%s%smult%d_Rescaled.root" % \
-                     (self.d_resultsallpdata, self.case, self.typean, imult)
+            fileoutcrossmult = "%s/finalcross%s%smult%d.root" % (
+                self.d_resultsallpdata,
+                self.case,
+                self.typean,
+                imult,
+            )
+            if (self.p_nbx2) and imult == 0:
+                fileoutcrossmultRescaled = "%s/finalcross%s%smult%d_Rescaled.root" % (
+                    self.d_resultsallpdata,
+                    self.case,
+                    self.typean,
+                    imult,
+                )
             norm = -1
             filemass = TFile.Open(self.n_filemass)
             labeltrigger = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning_gen)
             if self.apply_weights is True:
                 labeltrigger = labeltrigger + "_weight"
             if self.do_inel0[imult]:
-                labeltrigger_inel0 = "hbit%svs%s_ibin2_%d" % (self.triggerbit, self.inel0_var, \
-                                                              imult)
+                labeltrigger_inel0 = "hbit%svs%s_ibin2_%d" % (
+                    self.triggerbit,
+                    self.inel0_var,
+                    imult,
+                )
                 if self.apply_weights is True:
                     labeltrigger_inel0 = labeltrigger_inel0 + "_weight"
                 hsel_inel0 = filemass.Get("sel_%s" % labeltrigger_inel0)
                 hnovtx_inel0 = filemass.Get("novtx_%s" % labeltrigger_inel0)
                 hvtxout_inel0 = filemass.Get("vtxout_%s" % labeltrigger_inel0)
-                norm = self.calculate_norm(hsel_inel0, hnovtx_inel0, hvtxout_inel0, 1, 999)
+                norm = self.calculate_norm(
+                    hsel_inel0, hnovtx_inel0, hvtxout_inel0, 1, 999
+                )
             else:
                 hsel = filemass.Get("sel_%s" % labeltrigger)
                 hnovtx = filemass.Get("novtx_%s" % labeltrigger)
                 hvtxout = filemass.Get("vtxout_%s" % labeltrigger)
-                norm = self.calculate_norm(hsel, hnovtx, hvtxout,
-                                           self.lvar2_binmin[imult],
-                                           self.lvar2_binmax[imult])
+                norm = self.calculate_norm(
+                    hsel,
+                    hnovtx,
+                    hvtxout,
+                    self.lvar2_binmin[imult],
+                    self.lvar2_binmax[imult],
+                )
             histonorm.SetBinContent(imult + 1, norm)
             # pylint: disable=logging-not-lazy
             self.logger.warning("Number of events %d for mult bin %d" % (norm, imult))
             filecrossmb = None
             if self.p_fprompt_from_mb is True and self.p_fd_method == 2:
                 if self.p_corrmb_typean is not None:
-                    pathtoreplace = os.path.basename(os.path.normpath(self.d_resultsallpdata))
+                    pathtoreplace = os.path.basename(
+                        os.path.normpath(self.d_resultsallpdata)
+                    )
                     pathreplaceby = os.path.basename(os.path.normpath(self.results_mb))
-                    resultpathmb = self.d_resultsallpdata.replace(pathtoreplace, pathreplaceby)
-                    filecrossmb = "%s/finalcross%s%smult0.root" % (resultpathmb, self.case, \
-                                                                   self.p_corrmb_typean)
+                    resultpathmb = self.d_resultsallpdata.replace(
+                        pathtoreplace, pathreplaceby
+                    )
+                    filecrossmb = "%s/finalcross%s%smult0.root" % (
+                        resultpathmb,
+                        self.case,
+                        self.p_corrmb_typean,
+                    )
                     if self.get_crossmb_from_path is not None:
                         filecrossmb = self.path_for_crossmb
                     self.logger.info("Looking for %s", filecrossmb)
                     if os.path.exists(filecrossmb):
-                        self.logger.info("Calculating spectra using fPrompt from MB. "\
-                                         "Assuming MB is bin 0: %s", filecrossmb)
+                        self.logger.info(
+                            "Calculating spectra using fPrompt from MB. "
+                            "Assuming MB is bin 0: %s",
+                            filecrossmb,
+                        )
                     else:
                         self.logger.fatal("First run MB if you want to use MB fPrompt!")
 
-            if self.p_fprompt_from_mb is None or self.p_fd_method != 2 or \
-              (imult == 0 and self.p_corrmb_typean is None):
-                HFPtSpectrum(self.p_indexhpt, self.p_inputfonllpred, \
-                 fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
-                 fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+            if (
+                self.p_fprompt_from_mb is None
+                or self.p_fd_method != 2
+                or (imult == 0 and self.p_corrmb_typean is None)
+            ):
+                HFPtSpectrum(
+                    self.p_indexhpt,
+                    self.p_inputfonllpred,
+                    fileouteff,
+                    namehistoeffprompt,
+                    namehistoefffeed,
+                    yield_filename,
+                    nameyield,
+                    fileoutcrossmult,
+                    norm,
+                    self.p_sigmav0 * 1e12,
+                    self.p_fd_method,
+                    self.p_cctype,
+                )
                 if self.p_nbx2:
-                    HFPtSpectrumRescaled(self.p_indexhpt, self.p_inputfonllpred, \
-                    fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
-                    fileoutcrossmultRescaled, norm, self.p_sigmav0 * 1e12, \
-                    self.p_fd_method, self.p_cctype)
+                    HFPtSpectrumRescaled(
+                        self.p_indexhpt,
+                        self.p_inputfonllpred,
+                        fileouteff,
+                        namehistoeffprompt,
+                        namehistoefffeed,
+                        yield_filename,
+                        nameyield,
+                        fileoutcrossmultRescaled,
+                        norm,
+                        self.p_sigmav0 * 1e12,
+                        self.p_fd_method,
+                        self.p_cctype,
+                    )
             else:
                 if filecrossmb is None:
-                    filecrossmb = "%s/finalcross%s%smult0.root" % \
-                                   (self.d_resultsallpdata, self.case, self.typean)
-                    self.logger.info("Calculating spectra using fPrompt from MB. "\
-                                     "Assuming MB is bin 0: %s", filecrossmb)
-                HFPtSpectrum2(filecrossmb, self.p_triggereff[imult], self.p_triggereffunc[imult], \
-                              fileouteff, namehistoeffprompt, namehistoefffeed, \
-                              yield_filename, nameyield, fileoutcrossmult, norm, \
-                              self.p_sigmav0 * 1e12)
+                    filecrossmb = "%s/finalcross%s%smult0.root" % (
+                        self.d_resultsallpdata,
+                        self.case,
+                        self.typean,
+                    )
+                    self.logger.info(
+                        "Calculating spectra using fPrompt from MB. "
+                        "Assuming MB is bin 0: %s",
+                        filecrossmb,
+                    )
+                HFPtSpectrum2(
+                    filecrossmb,
+                    self.p_triggereff[imult],
+                    self.p_triggereffunc[imult],
+                    fileouteff,
+                    namehistoeffprompt,
+                    namehistoefffeed,
+                    yield_filename,
+                    nameyield,
+                    fileoutcrossmult,
+                    norm,
+                    self.p_sigmav0 * 1e12,
+                )
 
-        fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
-            (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        fileoutcrosstot = TFile.Open(
+            "%s/finalcross%s%smulttot.root"
+            % (self.d_resultsallpdata, self.case, self.typean),
+            "recreate",
+        )
 
         for imult in range(self.p_nbin2):
-            fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
-                (self.d_resultsallpdata, self.case, self.typean, imult)
+            fileoutcrossmult = "%s/finalcross%s%smult%d.root" % (
+                self.d_resultsallpdata,
+                self.case,
+                self.typean,
+                imult,
+            )
             f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
             if not f_fileoutcrossmult:
                 continue
@@ -571,48 +804,69 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         if self.p_nbx2:
             gROOT.LoadMacro("CombineFeedDownMCSubtractionMethodsUncertainties.C")
             from ROOT import CombineFeedDownMCSubtractionMethodsUncertainties
-            fileoutcrossmult0 = "%s/finalcross%s%smult0.root" % \
-                (self.d_resultsallpdata, self.case, self.typean)
-            fileoutFeeddownTot = "%s/FeeddownSyst_NbNbx2_%s%s.root" % \
-                (self.d_resultsallpdata, self.case, self.typean)
-            CombineFeedDownMCSubtractionMethodsUncertainties(fileoutcrossmultRescaled, \
-                fileoutcrossmult0, fileoutFeeddownTot, self.p_inputfonllpred, 6)
 
+            fileoutcrossmult0 = "%s/finalcross%s%smult0.root" % (
+                self.d_resultsallpdata,
+                self.case,
+                self.typean,
+            )
+            fileoutFeeddownTot = "%s/FeeddownSyst_NbNbx2_%s%s.root" % (
+                self.d_resultsallpdata,
+                self.case,
+                self.typean,
+            )
+            CombineFeedDownMCSubtractionMethodsUncertainties(
+                fileoutcrossmultRescaled,
+                fileoutcrossmult0,
+                fileoutFeeddownTot,
+                self.p_inputfonllpred,
+                6,
+            )
 
     def plotternormyields(self):
         gROOT.SetBatch(True)
-        cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
+        cCrossvsvar1 = TCanvas("cCrossvsvar1", "The Fit Canvas")
         cCrossvsvar1.SetCanvasSize(1900, 1500)
         cCrossvsvar1.SetWindowSize(500, 500)
         cCrossvsvar1.SetLogy()
         cCrossvsvar1.cd()
-        legvsvar1 = TLegend(.5, .65, .7, .85)
+        legvsvar1 = TLegend(0.5, 0.65, 0.7, 0.85)
         legvsvar1.SetBorderSize(0)
         legvsvar1.SetFillColor(0)
         legvsvar1.SetFillStyle(0)
         legvsvar1.SetTextFont(42)
         legvsvar1.SetTextSize(0.035)
-        fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
-            (self.d_resultsallpdata, self.case, self.typean))
+        fileoutcrosstot = TFile.Open(
+            "%s/finalcross%s%smulttot.root"
+            % (self.d_resultsallpdata, self.case, self.typean)
+        )
 
         for imult in range(self.p_nbin2):
             hcross = fileoutcrosstot.Get("histoSigmaCorr%d" % imult)
-            hcross.Scale(1./(self.p_sigmav0 * 1e12))
-            hcross.SetLineColor(imult+1)
-            hcross.SetMarkerColor(imult+1)
-            hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron)
+            hcross.Scale(1.0 / (self.p_sigmav0 * 1e12))
+            hcross.SetLineColor(imult + 1)
+            hcross.SetMarkerColor(imult + 1)
+            hcross.GetXaxis().SetTitle(
+                "#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron
+            )
             hcross.GetYaxis().SetTitleOffset(1.3)
-            hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
-                                       (self.p_latexnhadron, self.typean))
+            hcross.GetYaxis().SetTitle(
+                "Corrected yield/events (%s) %s" % (self.p_latexnhadron, self.typean)
+            )
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
-            legvsvar1endstring = "%.1f #leq %s < %.1f" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legvsvar1endstring = "%.1f #leq %s < %.1f" % (
+                self.lvar2_binmin[imult],
+                self.p_latexbin2var,
+                self.lvar2_binmax[imult],
+            )
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
         legvsvar1.Draw()
-        cCrossvsvar1.SaveAs("%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata,
-                                                                    self.case, self.typean,
-                                                                    self.v_var_binning))
+        cCrossvsvar1.SaveAs(
+            "%s/CorrectedYieldsNorm%s%sVs%s.eps"
+            % (self.d_resultsallpdata, self.case, self.typean, self.v_var_binning)
+        )
+
     def plottervalidation(self):
         if self.p_performval is False:
             self.logger.fatal(
@@ -629,11 +883,13 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         # depending on how you set the option doperperiod in the
         # default_complete.yml database.
 
-        def do_validation_plots(input_file_name,
-                                output_path,
-                                ismc=False,
-                                pileup_fraction=True,
-                                tpc_tof_me=True):
+        def do_validation_plots(
+            input_file_name,
+            output_path,
+            ismc=False,
+            pileup_fraction=True,
+            tpc_tof_me=True,
+        ):
             gROOT.SetBatch(True)
 
             input_file = TFile(input_file_name, "READ")
@@ -683,7 +939,9 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
 
             # Fraction of pileup events
             if pileup_fraction:
-                hnum = get_histo("n_tracklets_corr", tag="pileup", strictly_require=False)
+                hnum = get_histo(
+                    "n_tracklets_corr", tag="pileup", strictly_require=False
+                )
                 if hnum is not None:
                     hnum.SetName(hnum.GetName() + "_eventfraction")
                     hden = get_histo("n_tracklets_corr", tag="_EvtSel")
@@ -694,22 +952,19 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             def plot_tpc_tof_me(tag):
                 # Compute TPC-TOF matching efficiency
                 if tpc_tof_me:
-                    to_plot = [["Pi", "K", "Pr"],
-                               ["0", "1"],
-                               ["p_prong0", "pt_prong0", "pt_cand"]
-                               ]
+                    to_plot = [
+                        ["Pi", "K", "Pr"],
+                        ["0", "1"],
+                        ["p_prong0", "pt_prong0", "pt_cand"],
+                    ]
                     for spec, prong, observable in itertools.product(*to_plot):
-                        hname = [f"{observable}",
-                                 f"nsigTOF_{spec}_{prong}", tag]
-                        hnum = get_histo(*hname,
-                                         strictly_require=False)
+                        hname = [f"{observable}", f"nsigTOF_{spec}_{prong}", tag]
+                        hnum = get_histo(*hname, strictly_require=False)
                         if hnum is None:
                             continue
-                        hnum = hnum.ProjectionX(
-                            hnum.GetName() + "_num", 2, -1)
+                        hnum = hnum.ProjectionX(hnum.GetName() + "_num", 2, -1)
                         hden = get_histo(*hname)
-                        hden = hden.ProjectionX(
-                            hden.GetName() + "_den")
+                        hden = hden.ProjectionX(hden.GetName() + "_den")
                         hnum.Divide(hnum, hden, 1, 1, "B")
                         hnum.SetName(
                             hnum.GetName().replace(
@@ -734,5 +989,4 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             input_file.Close()
 
         do_validation_plots(self.n_filemass, self.d_resultsallpdata)
-        do_validation_plots(self.n_filemass_mc,
-                            self.d_resultsallpmc, ismc=True)
+        do_validation_plots(self.n_filemass_mc, self.d_resultsallpmc, ismc=True)

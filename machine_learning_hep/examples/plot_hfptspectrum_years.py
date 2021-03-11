@@ -16,9 +16,11 @@
 main script for doing final stage analysis
 """
 import os
+
 # pylint: disable=import-error, no-name-in-module, unused-import
 import yaml
-from ROOT import gROOT, TFile
+from ROOT import TFile, gROOT
+
 from machine_learning_hep.utilities_plot import plot_histograms
 
 FILES_NOT_FOUND = []
@@ -28,11 +30,10 @@ FILES_NOT_FOUND = []
 # pylint: disable=too-many-branches, too-many-locals
 def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
 
-
-    with open("../data/database_ml_parameters_%s.yml" % case_1, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case_1, "r") as param_config:
         data_param_1 = yaml.load(param_config, Loader=yaml.FullLoader)
 
-    with open("../data/database_ml_parameters_%s.yml" % case_2, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case_2, "r") as param_config:
         data_param_2 = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots_1 = data_param_1[case_1]["analysis"]["dir_general_plots"]
@@ -48,17 +49,30 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
 
     use_period = data_param_1[case_1]["analysis"][ana_type]["useperiod"]
     latexbin2var = data_param_1[case_1]["analysis"][ana_type]["latexbin2var"]
-    result_paths_1 = [data_param_1[case_1]["analysis"][ana_type]["data"]["results"][i] \
-            for i in range(len(use_period)) if use_period[i]]
-    result_paths_1.insert(0, data_param_1[case_1]["analysis"][ana_type]["data"]["resultsallp"])
+    result_paths_1 = [
+        data_param_1[case_1]["analysis"][ana_type]["data"]["results"][i]
+        for i in range(len(use_period))
+        if use_period[i]
+    ]
+    result_paths_1.insert(
+        0, data_param_1[case_1]["analysis"][ana_type]["data"]["resultsallp"]
+    )
 
-    result_paths_2 = [data_param_2[case_2]["analysis"][ana_type]["data"]["results"][i] \
-            for i in range(len(use_period)) if use_period[i]]
-    result_paths_2.insert(0, data_param_2[case_2]["analysis"][ana_type]["data"]["resultsallp"])
+    result_paths_2 = [
+        data_param_2[case_2]["analysis"][ana_type]["data"]["results"][i]
+        for i in range(len(use_period))
+        if use_period[i]
+    ]
+    result_paths_2.insert(
+        0, data_param_2[case_2]["analysis"][ana_type]["data"]["resultsallp"]
+    )
 
     # Assume same in all particle cases
-    periods = [data_param_1[case_1]["multi"]["data"]["period"][i] \
-            for i in range(len(use_period)) if use_period[i]]
+    periods = [
+        data_param_1[case_1]["multi"]["data"]["period"][i]
+        for i in range(len(use_period))
+        if use_period[i]
+    ]
     periods.insert(0, "merged")
 
     binsmin = data_param_1[case_1]["analysis"][ana_type]["sel_binmin2"]
@@ -67,10 +81,10 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
     name_1 = data_param_1[case_1]["analysis"][ana_type]["latexnamehadron"]
     name_2 = data_param_2[case_2]["analysis"][ana_type]["latexnamehadron"]
 
-    #br_1 = data_param_1[case_1]["ml"]["opt"]["BR"]
-    #br_2 = data_param_2[case_2]["ml"]["opt"]["BR"]
-    #sigmav0_1 = data_param_1[case_1]["analysis"]["sigmav0"]
-    #sigmav0_2 = data_param_2[case_2]["analysis"]["sigmav0"]
+    # br_1 = data_param_1[case_1]["ml"]["opt"]["BR"]
+    # br_2 = data_param_2[case_2]["ml"]["opt"]["BR"]
+    # sigmav0_1 = data_param_1[case_1]["analysis"]["sigmav0"]
+    # sigmav0_2 = data_param_2[case_2]["analysis"]["sigmav0"]
 
     if mult_bins is None:
         mult_bins = range(len(binsmin))
@@ -101,14 +115,16 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
             hyield_1.SetDirectory(0)
             hyield_2 = file_2.Get("histoSigmaCorr")
             hyield_2.SetDirectory(0)
-            #hyield_1.Scale(1./(br_1 * sigmav0_1 * 1e12))
-            #hyield_2.Scale(1./(br_2 * sigmav0_2 * 1e12))
+            # hyield_1.Scale(1./(br_1 * sigmav0_1 * 1e12))
+            # hyield_2.Scale(1./(br_2 * sigmav0_2 * 1e12))
             hyield_ratio = hyield_1.Clone(f"{case_1}_{case_2}_ratio_{period}_{imult}")
             hyield_ratio.Divide(hyield_2)
             histos.append(hyield_ratio)
 
-            l_string = f"{binsmin[imult]:.1f} #leq {latexbin2var} < {binsmax[imult]:.1f} "\
-                       f"({ana_type}), {period}"
+            l_string = (
+                f"{binsmin[imult]:.1f} #leq {latexbin2var} < {binsmax[imult]:.1f} "
+                f"({ana_type}), {period}"
+            )
             legend_titles.append(l_string)
 
         if not histos:
@@ -118,18 +134,30 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
         if not os.path.exists(sub_folder):
             os.makedirs(sub_folder)
 
-        save_path = f"{sub_folder}/{histos[0].GetName()}_combined_{periods_string}_{imult}.eps"
+        save_path = (
+            f"{sub_folder}/{histos[0].GetName()}_combined_{periods_string}_{imult}.eps"
+        )
         y_label = f"{histos[0].GetYaxis().GetTitle()} {name_1} / {name_2}"
 
-        plot_histograms(histos, True, True, legend_titles, histos[0].GetTitle(),
-                        "#it{p}_{T} (GeV/#it{c})", y_label, "year / merged", save_path)
+        plot_histograms(
+            histos,
+            True,
+            True,
+            legend_titles,
+            histos[0].GetTitle(),
+            "#it{p}_{T} (GeV/#it{c})",
+            y_label,
+            "year / merged",
+            save_path,
+        )
+
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches, too-many-locals
 def plot_hfspectrum_years(case, ana_type, mult_bins=None):
 
-    with open("../data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case, "r") as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots = data_param[case]["analysis"]["dir_general_plots"]
@@ -139,20 +167,28 @@ def plot_hfspectrum_years(case, ana_type, mult_bins=None):
         os.makedirs(folder_plots)
 
     use_period = data_param[case]["analysis"][ana_type]["useperiod"]
-    result_paths = [data_param[case]["analysis"][ana_type]["data"]["results"][i] \
-            for i in range(len(use_period)) if use_period[i]]
-    periods = [data_param[case]["multi"]["data"]["period"][i] \
-            for i in range(len(use_period)) if use_period[i]]
+    result_paths = [
+        data_param[case]["analysis"][ana_type]["data"]["results"][i]
+        for i in range(len(use_period))
+        if use_period[i]
+    ]
+    periods = [
+        data_param[case]["multi"]["data"]["period"][i]
+        for i in range(len(use_period))
+        if use_period[i]
+    ]
 
-    result_paths.insert(0, data_param[case]["analysis"][ana_type]["data"]["resultsallp"])
+    result_paths.insert(
+        0, data_param[case]["analysis"][ana_type]["data"]["resultsallp"]
+    )
     periods.insert(0, "merged")
 
     binsmin = data_param[case]["analysis"][ana_type]["sel_binmin2"]
     binsmax = data_param[case]["analysis"][ana_type]["sel_binmax2"]
     name = data_param[case]["analysis"][ana_type]["latexnamehadron"]
     latexbin2var = data_param[case]["analysis"][ana_type]["latexbin2var"]
-    #br = data_param[case]["ml"]["opt"]["BR"]
-    #sigmav0 = data_param[case]["analysis"]["sigmav0"]
+    # br = data_param[case]["ml"]["opt"]["BR"]
+    # sigmav0 = data_param[case]["analysis"]["sigmav0"]
 
     if mult_bins is None:
         mult_bins = range(len(binsmin))
@@ -171,10 +207,23 @@ def plot_hfspectrum_years(case, ana_type, mult_bins=None):
     print("################")
     print(f"case {case} in analysis {ana_type}")
 
-    histo_names = ["hDirectMCpt", "hFeedDownMCpt", "hDirectMCptMax", "hDirectMCptMin",
-                   "hFeedDownMCptMax", "hFeedDownMCptMin", "hDirectEffpt", "hFeedDownEffpt",
-                   "hRECpt", "histoYieldCorr", "histoYieldCorrMax", "histoYieldCorrMin",
-                   "histoSigmaCorr", "histoSigmaCorrMax", "histoSigmaCorrMin"]
+    histo_names = [
+        "hDirectMCpt",
+        "hFeedDownMCpt",
+        "hDirectMCptMax",
+        "hDirectMCptMin",
+        "hFeedDownMCptMax",
+        "hFeedDownMCptMin",
+        "hDirectEffpt",
+        "hFeedDownEffpt",
+        "hRECpt",
+        "histoYieldCorr",
+        "histoYieldCorrMax",
+        "histoYieldCorrMin",
+        "histoSigmaCorr",
+        "histoSigmaCorrMax",
+        "histoSigmaCorrMin",
+    ]
 
     periods_string = "_".join(periods)
 
@@ -194,11 +243,13 @@ def plot_hfspectrum_years(case, ana_type, mult_bins=None):
                 h.SetDirectory(0)
                 histos.append(h)
                 comment = ""
-                if histos[-1].Integral() <= 0. or histos[-1].GetEntries() == 0:
+                if histos[-1].Integral() <= 0.0 or histos[-1].GetEntries() == 0:
                     print(f"Empty period {period}, {case}, {ana_type}, mult {imult}")
                     comment = "(empty)"
-                l_string = f"{binsmin[imult]:.1f} #leq {latexbin2var} < {binsmax[imult]:.1f} "\
-                           f"({ana_type}), {period} {comment}"
+                l_string = (
+                    f"{binsmin[imult]:.1f} #leq {latexbin2var} < {binsmax[imult]:.1f} "
+                    f"({ana_type}), {period} {comment}"
+                )
                 legend_titles.append(l_string)
 
             if not histos:
@@ -210,17 +261,27 @@ def plot_hfspectrum_years(case, ana_type, mult_bins=None):
             save_path = f"{sub_folder}/{hn}_combined_{periods_string}_{imult}.eps"
 
             label_y = f"{histos[0].GetYaxis().GetTitle()} {name}"
-            plot_histograms(histos, True, True, legend_titles, histos[0].GetTitle(),
-                            "#it{p}_{T} (GeV/#it{c})", label_y, "year / merged", save_path)
+            plot_histograms(
+                histos,
+                True,
+                True,
+                legend_titles,
+                histos[0].GetTitle(),
+                "#it{p}_{T} (GeV/#it{c})",
+                label_y,
+                "year / merged",
+                save_path,
+            )
+
 
 #####################################
 
 gROOT.SetBatch(True)
 
-#EXAMPLE HOW TO USE plot_hfptspectrum_years
+# EXAMPLE HOW TO USE plot_hfptspectrum_years
 #  ---> Makes comparison plots+ratios (for whatever histogram) between different years/periods.
-#plot_hfspectrum_years("Dspp", "MBvspt_ntrkl")
-#plot_hfspectrum_years_ratios("Dspp", "D0pp", "MBvspt_ntrkl")
+# plot_hfspectrum_years("Dspp", "MBvspt_ntrkl")
+# plot_hfspectrum_years_ratios("Dspp", "D0pp", "MBvspt_ntrkl")
 
 if FILES_NOT_FOUND:
     print("FILES NOT FOUND:")

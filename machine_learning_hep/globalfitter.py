@@ -16,12 +16,24 @@
 Methods to: fit inv. mass
 """
 
-from math import sqrt, pi, exp
-# pylint: disable=import-error,no-name-in-module
-from ROOT import TF1, gStyle, TCanvas, TPaveText, Double, TVirtualFitter, \
-                 kGreen, kRed, kBlue, TGraph, gROOT
-from  machine_learning_hep.logger import get_logger
+from math import exp, pi, sqrt
 
+# pylint: disable=import-error,no-name-in-module
+from ROOT import (
+    TF1,
+    Double,
+    TCanvas,
+    TGraph,
+    TPaveText,
+    TVirtualFitter,
+    gROOT,
+    gStyle,
+    kBlue,
+    kGreen,
+    kRed,
+)
+
+from machine_learning_hep.logger import get_logger
 
 gROOT.ProcessLine("struct FitValues { Double_t mean; Double_t sigma; Double_t mean_fit; \
                                       Double_t sigma_fit; Bool_t fix_mean; Bool_t fix_sigma; \
@@ -31,6 +43,7 @@ gROOT.ProcessLine("struct FitValues { Double_t mean; Double_t sigma; Double_t me
 
 # pylint: disable=wrong-import-position, ungrouped-imports
 from ROOT import FitValues
+
 
 def fixpar(massmin, massmax, masspeak, range_signal):
     par_fix1 = Double(massmax-massmin)

@@ -13,30 +13,46 @@
 #############################################################################
 
 
-from os.path import join
 import os
-from glob import glob
 from array import array
+from glob import glob
+from os.path import join
 
-#pylint: disable=too-many-lines
-from ROOT import TFile, TH1F, TCanvas, gStyle, Double  #pylint: disable=import-error, no-name-in-module
+# pylint: disable=too-many-lines
+from ROOT import (  # pylint: disable=import-error, no-name-in-module
+    TH1F,
+    Double,
+    TCanvas,
+    TFile,
+    gStyle,
+)
 
+from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss, FitSystAliHF
+from machine_learning_hep.fitting.utils import load_fit, save_fit
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities import make_file_path
 from machine_learning_hep.utilities_plot import plot_histograms
-from machine_learning_hep.fitting.utils import save_fit, load_fit
-from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss, FitSystAliHF
 
-class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many-statements
+
+class MLFitParsFactory:  # pylint: disable=too-many-instance-attributes, too-many-statements
     """
     Managing MLHEP specific fit parameters and is used to collect and retrieve all information
     required to initialise a (systematic) fit
     """
 
     SIG_FUNC_MAP = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
-    BKG_FUNC_MAP = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
+    BKG_FUNC_MAP = {
+        "kExpo": 0,
+        "kLin": 1,
+        "Pol2": 2,
+        "kNoBk": 3,
+        "kPow": 4,
+        "kPowEx": 5,
+    }
 
-    def __init__(self, database: dict, ana_type: str, file_data_name: str, file_mc_name: str): # pylint: disable=too-many-branches
+    def __init__(
+        self, database: dict, ana_type: str, file_data_name: str, file_mc_name: str
+    ):  # pylint: disable=too-many-branches
         """
         Initialize MLFitParsFactory
         Args:
@@ -85,7 +101,9 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         # Fit method flags
         self.init_fits_from = ana_config["init_fits_from"]
-        self.pre_fit_class_mc = ana_config.get("pre_fits_mc", ["kGaus"] * len(self.init_fits_from))
+        self.pre_fit_class_mc = ana_config.get(
+            "pre_fits_mc", ["kGaus"] * len(self.init_fits_from)
+        )
         self.sig_func_name = ana_config["sgnfunc"]
         self.bkg_func_name = ana_config["bkgfunc"]
         self.fit_range_low = ana_config["massmin"]
@@ -100,7 +118,6 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
                 _ = self.rebin[0][0][0]
         except (TypeError, KeyError):
             self.rebin = [self.rebin for _ in range(self.n_bins2)]
-
 
         # Initial fit parameters
         self.mean = ana_config["masspeak"]
@@ -137,21 +154,28 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         except TypeError:
             self.include_sec_peak = [self.include_sec_peak for _ in range(self.n_bins2)]
 
-        self.sec_mean = ana_config.get("masssecpeak", None) if self.include_sec_peak else None
+        self.sec_mean = (
+            ana_config.get("masssecpeak", None) if self.include_sec_peak else None
+        )
         self.fix_sec_mean = ana_config.get("fix_masssecpeak", [False] * self.n_bins1)
         try:
             iter(self.fix_sec_mean[0])
         except TypeError:
             self.fix_sec_mean = [self.fix_sec_mean for _ in range(self.n_bins2)]
-        self.sec_sigma = ana_config.get("widthsecpeak", None) if self.include_sec_peak else None
-        self.fix_sec_sigma = ana_config.get("fix_widthsecpeak", None) \
-                                              if self.include_sec_peak else None
+        self.sec_sigma = (
+            ana_config.get("widthsecpeak", None) if self.include_sec_peak else None
+        )
+        self.fix_sec_sigma = (
+            ana_config.get("fix_widthsecpeak", None) if self.include_sec_peak else None
+        )
 
         # Reflections flag
         self.include_reflections = ana_config.get("include_reflection", False)
 
         # Is this a trigger weighted histogram?
-        self.apply_weights = ana_config["triggersel"].get("usetriggcorrfunc", None) is not None
+        self.apply_weights = (
+            ana_config["triggersel"].get("usetriggcorrfunc", None) is not None
+        )
 
         # Systematics
         self.syst_pars = ana_config.get("systematics", {})
@@ -166,11 +190,15 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
             if not isinstance(self.syst_init_sigma_from[0], list):
                 self.syst_init_sigma_from = [self.syst_init_sigma_from] * self.n_bins2
 
-            self.syst_consider_free_sigma = self.syst_pars.get("consider_free_sigma", False)
+            self.syst_consider_free_sigma = self.syst_pars.get(
+                "consider_free_sigma", False
+            )
             try:
                 iter(self.syst_consider_free_sigma)
             except TypeError:
-                self.syst_consider_free_sigma = [self.syst_consider_free_sigma] * self.n_bins1
+                self.syst_consider_free_sigma = [
+                    self.syst_consider_free_sigma
+                ] * self.n_bins1
 
             self.syst_rel_var_sigma_up = self.syst_pars.get("rel_var_sigma_up", None)
             try:
@@ -178,12 +206,15 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
             except TypeError:
                 self.syst_rel_var_sigma_up = [self.syst_rel_var_sigma_up] * self.n_bins1
 
-            self.syst_rel_var_sigma_down = self.syst_pars.get("rel_var_sigma_down", None)
+            self.syst_rel_var_sigma_down = self.syst_pars.get(
+                "rel_var_sigma_down", None
+            )
             try:
                 iter(self.syst_rel_var_sigma_down)
             except TypeError:
-                self.syst_rel_var_sigma_down = [self.syst_rel_var_sigma_down] * self.n_bins1
-
+                self.syst_rel_var_sigma_down = [
+                    self.syst_rel_var_sigma_down
+                ] * self.n_bins1
 
     def make_ali_hf_fit_pars(self, ibin1, ibin2):
         """
@@ -195,18 +226,20 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
             dictionary of fit parameters
         """
 
-        fit_pars = {"sig_func_name": MLFitParsFactory.SIG_FUNC_MAP[self.sig_func_name[ibin1]],
-                    "bkg_func_name": MLFitParsFactory.BKG_FUNC_MAP[self.bkg_func_name[ibin1]],
-                    "likelihood": self.likelihood,
-                    "rebin": self.rebin[ibin2][ibin1],
-                    "fit_range_low": self.fit_range_low[ibin1],
-                    "fit_range_up": self.fit_range_up[ibin1],
-                    "n_sigma_sideband": self.n_sigma_sideband,
-                    "rel_sigma_bound": self.rel_sigma_bound,
-                    "mean": self.mean[ibin2][ibin1],
-                    "sigma": self.sigma[ibin1],
-                    "fix_mean": self.fix_mean,
-                    "fix_sigma": self.fix_sigma[ibin1]}
+        fit_pars = {
+            "sig_func_name": MLFitParsFactory.SIG_FUNC_MAP[self.sig_func_name[ibin1]],
+            "bkg_func_name": MLFitParsFactory.BKG_FUNC_MAP[self.bkg_func_name[ibin1]],
+            "likelihood": self.likelihood,
+            "rebin": self.rebin[ibin2][ibin1],
+            "fit_range_low": self.fit_range_low[ibin1],
+            "fit_range_up": self.fit_range_up[ibin1],
+            "n_sigma_sideband": self.n_sigma_sideband,
+            "rel_sigma_bound": self.rel_sigma_bound,
+            "mean": self.mean[ibin2][ibin1],
+            "sigma": self.sigma[ibin1],
+            "fix_mean": self.fix_mean,
+            "fix_sigma": self.fix_sigma[ibin1],
+        }
 
         fit_pars["include_sec_peak"] = self.include_sec_peak[ibin2][ibin1]
         if self.include_sec_peak[ibin2][ibin1]:
@@ -223,7 +256,6 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
             fit_pars["include_reflections"] = False
 
         return fit_pars
-
 
     def make_ali_hf_syst_pars(self, ibin1, ibin2):
         """
@@ -235,29 +267,31 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
             dictionary of systematic fit parameters
         """
 
-        fit_pars = {"mean": None,
-                    "sigma": None,
-                    "rebin": self.rebin[ibin2][ibin1],
-                    "fit_range_low": self.fit_range_low[ibin1],
-                    "fit_range_up": self.fit_range_up[ibin1],
-                    "likelihood": self.likelihood,
-                    "n_sigma_sideband": self.n_sigma_sideband,
-                    "mean_ref": None,
-                    "sigma_ref": None,
-                    "yield_ref": None,
-                    "chi2_ref": None,
-                    "signif_ref": None,
-                    "fit_range_low_syst": self.syst_pars.get("massmin", None),
-                    "fit_range_up_syst": self.syst_pars.get("massmax", None),
-                    "bin_count_sigma_syst": self.syst_pars.get("bincount_sigma", None),
-                    "bkg_func_names_syst": self.syst_pars.get("bkg_funcs", None),
-                    "rebin_syst": self.syst_pars.get("rebin", None),
-                    # Check DB
-                    "consider_free_sigma_syst": self.syst_consider_free_sigma[ibin1],
-                    "rel_var_sigma_up_syst": self.syst_rel_var_sigma_up[ibin1],
-                    "rel_var_sigma_down_syst": self.syst_rel_var_sigma_down[ibin1],
-                    "signif_min_syst": self.syst_pars.get("min_signif", 3.),
-                    "chi2_max_syst": self.syst_pars.get("max_chisquare_ndf", 2.)}
+        fit_pars = {
+            "mean": None,
+            "sigma": None,
+            "rebin": self.rebin[ibin2][ibin1],
+            "fit_range_low": self.fit_range_low[ibin1],
+            "fit_range_up": self.fit_range_up[ibin1],
+            "likelihood": self.likelihood,
+            "n_sigma_sideband": self.n_sigma_sideband,
+            "mean_ref": None,
+            "sigma_ref": None,
+            "yield_ref": None,
+            "chi2_ref": None,
+            "signif_ref": None,
+            "fit_range_low_syst": self.syst_pars.get("massmin", None),
+            "fit_range_up_syst": self.syst_pars.get("massmax", None),
+            "bin_count_sigma_syst": self.syst_pars.get("bincount_sigma", None),
+            "bkg_func_names_syst": self.syst_pars.get("bkg_funcs", None),
+            "rebin_syst": self.syst_pars.get("rebin", None),
+            # Check DB
+            "consider_free_sigma_syst": self.syst_consider_free_sigma[ibin1],
+            "rel_var_sigma_up_syst": self.syst_rel_var_sigma_up[ibin1],
+            "rel_var_sigma_down_syst": self.syst_rel_var_sigma_down[ibin1],
+            "signif_min_syst": self.syst_pars.get("min_signif", 3.0),
+            "chi2_max_syst": self.syst_pars.get("max_chisquare_ndf", 2.0),
+        }
 
         fit_pars["include_sec_peak"] = self.include_sec_peak[ibin2][ibin1]
         if self.include_sec_peak[ibin2][ibin1]:
@@ -274,7 +308,6 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
             fit_pars["include_reflections"] = False
 
         return fit_pars
-
 
     def make_suffix(self, ibin1, ibin2):
         """
@@ -287,27 +320,44 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         """
         if self.bin2_name is not None:
             if self.mltype == "MultiClassification":
-                return "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
-                       (self.bin1_name, self.bins1_edges_low[ibin1],
-                        self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1][0],
-                        self.prob_cut_fin[ibin1][1], self.bin2_name,
-                        self.bins2_edges_low[ibin2], self.bins2_edges_up[ibin2])
-            return "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                   (self.bin1_name, self.bins1_edges_low[ibin1],
-                    self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1],
-                    self.bin2_name, self.bins2_edges_low[ibin2],
-                    self.bins2_edges_up[ibin2])
+                return "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % (
+                    self.bin1_name,
+                    self.bins1_edges_low[ibin1],
+                    self.bins1_edges_up[ibin1],
+                    self.prob_cut_fin[ibin1][0],
+                    self.prob_cut_fin[ibin1][1],
+                    self.bin2_name,
+                    self.bins2_edges_low[ibin2],
+                    self.bins2_edges_up[ibin2],
+                )
+            return "%s%d_%d_%.2f%s_%.2f_%.2f" % (
+                self.bin1_name,
+                self.bins1_edges_low[ibin1],
+                self.bins1_edges_up[ibin1],
+                self.prob_cut_fin[ibin1],
+                self.bin2_name,
+                self.bins2_edges_low[ibin2],
+                self.bins2_edges_up[ibin2],
+            )
 
         if self.mltype == "MultiClassification":
-            return "%s%d_%d_%.2f%.2f" % \
-                   (self.bin1_name, self.bins1_edges_low[ibin1],
-                    self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1][0],
-                    self.prob_cut_fin[ibin1][1])
-        return "%s%d_%d_%.2f" % \
-               (self.bin1_name, self.bins1_edges_low[ibin1],
-                self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1])
+            return "%s%d_%d_%.2f%.2f" % (
+                self.bin1_name,
+                self.bins1_edges_low[ibin1],
+                self.bins1_edges_up[ibin1],
+                self.prob_cut_fin[ibin1][0],
+                self.prob_cut_fin[ibin1][1],
+            )
+        return "%s%d_%d_%.2f" % (
+            self.bin1_name,
+            self.bins1_edges_low[ibin1],
+            self.bins1_edges_up[ibin1],
+            self.prob_cut_fin[ibin1],
+        )
 
-    def get_histograms(self, ibin1, ibin2, get_data=True, get_mc=False, get_reflections=False):
+    def get_histograms(
+        self, ibin1, ibin2, get_data=True, get_mc=False, get_reflections=False
+    ):
         """
         Get histograms according to specified bins
         Args:
@@ -339,7 +389,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         file_mc = TFile(self.file_mc_name, "READ")
         if not file_mc.IsOpen():
-                raise ValueError("TFile", file_mc.GetName(), "Is not open!")
+            raise ValueError("TFile", file_mc.GetName(), "Is not open!")
         histo_mc = None
         histo_reflections = None
         if get_mc:
@@ -351,7 +401,6 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         file_mc.Close()
 
         return histo_data, histo_mc, histo_reflections
-
 
     def get_fit_pars(self, ibin1, ibin2):
         """
@@ -365,22 +414,29 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         """
 
         fit_pars = self.make_ali_hf_fit_pars(ibin1, ibin2)
-        histo_data, histo_mc, histo_reflections = self.get_histograms(ibin1, ibin2, \
-                get_data=True, get_mc=True, \
-                get_reflections=fit_pars["include_reflections"])
+        histo_data, histo_mc, histo_reflections = self.get_histograms(
+            ibin1,
+            ibin2,
+            get_data=True,
+            get_mc=True,
+            get_reflections=fit_pars["include_reflections"],
+        )
 
         lock_override_init = ["sigma"] if self.use_user_sigma[ibin1] else []
         if self.use_user_mean[ibin1]:
             lock_override_init.append("mean")
 
-        return {"histograms": {"data": histo_data,
-                               "mc": histo_mc,
-                               "reflections": histo_reflections},
-                "init_from": self.init_fits_from[ibin1],
-                "lock_override_init": lock_override_init,
-                "init_pars": fit_pars,
-                "pre_fit_mc": {"type_gauss": self.pre_fit_class_mc[ibin1]}}
-
+        return {
+            "histograms": {
+                "data": histo_data,
+                "mc": histo_mc,
+                "reflections": histo_reflections,
+            },
+            "init_from": self.init_fits_from[ibin1],
+            "lock_override_init": lock_override_init,
+            "init_pars": fit_pars,
+            "pre_fit_mc": {"type_gauss": self.pre_fit_class_mc[ibin1]},
+        }
 
     def get_syst_pars(self, ibin1, ibin2):
         """
@@ -398,16 +454,23 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
             return None
 
         fit_pars = self.make_ali_hf_syst_pars(ibin1, ibin2)
-        histo_data, histo_mc, histo_reflections = self.get_histograms(ibin1, ibin2, \
-                get_data=True, get_mc=fit_pars["include_reflections"], \
-                get_reflections=fit_pars["include_reflections"])
+        histo_data, histo_mc, histo_reflections = self.get_histograms(
+            ibin1,
+            ibin2,
+            get_data=True,
+            get_mc=fit_pars["include_reflections"],
+            get_reflections=fit_pars["include_reflections"],
+        )
 
-        return {"histograms": {"data": histo_data,
-                               "mc": histo_mc,
-                               "reflections": histo_reflections},
-                "init_from": self.syst_init_sigma_from[ibin2][ibin1],
-                "init_pars": fit_pars}
-
+        return {
+            "histograms": {
+                "data": histo_data,
+                "mc": histo_mc,
+                "reflections": histo_reflections,
+            },
+            "init_from": self.syst_init_sigma_from[ibin2][ibin1],
+            "init_pars": fit_pars,
+        }
 
     def yield_fit_pars(self):
         """
@@ -416,7 +479,6 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         for ibin2 in range(self.n_bins2):
             for ibin1 in range(self.n_bins1):
                 yield ibin1, ibin2, self.get_fit_pars(ibin1, ibin2)
-
 
     def yield_syst_pars(self):
         """
@@ -427,14 +489,19 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
                 yield ibin1, ibin2, self.get_syst_pars(ibin1, ibin2)
 
 
-class MLFitter: # pylint: disable=too-many-instance-attributes
+class MLFitter:  # pylint: disable=too-many-instance-attributes
     """
     Wrapper around all available fits insatntiated and used in an MLHEP analysis run.
     """
 
-
-    def __init__(self, case: str, database: dict, ana_type: str,
-                 data_out_dir: str, mc_out_dir: str):
+    def __init__(
+        self,
+        case: str,
+        database: dict,
+        ana_type: str,
+        data_out_dir: str,
+        mc_out_dir: str,
+    ):
         """
         Initialize MLFitter
         Args:
@@ -450,7 +517,9 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.ana_type = ana_type
         self.ana_config = database["analysis"][ana_type]
 
-        self.pars_factory = MLFitParsFactory(database, ana_type, data_out_dir, mc_out_dir)
+        self.pars_factory = MLFitParsFactory(
+            database, ana_type, data_out_dir, mc_out_dir
+        )
 
         self.pre_fits_mc = None
         self.pre_fits_data = None
@@ -466,7 +535,6 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.done_central_fits = False
         self.is_initialized_syst = False
         self.done_syst = False
-
 
     def initialize_fits(self):
         """
@@ -485,16 +553,17 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
         pre_fits_bins1 = []
         for ibin1, ibin2, pars in self.pars_factory.yield_fit_pars():
-            self.central_fits[(ibin1, ibin2)] = FitAliHF( \
-                    pars["init_pars"], \
-                    histo=pars["histograms"]["data"], \
-                    histo_mc=pars["histograms"]["mc"], \
-                    histo_reflections=pars["histograms"]["reflections"])
+            self.central_fits[(ibin1, ibin2)] = FitAliHF(
+                pars["init_pars"],
+                histo=pars["histograms"]["data"],
+                histo_mc=pars["histograms"]["mc"],
+                histo_reflections=pars["histograms"]["reflections"],
+            )
             self.init_central_fits_from[(ibin1, ibin2)] = pars["init_from"]
             self.lock_override_init[(ibin1, ibin2)] = pars["lock_override_init"]
 
-        #Weights only make sense in HM bin, not in mult. integrated where we initialise.
-        #If weights are used, the initialised width doesn't make sense anymore
+        # Weights only make sense in HM bin, not in mult. integrated where we initialise.
+        # If weights are used, the initialised width doesn't make sense anymore
         apply_weights_temp = self.pars_factory.apply_weights
         self.pars_factory.apply_weights = False
         for ibin1, ibin2, pars in self.pars_factory.yield_fit_pars():
@@ -503,17 +572,17 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
             pre_fits_bins1.append(ibin1)
 
-            self.pre_fits_mc[ibin1] = FitROOTGauss(pars["init_pars"],
-                                                   histo=pars["histograms"]["mc"],
-                                                   **pars["pre_fit_mc"])
-            self.pre_fits_data[ibin1] = FitAliHF( \
-                    pars["init_pars"], \
-                    histo=pars["histograms"]["data"], \
-                    histo_mc=pars["histograms"]["mc"], \
-                    histo_reflections=pars["histograms"]["reflections"])
+            self.pre_fits_mc[ibin1] = FitROOTGauss(
+                pars["init_pars"], histo=pars["histograms"]["mc"], **pars["pre_fit_mc"]
+            )
+            self.pre_fits_data[ibin1] = FitAliHF(
+                pars["init_pars"],
+                histo=pars["histograms"]["data"],
+                histo_mc=pars["histograms"]["mc"],
+                histo_reflections=pars["histograms"]["reflections"],
+            )
         self.pars_factory.apply_weights = apply_weights_temp
         self.is_initialized_fits = True
-
 
     def perform_pre_fits(self):
         """
@@ -537,7 +606,6 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             fit.fit()
         self.done_pre_fits = True
 
-
     def perform_central_fits(self):
         """
         Perform all central fits and initialize from pre-fits if requested.
@@ -556,14 +624,23 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 pre_fit = self.pre_fits_mc[ibin1]
             else:
                 pre_fit = self.pre_fits_data[ibin1]
-            if not pre_fit.success and self.lock_override_init[(ibin1, ibin2)] \
-                    and "sigma" not in self.lock_override_init[(ibin1, ibin2)]:
-                self.logger.warning("Requested pre-fit on %s not successful but requested for " \
-                                    "central fit in bins (%i, %i). Skip...",
-                                    self.init_central_fits_from[(ibin1, ibin2)], ibin1, ibin2)
+            if (
+                not pre_fit.success
+                and self.lock_override_init[(ibin1, ibin2)]
+                and "sigma" not in self.lock_override_init[(ibin1, ibin2)]
+            ):
+                self.logger.warning(
+                    "Requested pre-fit on %s not successful but requested for "
+                    "central fit in bins (%i, %i). Skip...",
+                    self.init_central_fits_from[(ibin1, ibin2)],
+                    ibin1,
+                    ibin2,
+                )
                 continue
 
-            override_init_pars = pre_fit.get_fit_pars() if pre_fit and pre_fit.success else {}
+            override_init_pars = (
+                pre_fit.get_fit_pars() if pre_fit and pre_fit.success else {}
+            )
             if self.lock_override_init[(ibin1, ibin2)]:
                 for name in self.lock_override_init[(ibin1, ibin2)]:
                     _ = override_init_pars.pop(name, None)
@@ -573,7 +650,6 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             fit.fit()
 
         self.done_central_fits = True
-
 
     def get_central_fit(self, ibin1, ibin2):
         """
@@ -587,7 +663,6 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         """
 
         return self.central_fits.get((ibin1, ibin2), None)
-
 
     def print_fits(self):
         """
@@ -614,7 +689,6 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             print(fit)
         self.logger.info("Print all fits done")
 
-
     def initialize_syst(self):
         """
         Initialize all systematic fits required in an MLHEP analysis run. Using MLFitParsFactory
@@ -635,15 +709,15 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             if not pars:
                 self.syst_fits[(ibin1, ibin2)] = None
                 continue
-            self.syst_fits[(ibin1, ibin2)] = FitSystAliHF( \
-                    pars["init_pars"], \
-                    histo=pars["histograms"]["data"], \
-                    histo_mc=pars["histograms"]["mc"], \
-                    histo_reflections=pars["histograms"]["reflections"])
+            self.syst_fits[(ibin1, ibin2)] = FitSystAliHF(
+                pars["init_pars"],
+                histo=pars["histograms"]["data"],
+                histo_mc=pars["histograms"]["mc"],
+                histo_reflections=pars["histograms"]["reflections"],
+            )
             self.init_syst_fits_from[(ibin1, ibin2)] = pars["init_from"]
 
         self.is_initialized_syst = True
-
 
     def perform_syst(self, results_dir):
         """
@@ -662,22 +736,32 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
         for (ibin1, ibin2), fit in self.syst_fits.items():
             if not fit:
-                self.logger.warning("No systematic fit for bins (%i, %i). Skip...",
-                                    ibin1, ibin2)
+                self.logger.warning(
+                    "No systematic fit for bins (%i, %i). Skip...", ibin1, ibin2
+                )
                 continue
 
             if not self.central_fits[(ibin1, ibin2)].success:
-                self.logger.warning("Central fit not successful for bins (%i, %i). Skip...",
-                                    ibin1, ibin2)
+                self.logger.warning(
+                    "Central fit not successful for bins (%i, %i). Skip...",
+                    ibin1,
+                    ibin2,
+                )
                 continue
 
             # Prepare to overwrite some ini parameters
             pre_fit = None
             central_fit = self.central_fits[(ibin1, ibin2)]
             init_from = self.init_syst_fits_from[(ibin1, ibin2)]
-            if init_from == "pre_fit" and self.init_central_fits_from[(ibin1, ibin2)] == "mc":
+            if (
+                init_from == "pre_fit"
+                and self.init_central_fits_from[(ibin1, ibin2)] == "mc"
+            ):
                 pre_fit = self.pre_fits_mc[ibin1]
-            elif init_from == "pre_fit" and self.init_central_fits_from[(ibin1, ibin2)] == "data":
+            elif (
+                init_from == "pre_fit"
+                and self.init_central_fits_from[(ibin1, ibin2)] == "data"
+            ):
                 pre_fit = self.pre_fits_data[ibin1]
             else:
                 pre_fit = central_fit
@@ -685,13 +769,17 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             # Get reference parameters
             signif = Double()
             signif_err = Double()
-            central_fit.kernel.Significance(self.pars_factory.n_sigma_signal, signif, signif_err)
+            central_fit.kernel.Significance(
+                self.pars_factory.n_sigma_signal, signif, signif_err
+            )
             central_fit_pars = central_fit.get_fit_pars()
-            overwrite_init = {"yield_ref": central_fit.kernel.GetRawYield(),
-                              "mean_ref": central_fit_pars["mean"],
-                              "sigma_ref": central_fit_pars["sigma"],
-                              "chi2_ref": central_fit.kernel.GetReducedChiSquare(),
-                              "signif_ref": signif}
+            overwrite_init = {
+                "yield_ref": central_fit.kernel.GetRawYield(),
+                "mean_ref": central_fit_pars["mean"],
+                "sigma_ref": central_fit_pars["sigma"],
+                "chi2_ref": central_fit.kernel.GetReducedChiSquare(),
+                "signif_ref": signif,
+            }
             # Get mean and sigma for fit init
             pre_fit_pars = pre_fit.get_fit_pars()
             overwrite_init["mean"] = pre_fit_pars["mean"]
@@ -700,12 +788,12 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             fit.override_init_pars(**overwrite_init)
 
             # Set the path for intermediate results which are produced by the multi trial fitter
-            fit.results_path = os.path.join(results_dir,
-                                            f"multi_trial_bin1_{ibin1}_bin2_{ibin2}.root")
+            fit.results_path = os.path.join(
+                results_dir, f"multi_trial_bin1_{ibin1}_bin2_{ibin2}.root"
+            )
             fit.fit()
 
         self.done_syst = True
-
 
     def get_bins2(self):
         bins2 = []
@@ -715,8 +803,9 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             bins2.append(ibin2)
         return bins2
 
-
-    def draw_fits(self, save_dir, root_dir=None): # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+    def draw_fits(
+        self, save_dir, root_dir=None
+    ):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         """
         Draw all fits one-by-one
         Args:
@@ -740,21 +829,39 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 histo.SetBinError(ibin, err)
 
         # Summarize in mult histograms in pT bins
-        yieldshistos = {ibin2: TH1F("hyields%d" % (ibin2), "", \
-                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
-        means_histos = {ibin2:TH1F("hmeans%d" % (ibin2), "", \
-                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
-        sigmas_histos = {ibin2: TH1F("hsigmas%d" % (ibin2), "", \
-                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
-        signifs_histos = {ibin2: TH1F("hsignifs%d" % (ibin2), "", \
-                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
-        refls_histos = {ibin2: TH1F("hrefl%d" % (ibin2), "", \
-                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
+        yieldshistos = {
+            ibin2: TH1F("hyields%d" % (ibin2), "", n_bins1, array("d", bins1_ranges))
+            for ibin2 in bins2
+        }
+        means_histos = {
+            ibin2: TH1F("hmeans%d" % (ibin2), "", n_bins1, array("d", bins1_ranges))
+            for ibin2 in bins2
+        }
+        sigmas_histos = {
+            ibin2: TH1F("hsigmas%d" % (ibin2), "", n_bins1, array("d", bins1_ranges))
+            for ibin2 in bins2
+        }
+        signifs_histos = {
+            ibin2: TH1F("hsignifs%d" % (ibin2), "", n_bins1, array("d", bins1_ranges))
+            for ibin2 in bins2
+        }
+        refls_histos = {
+            ibin2: TH1F("hrefl%d" % (ibin2), "", n_bins1, array("d", bins1_ranges))
+            for ibin2 in bins2
+        }
         have_summary_pt_bins = []
-        means_init_mc_histos = TH1F("hmeans_init_mc", "", n_bins1, array("d", bins1_ranges))
-        sigmas_init_mc_histos = TH1F("hsigmas_init_mc", "", n_bins1, array("d", bins1_ranges))
-        means_init_data_histos = TH1F("hmeans_init_data", "", n_bins1, array("d", bins1_ranges))
-        sigmas_init_data_histos = TH1F("hsigmas_init_data", "", n_bins1, array("d", bins1_ranges))
+        means_init_mc_histos = TH1F(
+            "hmeans_init_mc", "", n_bins1, array("d", bins1_ranges)
+        )
+        sigmas_init_mc_histos = TH1F(
+            "hsigmas_init_mc", "", n_bins1, array("d", bins1_ranges)
+        )
+        means_init_data_histos = TH1F(
+            "hmeans_init_data", "", n_bins1, array("d", bins1_ranges)
+        )
+        sigmas_init_data_histos = TH1F(
+            "hsigmas_init_data", "", n_bins1, array("d", bins1_ranges)
+        )
 
         nx = 4
         ny = 2
@@ -770,8 +877,10 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
         canvas_init_mc = TCanvas("canvas_init_mc", "MC", 1000, canvy)
         canvas_init_data = TCanvas("canvas_init_data", "Data", 1000, canvy)
-        canvas_data = {ibin2: TCanvas("canvas_data%d" % (ibin2), "Data", 1000, canvy) \
-                       for ibin2 in bins2}
+        canvas_data = {
+            ibin2: TCanvas("canvas_data%d" % (ibin2), "Data", 1000, canvy)
+            for ibin2 in bins2
+        }
         canvas_init_mc.Divide(nx, ny)
         canvas_init_data.Divide(nx, ny)
 
@@ -783,14 +892,18 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
             # Some variables set for drawing
             if self.pars_factory.mltype == "MultiClassification":
-                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
-                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                        f"(prob0 <= {self.pars_factory.prob_cut_fin[ibin1][0]:.2f} &" \
-                        f"prob1 >= {self.pars_factory.prob_cut_fin[ibin1][1]:.2f})"
+                title = (
+                    f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < "
+                    f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}"
+                    f"(prob0 <= {self.pars_factory.prob_cut_fin[ibin1][0]:.2f} &"
+                    f"prob1 >= {self.pars_factory.prob_cut_fin[ibin1][1]:.2f})"
+                )
             else:
-                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
-                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                        f"(prob > {self.pars_factory.prob_cut_fin[ibin1]:.2f})"
+                title = (
+                    f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < "
+                    f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}"
+                    f"(prob > {self.pars_factory.prob_cut_fin[ibin1]:.2f})"
+                )
 
             x_axis_label = "#it{M}_{inv} (GeV/#it{c}^{2})"
             n_sigma_signal = self.pars_factory.n_sigma_signal
@@ -801,30 +914,61 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             histo = fit.histo
 
             # Central fits
-            y_axis_label = \
-                    f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+            y_axis_label = (
+                f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+            )
             canvas = TCanvas("fit_canvas", suffix_write, 700, 700)
-            fit.draw(canvas, sigma_signal=n_sigma_signal, x_axis_label=x_axis_label,
-                     y_axis_label=y_axis_label, title=title)
+            fit.draw(
+                canvas,
+                sigma_signal=n_sigma_signal,
+                x_axis_label=x_axis_label,
+                y_axis_label=y_axis_label,
+                title=title,
+            )
             if self.pars_factory.apply_weights is False:
-                canvas.SaveAs(make_file_path(save_dir, "fittedplot", "eps", None,
-                                             suffix_write))
+                canvas.SaveAs(
+                    make_file_path(save_dir, "fittedplot", "eps", None, suffix_write)
+                )
             else:
-                canvas.SaveAs(make_file_path(save_dir, "fittedplotweights", "eps", None,
-                                             suffix_write))
+                canvas.SaveAs(
+                    make_file_path(
+                        save_dir, "fittedplotweights", "eps", None, suffix_write
+                    )
+                )
             canvas.Close()
-            fit.draw(canvas_data[ibin2].cd(ibin1+1), sigma_signal=n_sigma_signal,
-                     x_axis_label=x_axis_label, y_axis_label=y_axis_label, title=title)
+            fit.draw(
+                canvas_data[ibin2].cd(ibin1 + 1),
+                sigma_signal=n_sigma_signal,
+                x_axis_label=x_axis_label,
+                y_axis_label=y_axis_label,
+                title=title,
+            )
 
             if fit.success:
-                fill_wrapper(yieldshistos[ibin2], ibin1 + 1,
-                             kernel.GetRawYield(), kernel.GetRawYieldError())
-                fill_wrapper(means_histos[ibin2], ibin1 + 1,
-                             kernel.GetMean(), kernel.GetMeanUncertainty())
-                fill_wrapper(sigmas_histos[ibin2], ibin1 + 1,
-                             kernel.GetSigma(), kernel.GetSigmaUncertainty())
-                fill_wrapper(refls_histos[ibin2], ibin1 + 1,
-                             kernel.GetReflOverSig(), kernel.GetReflOverSigUncertainty())
+                fill_wrapper(
+                    yieldshistos[ibin2],
+                    ibin1 + 1,
+                    kernel.GetRawYield(),
+                    kernel.GetRawYieldError(),
+                )
+                fill_wrapper(
+                    means_histos[ibin2],
+                    ibin1 + 1,
+                    kernel.GetMean(),
+                    kernel.GetMeanUncertainty(),
+                )
+                fill_wrapper(
+                    sigmas_histos[ibin2],
+                    ibin1 + 1,
+                    kernel.GetSigma(),
+                    kernel.GetSigmaUncertainty(),
+                )
+                fill_wrapper(
+                    refls_histos[ibin2],
+                    ibin1 + 1,
+                    kernel.GetReflOverSig(),
+                    kernel.GetReflOverSigUncertainty(),
+                )
 
                 signif = Double()
                 signif_err = Double()
@@ -832,25 +976,32 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 fill_wrapper(signifs_histos[ibin2], ibin1 + 1, signif, signif_err)
 
                 # Residual plot
-                c_res = TCanvas('cRes', 'The Fit Canvas', 800, 800)
+                c_res = TCanvas("cRes", "The Fit Canvas", 800, 800)
                 c_res.cd()
                 h_pulls = histo.Clone(f"{histo.GetName()}_pull")
                 h_residual_trend = histo.Clone(f"{histo.GetName()}_residual_trend")
                 h_pulls_trend = histo.Clone(f"{histo.GetName()}_pulls_trend")
                 if self.pars_factory.include_reflections:
-                    _ = kernel.GetOverBackgroundPlusReflResidualsAndPulls( \
-                            h_pulls, h_residual_trend, h_pulls_trend, \
-                            self.pars_factory.fit_range_low[ibin1], \
-                            self.pars_factory.fit_range_up[ibin1])
+                    _ = kernel.GetOverBackgroundPlusReflResidualsAndPulls(
+                        h_pulls,
+                        h_residual_trend,
+                        h_pulls_trend,
+                        self.pars_factory.fit_range_low[ibin1],
+                        self.pars_factory.fit_range_up[ibin1],
+                    )
                 else:
-                    _ = kernel.GetOverBackgroundResidualsAndPulls( \
-                            h_pulls, h_residual_trend, h_pulls_trend, \
-                            self.pars_factory.fit_range_low[ibin1], \
-                            self.pars_factory.fit_range_up[ibin1])
+                    _ = kernel.GetOverBackgroundResidualsAndPulls(
+                        h_pulls,
+                        h_residual_trend,
+                        h_pulls_trend,
+                        self.pars_factory.fit_range_low[ibin1],
+                        self.pars_factory.fit_range_up[ibin1],
+                    )
                 h_residual_trend.Draw()
-                c_res.SaveAs(make_file_path(save_dir, "residual", "eps", None, suffix_write))
+                c_res.SaveAs(
+                    make_file_path(save_dir, "residual", "eps", None, suffix_write)
+                )
                 c_res.Close()
-
 
             # Summary plots to be done only once per pT bin
             if ibin1 in have_summary_pt_bins:
@@ -859,23 +1010,36 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             have_summary_pt_bins.append(ibin1)
 
             # Pre-fit MC
-            suffix_write = self.pars_factory.make_suffix(ibin1, self.pars_factory.bins2_int_bin)
+            suffix_write = self.pars_factory.make_suffix(
+                ibin1, self.pars_factory.bins2_int_bin
+            )
 
             pre_fit_mc = self.pre_fits_mc[ibin1]
             kernel = pre_fit_mc.kernel
             histo = pre_fit_mc.histo
-            y_axis_label = \
-                    f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+            y_axis_label = (
+                f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+            )
             canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
-            pre_fit_mc.draw(canvas, x_axis_label=x_axis_label, y_axis_label=y_axis_label,
-                            title=title)
+            pre_fit_mc.draw(
+                canvas,
+                x_axis_label=x_axis_label,
+                y_axis_label=y_axis_label,
+                title=title,
+            )
 
-            canvas.SaveAs(make_file_path(save_dir, "fittedplot_integrated_mc", "eps", None,
-                                         suffix_write))
+            canvas.SaveAs(
+                make_file_path(
+                    save_dir, "fittedplot_integrated_mc", "eps", None, suffix_write
+                )
+            )
             canvas.Close()
-            pre_fit_mc.draw(canvas_init_mc.cd(ibin1+1), x_axis_label=x_axis_label,
-                            y_axis_label=y_axis_label, title=title)
-
+            pre_fit_mc.draw(
+                canvas_init_mc.cd(ibin1 + 1),
+                x_axis_label=x_axis_label,
+                y_axis_label=y_axis_label,
+                title=title,
+            )
 
             if pre_fit_mc.success:
                 # Only fill these summary plots in case of success
@@ -884,32 +1048,46 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 sigmas_init_mc_histos.SetBinContent(ibin1 + 1, kernel.GetParameter(2))
                 sigmas_init_mc_histos.SetBinError(ibin1 + 1, kernel.GetParError(2))
 
-
             pre_fit_data = self.pre_fits_data[ibin1]
             kernel = pre_fit_data.kernel
             histo = pre_fit_data.histo
 
-
             # Pre-fit data
-            y_axis_label = \
-                    f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+            y_axis_label = (
+                f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+            )
             canvas = TCanvas("fit_canvas_data_init", suffix_write, 700, 700)
-            pre_fit_data.draw(canvas, sigma_signal=n_sigma_signal, x_axis_label=x_axis_label,
-                              y_axis_label=y_axis_label, title=title)
-            canvas.SaveAs(make_file_path(save_dir, "fittedplot_integrated", "eps", None,
-                                         suffix_write))
+            pre_fit_data.draw(
+                canvas,
+                sigma_signal=n_sigma_signal,
+                x_axis_label=x_axis_label,
+                y_axis_label=y_axis_label,
+                title=title,
+            )
+            canvas.SaveAs(
+                make_file_path(
+                    save_dir, "fittedplot_integrated", "eps", None, suffix_write
+                )
+            )
             canvas.Close()
-            pre_fit_data.draw(canvas_init_data.cd(ibin1+1), sigma_signal=n_sigma_signal,
-                              x_axis_label=x_axis_label, y_axis_label=y_axis_label,
-                              title=title)
+            pre_fit_data.draw(
+                canvas_init_data.cd(ibin1 + 1),
+                sigma_signal=n_sigma_signal,
+                x_axis_label=x_axis_label,
+                y_axis_label=y_axis_label,
+                title=title,
+            )
 
             if pre_fit_data.success:
                 # Only fill these summary plots in case of success
                 means_init_data_histos.SetBinContent(ibin1 + 1, kernel.GetMean())
-                means_init_data_histos.SetBinError(ibin1 + 1, kernel.GetMeanUncertainty())
+                means_init_data_histos.SetBinError(
+                    ibin1 + 1, kernel.GetMeanUncertainty()
+                )
                 sigmas_init_data_histos.SetBinContent(ibin1 + 1, kernel.GetSigma())
-                sigmas_init_data_histos.SetBinError(ibin1 + 1, kernel.GetSigmaUncertainty())
-
+                sigmas_init_data_histos.SetBinError(
+                    ibin1 + 1, kernel.GetSigmaUncertainty()
+                )
 
         canvas_init_mc.SaveAs(make_file_path(save_dir, "canvas_InitMC", "eps"))
         canvas_init_mc.Close()
@@ -917,8 +1095,9 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         canvas_init_data.Close()
         for ibin2 in bins2:
             suffix2 = f"ibin2_{ibin2}"
-            canvas_data[ibin2].SaveAs(make_file_path(save_dir, "canvas_FinalData", "eps", None,
-                                                     suffix2))
+            canvas_data[ibin2].SaveAs(
+                make_file_path(save_dir, "canvas_FinalData", "eps", None, suffix2)
+            )
             if root_dir:
                 root_dir.cd()
                 yieldshistos[ibin2].Write()
@@ -926,53 +1105,101 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 sigmas_histos[ibin2].Write()
                 signifs_histos[ibin2].Write()
                 refls_histos[ibin2].Write()
-            #canvas_data[ibin2].Close()
-
+            # canvas_data[ibin2].Close()
 
         latex_hadron_name = self.ana_config["latexnamehadron"]
         if self.pars_factory.bin2_name is not None:
             latex_bin2_var = self.ana_config["latexbin2var"]
             latex_hadron_name = self.ana_config["latexnamehadron"]
             # Plot some summary historgrams
-            leg_strings = [f"{self.pars_factory.bins2_edges_low[ibin2]} #leq {latex_bin2_var} < " \
-                           f"{self.pars_factory.bins2_edges_up[ibin2]}" for ibin2 in bins2]
+            leg_strings = [
+                f"{self.pars_factory.bins2_edges_low[ibin2]} #leq {latex_bin2_var} < "
+                f"{self.pars_factory.bins2_edges_up[ibin2]}"
+                for ibin2 in bins2
+            ]
         else:
             leg_strings = [""]
 
-        save_name = make_file_path(save_dir, "Yields", "eps", None, [self.case, self.ana_type])
+        save_name = make_file_path(
+            save_dir, "Yields", "eps", None, [self.case, self.ana_type]
+        )
         # Yields summary plot
-        plot_histograms([yieldshistos[ibin2] for ibin2 in bins2], True, True, leg_strings,
-                        "uncorrected yields", "#it{p}_{T} (GeV/#it{c})",
-                        f"Uncorrected yields {latex_hadron_name} {self.ana_type}", "mult. / int.",
-                        save_name)
-        save_name = make_file_path(save_dir, "Means", "eps", None, [self.case, self.ana_type])
+        plot_histograms(
+            [yieldshistos[ibin2] for ibin2 in bins2],
+            True,
+            True,
+            leg_strings,
+            "uncorrected yields",
+            "#it{p}_{T} (GeV/#it{c})",
+            f"Uncorrected yields {latex_hadron_name} {self.ana_type}",
+            "mult. / int.",
+            save_name,
+        )
+        save_name = make_file_path(
+            save_dir, "Means", "eps", None, [self.case, self.ana_type]
+        )
         # Means summary plot
-        plot_histograms([means_histos[ibin2] for ibin2 in bins2], False, True, leg_strings, "Means",
-                        "#it{p}_{T} (GeV/#it{c})",
-                        "#mu_{fit} " + f"{latex_hadron_name} {self.ana_type}", "mult. / int.",
-                        save_name)
-        save_name = make_file_path(save_dir, "Sigmas", "eps", None, [self.case, self.ana_type])
-        #Sigmas summary plot
-        plot_histograms([sigmas_histos[ibin2] for ibin2 in bins2], False, True, leg_strings,
-                        "Sigmas", "#it{p}_{T} (GeV/#it{c})",
-                        "#sigma_{fit} " + f"{latex_hadron_name} {self.ana_type}", "mult. / int.",
-                        save_name)
+        plot_histograms(
+            [means_histos[ibin2] for ibin2 in bins2],
+            False,
+            True,
+            leg_strings,
+            "Means",
+            "#it{p}_{T} (GeV/#it{c})",
+            "#mu_{fit} " + f"{latex_hadron_name} {self.ana_type}",
+            "mult. / int.",
+            save_name,
+        )
+        save_name = make_file_path(
+            save_dir, "Sigmas", "eps", None, [self.case, self.ana_type]
+        )
+        # Sigmas summary plot
+        plot_histograms(
+            [sigmas_histos[ibin2] for ibin2 in bins2],
+            False,
+            True,
+            leg_strings,
+            "Sigmas",
+            "#it{p}_{T} (GeV/#it{c})",
+            "#sigma_{fit} " + f"{latex_hadron_name} {self.ana_type}",
+            "mult. / int.",
+            save_name,
+        )
 
         # Plot the initialized means and sigma for MC and data
-        save_name = make_file_path(save_dir, "Means_mult_int", "eps", None,
-                                   [self.case, self.ana_type])
-        plot_histograms([means_init_mc_histos, means_init_data_histos], False, False,
-                        ["MC", "data"], "Means of int. mult.", "#it{p}_{T} (GeV/#it{c})",
-                        "#mu_{fit} " + f"{latex_hadron_name} {self.ana_type}", "", save_name)
+        save_name = make_file_path(
+            save_dir, "Means_mult_int", "eps", None, [self.case, self.ana_type]
+        )
+        plot_histograms(
+            [means_init_mc_histos, means_init_data_histos],
+            False,
+            False,
+            ["MC", "data"],
+            "Means of int. mult.",
+            "#it{p}_{T} (GeV/#it{c})",
+            "#mu_{fit} " + f"{latex_hadron_name} {self.ana_type}",
+            "",
+            save_name,
+        )
 
-        save_name = make_file_path(save_dir, "Sigmas_mult_int", "eps", None,
-                                   [self.case, self.ana_type])
-        plot_histograms([sigmas_init_mc_histos, sigmas_init_data_histos], False, False,
-                        ["MC", "data"], "Sigmas of int. mult.", "#it{p}_{T} (GeV/#it{c})",
-                        "#sigma_{fit} " + f"{latex_hadron_name} {self.ana_type}", "", save_name)
+        save_name = make_file_path(
+            save_dir, "Sigmas_mult_int", "eps", None, [self.case, self.ana_type]
+        )
+        plot_histograms(
+            [sigmas_init_mc_histos, sigmas_init_data_histos],
+            False,
+            False,
+            ["MC", "data"],
+            "Sigmas of int. mult.",
+            "#it{p}_{T} (GeV/#it{c})",
+            "#sigma_{fit} " + f"{latex_hadron_name} {self.ana_type}",
+            "",
+            save_name,
+        )
 
-
-    def draw_syst(self, save_dir, results_dir, root_dir=None): # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+    def draw_syst(
+        self, save_dir, results_dir, root_dir=None
+    ):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         """Draw all fits one-by-one
 
         Args:
@@ -992,43 +1219,52 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
         for (ibin1, ibin2), fit in self.syst_fits.items():
             if not fit:
-                self.logger.warning("No systematic fit for bins (%i, %i). Skip...",
-                                    ibin1, ibin2)
+                self.logger.warning(
+                    "No systematic fit for bins (%i, %i). Skip...", ibin1, ibin2
+                )
                 continue
 
             # Some variables set for drawing
             if self.pars_factory.mltype == "MultiClassification":
-                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
-                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                        f"(prob0 <= {self.pars_factory.prob_cut_fin[ibin1][0]:.2f} &" \
-                        f"prob1 >= {self.pars_factory.prob_cut_fin[ibin1][1]:.2f})"
+                title = (
+                    f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < "
+                    f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}"
+                    f"(prob0 <= {self.pars_factory.prob_cut_fin[ibin1][0]:.2f} &"
+                    f"prob1 >= {self.pars_factory.prob_cut_fin[ibin1][1]:.2f})"
+                )
             else:
-                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
-                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                        f"(prob > {self.pars_factory.prob_cut_fin[ibin1]:.2f})"
+                title = (
+                    f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < "
+                    f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}"
+                    f"(prob > {self.pars_factory.prob_cut_fin[ibin1]:.2f})"
+                )
 
             suffix_write = self.pars_factory.make_suffix(ibin1, ibin2)
 
-            fit.results_path = os.path.join(results_dir,
-                                            f"multi_trial_bin1_{ibin1}_bin2_{ibin2}.root")
+            fit.results_path = os.path.join(
+                results_dir, f"multi_trial_bin1_{ibin1}_bin2_{ibin2}.root"
+            )
 
             # Central fits
             canvas = TCanvas("fit_canvas", suffix_write, 1400, 800)
             fit.draw(canvas, title=title)
 
             if self.pars_factory.apply_weights is False:
-                canvas.SaveAs(make_file_path(save_dir, "multi_trial", "eps", None,
-                                             suffix_write))
+                canvas.SaveAs(
+                    make_file_path(save_dir, "multi_trial", "eps", None, suffix_write)
+                )
             else:
-                canvas.SaveAs(make_file_path(save_dir, "multi_trial_weights", "eps", None,
-                                             suffix_write))
+                canvas.SaveAs(
+                    make_file_path(
+                        save_dir, "multi_trial_weights", "eps", None, suffix_write
+                    )
+                )
 
             if root_dir:
                 root_dir.cd()
                 canvas.Write(f"multi_trial_{suffix_write}")
 
             canvas.Close()
-
 
     @staticmethod
     def save_all_(fits, save_dir):
@@ -1044,7 +1280,6 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             annotations = {"key": key}
             save_fit(fit, save_dir_fit, annotations)
 
-
     def save_fits(self, top_save_dir):
         """
         Write all fits there are
@@ -1056,7 +1291,6 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.save_all_(self.pre_fits_mc, join(top_save_dir, "pre_fits_mc"))
         self.save_all_(self.pre_fits_data, join(top_save_dir, "pre_fits_data"))
         self.save_all_(self.central_fits, join(top_save_dir, "central_fits"))
-
 
     @staticmethod
     def load_all_(fits, save_dir):
@@ -1082,7 +1316,6 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             fits[key] = fit
         return True
 
-
     def load_fits(self, top_save_dir):
         """
         Read back all fits written to disk
@@ -1097,9 +1330,11 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.pre_fits_mc = {}
         self.pre_fits_data = {}
         self.central_fits = {}
-        success = self.load_all_(self.pre_fits_mc, join(top_save_dir, "pre_fits_mc")) and \
-                  self.load_all_(self.pre_fits_data, join(top_save_dir, "pre_fits_data")) and \
-                  self.load_all_(self.central_fits, join(top_save_dir, "central_fits"))
+        success = (
+            self.load_all_(self.pre_fits_mc, join(top_save_dir, "pre_fits_mc"))
+            and self.load_all_(self.pre_fits_data, join(top_save_dir, "pre_fits_data"))
+            and self.load_all_(self.central_fits, join(top_save_dir, "central_fits"))
+        )
         # Flags
         self.is_initialized_fits = True
         self.done_pre_fits = True

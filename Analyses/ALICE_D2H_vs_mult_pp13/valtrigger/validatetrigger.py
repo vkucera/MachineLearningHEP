@@ -17,12 +17,11 @@ main script for doing final stage analysis
 """
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
+
 # pylint: disable=import-error, no-name-in-module, unused-import
 import yaml
-from ROOT import TFile, TH1F, TCanvas
-from ROOT import gStyle, TLegend
-from ROOT import gROOT
-from ROOT import TStyle, gPad
+from ROOT import TH1F, TCanvas, TFile, TLegend, TStyle, gPad, gROOT, gStyle
+
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
@@ -36,25 +35,29 @@ def validatetrigger():
     gStyle.SetFrameFillColor(0)
     gStyle.SetOptTitle(0)
 
-    ccross = TCanvas('cCross', 'The Fit Canvas', 100, 600)
-    ccross = TCanvas('cCross', 'The Fit Canvas')
+    ccross = TCanvas("cCross", "The Fit Canvas", 100, 600)
+    ccross = TCanvas("cCross", "The Fit Canvas")
     ccross.SetCanvasSize(1500, 1500)
     ccross.SetWindowSize(500, 500)
     ccross.SetLogx()
 
-    legyield = TLegend(.3, .65, .7, .85)
+    legyield = TLegend(0.3, 0.65, 0.7, 0.85)
     legyield.SetBorderSize(0)
     legyield.SetFillColor(0)
     legyield.SetFillStyle(0)
     legyield.SetTextFont(42)
     legyield.SetTextSize(0.035)
 
-    files = ["resultsSPDvspt/finalcrossD0pptestSPDvsptmult3Weight.root",
-             "resultsSPDvspt/finalcrossD0pptestSPDvsptmult3NoWeight.root",
-             "resultsMBvspt_ntrkl/finalcrossD0pptestMBvspt_ntrklmult3.root"]
-    legends = ["triggered weight ntracklets 60-100",
-               "triggered no weight ntracklets 60-100",
-               "MB ntracklets 60-100"]
+    files = [
+        "resultsSPDvspt/finalcrossD0pptestSPDvsptmult3Weight.root",
+        "resultsSPDvspt/finalcrossD0pptestSPDvsptmult3NoWeight.root",
+        "resultsMBvspt_ntrkl/finalcrossD0pptestMBvspt_ntrklmult3.root",
+    ]
+    legends = [
+        "triggered weight ntracklets 60-100",
+        "triggered no weight ntracklets 60-100",
+        "MB ntracklets 60-100",
+    ]
     hempty = TH1F("hempty", "hempty", 100, 0, 30)
     hempty.GetYaxis().SetTitleOffset(1.2)
     hempty.GetYaxis().SetTitleFont(42)
@@ -68,7 +71,7 @@ def validatetrigger():
     hempty.SetMaximum(1e9)
     hempty.Draw()
 
-    legyield = TLegend(.3, .65, .7, .85)
+    legyield = TLegend(0.3, 0.65, 0.7, 0.85)
     legyield.SetBorderSize(0)
     legyield.SetFillColor(0)
     legyield.SetFillStyle(0)
@@ -97,5 +100,6 @@ def validatetrigger():
     legyield.AddEntry(hMB, legends[2], "LEP")
     legyield.Draw()
     ccross.SaveAs("ccrossSPD.eps")
+
 
 validatetrigger()

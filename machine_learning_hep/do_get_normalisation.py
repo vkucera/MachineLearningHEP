@@ -13,16 +13,17 @@
 #############################################################################
 
 import os
-import yaml
-import pandas as pd
 
-from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+import pandas as pd
+import yaml
+from ROOT import TH1F, TFile  # pylint: disable=import-error, no-name-in-module
+
 from machine_learning_hep.selectionutils import getnormforselevt
 
 # pylint: disable=invalid-name
 case = "Dspp5TeV"
 
-with open("data/database_ml_parameters.yml", 'r') as param_config:
+with open("data/database_ml_parameters.yml", "r") as param_config:
     data_param = yaml.load(param_config)
 
 namefile_evt = data_param[case]["files_names"]["namefile_evt_skim_tot"]

@@ -15,25 +15,29 @@
 """
 Methods to: perform bitwise operations on dataframes
 """
-from functools import reduce
 import operator
-import pandas as pd
-#import numba
+from functools import reduce
 
-#@numba.njit
+import pandas as pd
+
+# import numba
+
+# @numba.njit
 def selectbiton(array_cand_type, mask):
     return [((cand_type & mask) == mask) for cand_type in array_cand_type]
 
-#@numba.njit
+
+# @numba.njit
 def selectbitoff(array_cand_type, mask):
     return [((cand_type & mask) == 0) for cand_type in array_cand_type]
+
 
 def tag_bit_df(dfin, namebitmap, activatedbit):
     bitson = activatedbit[0]
     bitsoff = activatedbit[1]
     array_cand_type = dfin.loc[:, namebitmap].values.astype("int")
-    res_on = pd.Series([True]*len(array_cand_type))
-    res_off = pd.Series([True]*len(array_cand_type))
+    res_on = pd.Series([True] * len(array_cand_type))
+    res_off = pd.Series([True] * len(array_cand_type))
     res = pd.Series()
 
     if bitson:
@@ -46,6 +50,7 @@ def tag_bit_df(dfin, namebitmap, activatedbit):
         res_off = pd.Series(bitmapoff)
     res = res_on & res_off
     return res
+
 
 def filter_bit_df(dfin, namebitmap, activatedbit):
     res = tag_bit_df(dfin, namebitmap, activatedbit)

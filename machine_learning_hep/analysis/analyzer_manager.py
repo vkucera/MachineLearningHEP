@@ -14,6 +14,7 @@
 
 from machine_learning_hep.logger import get_logger
 
+
 # pylint: disable=too-many-instance-attributes
 class AnalyzerManager:
     """
@@ -38,7 +39,6 @@ class AnalyzerManager:
 
         self.is_initialized = False
 
-
     def get_analyzers(self, none_for_unused_period=True):
         self.initialize()
         if not none_for_unused_period:
@@ -52,7 +52,6 @@ class AnalyzerManager:
         analyzers[-1] = self.analyzers[-1]
         return analyzers
 
-
     def initialize(self):
         """
         Collect all analyzer objects required in a list and initialises the after_burner if present
@@ -61,16 +60,22 @@ class AnalyzerManager:
         if self.is_initialized:
             return
 
-        self.logger.info("Initialize analyzer manager for analyzer %s", self.ana_class.__name__)
+        self.logger.info(
+            "Initialize analyzer manager for analyzer %s", self.ana_class.__name__
+        )
 
         useperiod = self.database["analysis"][self.typean]["useperiod"]
 
         for ip, period in enumerate(useperiod):
             if self.doperiodbyperiod and period:
-                self.analyzers.append(self.ana_class(self.database, self.case, self.typean, ip,
-                                                     *self.add_args))
-        self.analyzers.append(self.ana_class(self.database, self.case, self.typean, None,
-                                             *self.add_args))
+                self.analyzers.append(
+                    self.ana_class(
+                        self.database, self.case, self.typean, ip, *self.add_args
+                    )
+                )
+        self.analyzers.append(
+            self.ana_class(self.database, self.case, self.typean, None, *self.add_args)
+        )
 
         if self.doperiodbyperiod:
             # get after-burner, if any
@@ -81,7 +86,6 @@ class AnalyzerManager:
 
         self.is_initialized = True
 
-
     def analyze(self, *ana_steps):
         """
         Gives a list of analyzers and analysis steps do each step for each analyzer
@@ -90,14 +94,18 @@ class AnalyzerManager:
         """
 
         if not ana_steps:
-            self.logger.info("No analysis steps to be done for Analyzer class %s. Return...",
-                             self.ana_class.__name__)
+            self.logger.info(
+                "No analysis steps to be done for Analyzer class %s. Return...",
+                self.ana_class.__name__,
+            )
             return
 
         self.initialize()
 
-        self.logger.info("Run all registered analyzers of type %s for following analysis steps",
-                         self.ana_class.__name__)
+        self.logger.info(
+            "Run all registered analyzers of type %s for following analysis steps",
+            self.ana_class.__name__,
+        )
         for step in ana_steps:
             print(f"  -> {step}")
 
@@ -116,7 +124,9 @@ class AnalyzerManager:
 
                 # Run after-burner if one was provided by the analyzer object
                 if self.after_burner and not self.after_burner.step(step):
-                    failed_steps_after_burner.append((self.after_burner.__class__.__name__, step))
+                    failed_steps_after_burner.append(
+                        (self.after_burner.__class__.__name__, step)
+                    )
 
             # Do analysis step for period-merged analyzer
             self.analyzers[-1].step(step)

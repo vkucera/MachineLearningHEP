@@ -18,10 +18,11 @@ Methods to: read and write a ROOT TNtuple
 
 import array
 import ast
-import numpy as np
-from ROOT import gROOT, TNtuple, TFile # pylint: disable=import-error,no-name-in-module
-from machine_learning_hep.logger import get_logger
 
+import numpy as np
+from ROOT import TFile, TNtuple, gROOT  # pylint: disable=import-error,no-name-in-module
+
+from machine_learning_hep.logger import get_logger
 
 META_INFO = "struct MLHEPMetaInfo { \
                Float_t firstLow; \
@@ -36,9 +37,14 @@ gROOT.ProcessLine(META_INFO)
 
 META_INFO_NAME = "MLHEPMetaInfo"
 
-from ROOT import MLHEPMetaInfo # pylint: disable=wrong-import-position, import-error, no-name-in-module, ungrouped-imports
+from ROOT import (  # pylint: disable=wrong-import-position, import-error, no-name-in-module, ungrouped-imports
+    MLHEPMetaInfo,
+)
 
-def create_meta_info(first_name, first_low, first_up, second_name, second_low, second_up, ml_wp):
+
+def create_meta_info(
+    first_name, first_low, first_up, second_name, second_low, second_up, ml_wp
+):
     """Fill MLHEPMetaInfo struct
 
     Custom MLHEP ROOT struct to store meta info
@@ -98,23 +104,24 @@ def read_meta_info(root_dir, fail_not_found=True):
         MLHEPMetaInfo
     """
 
-
     meta_info = root_dir.Get(META_INFO_NAME)
     if not meta_info and fail_not_found:
-        get_logger().fatal("Cannot find %s in directory %s", META_INFO_NAME, root_dir.GetName())
+        get_logger().fatal(
+            "Cannot find %s in directory %s", META_INFO_NAME, root_dir.GetName()
+        )
     return meta_info
 
 
 def read_ntuple(ntuple, variables):
     """
-      Return a numpy array with the values from TNtuple.
-        ntuple : input TNtuple
-        variables : list of ntuple variables to read
+    Return a numpy array with the values from TNtuple.
+      ntuple : input TNtuple
+      variables : list of ntuple variables to read
     """
     logger = get_logger()
     code_list = []
     for v in variables:
-        code_list += [compile("i.%s" % v, '<string>', 'eval')]
+        code_list += [compile("i.%s" % v, "<string>", "eval")]
     nentries = ntuple.GetEntries()
     nvars = len(variables)
     myarray = np.zeros((nentries, nvars))
@@ -128,18 +135,18 @@ def read_ntuple(ntuple, variables):
 
 def read_ntuple_ml(ntuple, variablesfeatures, variablesothers, variabley):
     """
-      Return a numpy array with the values from TNtuple.
-        ntuple : input TNtuple
-        variables : list of ntuple variables to read
+    Return a numpy array with the values from TNtuple.
+      ntuple : input TNtuple
+      variables : list of ntuple variables to read
     """
     logger = get_logger()
     code_listfeatures = []
     code_listothers = []
     for v in variablesfeatures:
-        code_listfeatures += [compile("i.%s" % v, '<string>', 'eval')]
+        code_listfeatures += [compile("i.%s" % v, "<string>", "eval")]
     for v in variablesothers:
-        code_listothers += [compile("i.%s" % v, '<string>', 'eval')]
-    codevariabley = compile("i.%s" % variabley, '<string>', 'eval')
+        code_listothers += [compile("i.%s" % v, "<string>", "eval")]
+    codevariabley = compile("i.%s" % variabley, "<string>", "eval")
     nentries = ntuple.GetEntries()
     nvars = len(variablesfeatures)
     nvarsothers = len(variablesothers)
@@ -159,17 +166,17 @@ def read_ntuple_ml(ntuple, variablesfeatures, variablesothers, variabley):
 
 def fill_ntuple(tupname, data, names):
     """
-      Create and fill ROOT NTuple with the data sample.
-        tupname : name of the NTuple
-        data : data sample
-        names : names of the NTuple variables
+    Create and fill ROOT NTuple with the data sample.
+      tupname : name of the NTuple
+      data : data sample
+      names : names of the NTuple variables
     """
     variables = ""
     for n in names:
         variables += "%s:" % n
     variables = variables[:-1]
-    values = len(names)*[0.]
-    avalues = array.array('f', values)
+    values = len(names) * [0.0]
+    avalues = array.array("f", values)
     nt = TNtuple(tupname, "", variables)
     for d in data:
         for i in range(len(names)):

@@ -17,24 +17,39 @@ main script for doing final stage analysis
 """
 import os
 from math import sqrt
+
 # pylint: disable=import-error, no-name-in-module, unused-import
 import yaml
-from ROOT import TFile, gStyle, gROOT
+from ROOT import TFile, gROOT, gStyle
+
 from machine_learning_hep.utilities_plot import plot_histograms
 
 FILES_NOT_FOUND = []
 
 # pylint: disable=too-many-branches
-def compare_ml_std(case_ml, ana_type_ml, period_number, filepath_std, scale_std=None,
-                   map_std_bins=None, mult_bin=None, ml_histo_names=None, std_histo_names=None,
-                   suffix=""):
+def compare_ml_std(
+    case_ml,
+    ana_type_ml,
+    period_number,
+    filepath_std,
+    scale_std=None,
+    map_std_bins=None,
+    mult_bin=None,
+    ml_histo_names=None,
+    std_histo_names=None,
+    suffix="",
+):
 
-    with open("data/database_ml_parameters_%s.yml" % case_ml, 'r') as param_config:
+    with open("data/database_ml_parameters_%s.yml" % case_ml, "r") as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
     if period_number < 0:
-        filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"]["resultsallp"]
+        filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"][
+            "resultsallp"
+        ]
     else:
-        filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"]["results"][period_number]
+        filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"]["results"][
+            period_number
+        ]
 
     # Get pt spectrum files
     if mult_bin is None:
@@ -48,15 +63,27 @@ def compare_ml_std(case_ml, ana_type_ml, period_number, filepath_std, scale_std=
     file_std = TFile.Open(filepath_std, "READ")
 
     # Collect histo names to quickly loop later
-    histo_names = ["hDirectMCpt", "hFeedDownMCpt", "hDirectMCptMax", "hDirectMCptMin",
-                   "hFeedDownMCptMax", "hFeedDownMCptMin", "hDirectEffpt", "hFeedDownEffpt",
-                   "hRECpt", "histoYieldCorr", "histoYieldCorrMax", "histoYieldCorrMin",
-                   "histoSigmaCorr", "histoSigmaCorrMax", "histoSigmaCorrMin"]
+    histo_names = [
+        "hDirectMCpt",
+        "hFeedDownMCpt",
+        "hDirectMCptMax",
+        "hDirectMCptMin",
+        "hFeedDownMCptMax",
+        "hFeedDownMCptMin",
+        "hDirectEffpt",
+        "hFeedDownEffpt",
+        "hRECpt",
+        "histoYieldCorr",
+        "histoYieldCorrMax",
+        "histoYieldCorrMin",
+        "histoSigmaCorr",
+        "histoSigmaCorrMax",
+        "histoSigmaCorrMin",
+    ]
     if ml_histo_names is None:
         ml_histo_names = histo_names
     if std_histo_names is None:
         std_histo_names = histo_names
-
 
     for hn_ml, hn_std in zip(ml_histo_names, std_histo_names):
         histo_ml = file_ml.Get(hn_ml)
@@ -79,13 +106,18 @@ def compare_ml_std(case_ml, ana_type_ml, period_number, filepath_std, scale_std=
 
             for ml_bin, std_bins in map_std_bins:
                 for b in std_bins:
-                    contents[ml_bin-1] += histo_std_tmp.GetBinWidth(b) * \
-                            histo_std_tmp.GetBinContent(b) / histo_ml.GetBinWidth(ml_bin)
-                    errors[ml_bin-1] += histo_std_tmp.GetBinError(b) * histo_std_tmp.GetBinError(b)
+                    contents[ml_bin - 1] += (
+                        histo_std_tmp.GetBinWidth(b)
+                        * histo_std_tmp.GetBinContent(b)
+                        / histo_ml.GetBinWidth(ml_bin)
+                    )
+                    errors[ml_bin - 1] += histo_std_tmp.GetBinError(
+                        b
+                    ) * histo_std_tmp.GetBinError(b)
 
             for b in range(histo_std.GetNbinsX()):
-                histo_std.SetBinContent(b+1, contents[b])
-                histo_std.SetBinError(b+1, sqrt(errors[b]))
+                histo_std.SetBinContent(b + 1, contents[b])
+                histo_std.SetBinError(b + 1, sqrt(errors[b]))
 
         else:
             histo_std = histo_std_tmp.Clone("std_cloned")
@@ -97,32 +129,57 @@ def compare_ml_std(case_ml, ana_type_ml, period_number, filepath_std, scale_std=
             print("creating folder ", folder_plots)
             os.makedirs(folder_plots)
 
+        save_path = f"{folder_plots}/{hn_ml}_ml_std_mult_{mult_bin}_period_{period_number}{suffix}.eps"
 
-        save_path = \
-                f"{folder_plots}/{hn_ml}_ml_std_mult_{mult_bin}_period_{period_number}{suffix}.eps"
+        plot_histograms(
+            [histo_std, histo_ml],
+            True,
+            True,
+            ["STD", "ML"],
+            histo_ml.GetTitle(),
+            "#it{p}_{T} (GeV/#it{c}",
+            histo_ml.GetYaxis().GetTitle(),
+            "ML / STD",
+            save_path,
+        )
 
-        plot_histograms([histo_std, histo_ml], True, True, ["STD", "ML"], histo_ml.GetTitle(),
-                        "#it{p}_{T} (GeV/#it{c}", histo_ml.GetYaxis().GetTitle(), "ML / STD",
-                        save_path)
 
 # pylint: disable=too-many-locals, too-many-branches, too-many-statements, too-many-arguments
-def compare_ml_std_ratio(case_ml_1, case_ml_2, ana_type_ml, period_number, filepath_std_1,
-                         filepath_std_2, scale_std_1=None, scale_std_2=None, map_std_bins=None,
-                         mult_bin=None, ml_histo_names=None, std_histo_names_1=None,
-                         std_histo_names_2=None, suffix=""):
+def compare_ml_std_ratio(
+    case_ml_1,
+    case_ml_2,
+    ana_type_ml,
+    period_number,
+    filepath_std_1,
+    filepath_std_2,
+    scale_std_1=None,
+    scale_std_2=None,
+    map_std_bins=None,
+    mult_bin=None,
+    ml_histo_names=None,
+    std_histo_names_1=None,
+    std_histo_names_2=None,
+    suffix="",
+):
 
-    with open("data/database_ml_parameters_%s.yml" % case_ml_1, 'r') as param_config:
+    with open("data/database_ml_parameters_%s.yml" % case_ml_1, "r") as param_config:
         data_param_1 = yaml.load(param_config, Loader=yaml.FullLoader)
-    with open("data/database_ml_parameters_%s.yml" % case_ml_2, 'r') as param_config:
+    with open("data/database_ml_parameters_%s.yml" % case_ml_2, "r") as param_config:
         data_param_2 = yaml.load(param_config, Loader=yaml.FullLoader)
     if period_number < 0:
-        filepath_ml_1 = data_param_1[case_ml_1]["analysis"][ana_type_ml]["data"]["resultsallp"]
-        filepath_ml_2 = data_param_2[case_ml_2]["analysis"][ana_type_ml]["data"]["resultsallp"]
+        filepath_ml_1 = data_param_1[case_ml_1]["analysis"][ana_type_ml]["data"][
+            "resultsallp"
+        ]
+        filepath_ml_2 = data_param_2[case_ml_2]["analysis"][ana_type_ml]["data"][
+            "resultsallp"
+        ]
     else:
-        filepath_ml_1 = \
-                data_param_1[case_ml_1]["analysis"][ana_type_ml]["data"]["results"][period_number]
-        filepath_ml_2 = \
-                data_param_2[case_ml_2]["analysis"][ana_type_ml]["data"]["results"][period_number]
+        filepath_ml_1 = data_param_1[case_ml_1]["analysis"][ana_type_ml]["data"][
+            "results"
+        ][period_number]
+        filepath_ml_2 = data_param_2[case_ml_2]["analysis"][ana_type_ml]["data"][
+            "results"
+        ][period_number]
 
     name_1 = data_param_1[case_ml_1]["analysis"][ana_type_ml]["latexnamemeson"]
     name_2 = data_param_2[case_ml_2]["analysis"][ana_type_ml]["latexnamemeson"]
@@ -144,10 +201,23 @@ def compare_ml_std_ratio(case_ml_1, case_ml_2, ana_type_ml, period_number, filep
     file_std_2 = TFile.Open(filepath_std_2, "READ")
 
     # Collect histo names to quickly loop later
-    histo_names = ["hDirectMCpt", "hFeedDownMCpt", "hDirectMCptMax", "hDirectMCptMin",
-                   "hFeedDownMCptMax", "hFeedDownMCptMin", "hDirectEffpt", "hFeedDownEffpt",
-                   "hRECpt", "histoYieldCorr", "histoYieldCorrMax", "histoYieldCorrMin",
-                   "histoSigmaCorr", "histoSigmaCorrMax", "histoSigmaCorrMin"]
+    histo_names = [
+        "hDirectMCpt",
+        "hFeedDownMCpt",
+        "hDirectMCptMax",
+        "hDirectMCptMin",
+        "hFeedDownMCptMax",
+        "hFeedDownMCptMin",
+        "hDirectEffpt",
+        "hFeedDownEffpt",
+        "hRECpt",
+        "histoYieldCorr",
+        "histoYieldCorrMax",
+        "histoYieldCorrMin",
+        "histoSigmaCorr",
+        "histoSigmaCorrMax",
+        "histoSigmaCorrMin",
+    ]
 
     if ml_histo_names is None:
         ml_histo_names = histo_names
@@ -156,7 +226,9 @@ def compare_ml_std_ratio(case_ml_1, case_ml_2, ana_type_ml, period_number, filep
     if std_histo_names_2 is None:
         std_histo_names_2 = histo_names
 
-    for hn_ml, hn_std_1, hn_std_2 in zip(ml_histo_names, std_histo_names_1, std_histo_names_2):
+    for hn_ml, hn_std_1, hn_std_2 in zip(
+        ml_histo_names, std_histo_names_1, std_histo_names_2
+    ):
         histo_ml_1 = file_ml_1.Get(hn_ml)
         histo_ml_2 = file_ml_2.Get(hn_ml)
         histo_std_tmp_1 = file_std_1.Get(hn_std_1)
@@ -188,26 +260,32 @@ def compare_ml_std_ratio(case_ml_1, case_ml_2, ana_type_ml, period_number, filep
 
             for ml_bin, std_bins in map_std_bins:
                 for b in std_bins:
-                    contents[ml_bin-1] += histo_std_tmp_1.GetBinContent(b) / len(std_bins)
-                    errors[ml_bin-1] += \
-                            histo_std_tmp_1.GetBinError(b) * histo_std_tmp_1.GetBinError(b)
+                    contents[ml_bin - 1] += histo_std_tmp_1.GetBinContent(b) / len(
+                        std_bins
+                    )
+                    errors[ml_bin - 1] += histo_std_tmp_1.GetBinError(
+                        b
+                    ) * histo_std_tmp_1.GetBinError(b)
 
             for b in range(histo_std_1.GetNbinsX()):
-                histo_std_1.SetBinContent(b+1, contents[b])
-                histo_std_1.SetBinError(b+1, sqrt(errors[b]))
+                histo_std_1.SetBinContent(b + 1, contents[b])
+                histo_std_1.SetBinError(b + 1, sqrt(errors[b]))
 
             contents = [0] * histo_ml_2.GetNbinsX()
             errors = [0] * histo_ml_2.GetNbinsX()
 
             for ml_bin, std_bins in map_std_bins:
                 for b in std_bins:
-                    contents[ml_bin-1] += histo_std_tmp_2.GetBinContent(b) / len(std_bins)
-                    errors[ml_bin-1] += \
-                            histo_std_tmp_2.GetBinError(b) * histo_std_tmp_2.GetBinError(b)
+                    contents[ml_bin - 1] += histo_std_tmp_2.GetBinContent(b) / len(
+                        std_bins
+                    )
+                    errors[ml_bin - 1] += histo_std_tmp_2.GetBinError(
+                        b
+                    ) * histo_std_tmp_2.GetBinError(b)
 
             for b in range(histo_std_2.GetNbinsX()):
-                histo_std_2.SetBinContent(b+1, contents[b])
-                histo_std_2.SetBinError(b+1, sqrt(errors[b]))
+                histo_std_2.SetBinContent(b + 1, contents[b])
+                histo_std_2.SetBinError(b + 1, sqrt(errors[b]))
 
         else:
             histo_std_1 = histo_std_tmp_1.Clone("std_cloned_1")
@@ -228,24 +306,44 @@ def compare_ml_std_ratio(case_ml_1, case_ml_2, ana_type_ml, period_number, filep
             print("creating folder ", folder_plots)
             os.makedirs(folder_plots)
 
-        save_path = f"{folder_plots}/ratio_{case_ml_1}_{case_ml_2}_{hn_ml}_ml_std_mult_" \
-                    f"{mult_bin}_period_{period_number}{suffix}.eps"
+        save_path = (
+            f"{folder_plots}/ratio_{case_ml_1}_{case_ml_2}_{hn_ml}_ml_std_mult_"
+            f"{mult_bin}_period_{period_number}{suffix}.eps"
+        )
 
-        plot_histograms([histo_ratio_std, histo_ratio_ml], True, True, ["STD", "ML"], "Ratio",
-                        "#it{p}_{T} (GeV/#it{c}", f"{name_1} / {name_2}", "ML / STD",
-                        save_path)
+        plot_histograms(
+            [histo_ratio_std, histo_ratio_ml],
+            True,
+            True,
+            ["STD", "ML"],
+            "Ratio",
+            "#it{p}_{T} (GeV/#it{c}",
+            f"{name_1} / {name_2}",
+            "ML / STD",
+            save_path,
+        )
 
         folder_plots = data_param_2[case_ml_2]["analysis"]["dir_general_plots"]
         if not os.path.exists(folder_plots):
             print("creating folder ", folder_plots)
             os.makedirs(folder_plots)
 
-        save_path = f"{folder_plots}/ratio_{case_ml_1}_{case_ml_2}_{hn_ml}_ml_std_mult_" \
-                    f"{mult_bin}_period_{period_number}{suffix}.eps"
+        save_path = (
+            f"{folder_plots}/ratio_{case_ml_1}_{case_ml_2}_{hn_ml}_ml_std_mult_"
+            f"{mult_bin}_period_{period_number}{suffix}.eps"
+        )
 
-        plot_histograms([histo_ratio_std, histo_ratio_ml], True, True, ["STD", "ML"], "Ratio",
-                        "#it{p}_{T} (GeV/#it{c}", f"{name_1} / {name_2}", "ML / STD",
-                        save_path)
+        plot_histograms(
+            [histo_ratio_std, histo_ratio_ml],
+            True,
+            True,
+            ["STD", "ML"],
+            "Ratio",
+            "#it{p}_{T} (GeV/#it{c}",
+            f"{name_1} / {name_2}",
+            "ML / STD",
+            save_path,
+        )
 
 
 #####################################
@@ -257,76 +355,141 @@ SIGMA0 = 57.8e-9
 ######
 # D0 #
 ######
-compare_ml_std("D0pp", "MBvspt_ntrkl", -1, "data/std_results/HFPtSpectrum_D0_merged_20191010.root",
-               None, [(1, [1]), (2, [2]), (3, [3]), (4, [4]), (5, [5]), (6, [6])], 0,
-               ["histoSigmaCorr"], ["histoSigmaCorr"])
-#compare_ml_std("D0pp", "MBvspt_ntrkl", -1, "data/std_results/D0_19_corryield.root", 1. / SIGMA0,
+compare_ml_std(
+    "D0pp",
+    "MBvspt_ntrkl",
+    -1,
+    "data/std_results/HFPtSpectrum_D0_merged_20191010.root",
+    None,
+    [(1, [1]), (2, [2]), (3, [3]), (4, [4]), (5, [5]), (6, [6])],
+    0,
+    ["histoSigmaCorr"],
+    ["histoSigmaCorr"],
+)
+# compare_ml_std("D0pp", "MBvspt_ntrkl", -1, "data/std_results/D0_19_corryield.root", 1. / SIGMA0,
 #               None, 1, ["histoYieldCorr"], ["corrYield_19"])
-#compare_ml_std("D0pp", "MBvspt_ntrkl", -1, "data/std_results/D0_1029_corryield.root", 1. / SIGMA0,
+# compare_ml_std("D0pp", "MBvspt_ntrkl", -1, "data/std_results/D0_1029_corryield.root", 1. / SIGMA0,
 #               None, 2, ["histoYieldCorr"], ["corrYield_1029"])
-#compare_ml_std("D0pp", "MBvspt_ntrkl", -1, "data/std_results/D0_3059_corryield.root", 1. / SIGMA0,
+# compare_ml_std("D0pp", "MBvspt_ntrkl", -1, "data/std_results/D0_3059_corryield.root", 1. / SIGMA0,
 #               None, 3, ["histoYieldCorr"], ["corrYield_3059"])
 
 # PRELIM COMPARISON
 # 2016 vs. 2016 int. mult.
-compare_ml_std("D0pp", "MBvspt_ntrkl", 0,
-               "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root", None,
-               [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6, 7]), (5, [8, 9]), (6, [10, 11])],
-               0, ["histoSigmaCorr"], ["histoSigmaCorr"], "_prelim")
+compare_ml_std(
+    "D0pp",
+    "MBvspt_ntrkl",
+    0,
+    "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root",
+    None,
+    [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6, 7]), (5, [8, 9]), (6, [10, 11])],
+    0,
+    ["histoSigmaCorr"],
+    ["histoSigmaCorr"],
+    "_prelim",
+)
 # mreged vs. 2016 int. mult.
-compare_ml_std("D0pp", "MBvspt_ntrkl", -1,
-               "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root", None,
-               [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6, 7]), (5, [8, 9]), (6, [10, 11])],
-               0, ["histoSigmaCorr"], ["histoSigmaCorr"], "_prelim")
+compare_ml_std(
+    "D0pp",
+    "MBvspt_ntrkl",
+    -1,
+    "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root",
+    None,
+    [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6, 7]), (5, [8, 9]), (6, [10, 11])],
+    0,
+    ["histoSigmaCorr"],
+    ["histoSigmaCorr"],
+    "_prelim",
+)
 ######
 # Lc #
 ######
 # Correct for branching ratios BR(Lc->pKpi) / BR(Lc->pK0s)
-compare_ml_std("LcpK0spp", "MBvspt_ntrkl", -1,
-               "data/std_results/HFPtSpectrum_LcpKpi_merged_20191010.root", 1./5.75, None, 0,
-               ["histoSigmaCorr"], ["histoSigmaCorr"])
-#compare_ml_std("LcpK0spp", "MBvspt_ntrkl", -1, "data/std_results/Lc_19_corryield.root",
+compare_ml_std(
+    "LcpK0spp",
+    "MBvspt_ntrkl",
+    -1,
+    "data/std_results/HFPtSpectrum_LcpKpi_merged_20191010.root",
+    1.0 / 5.75,
+    None,
+    0,
+    ["histoSigmaCorr"],
+    ["histoSigmaCorr"],
+)
+# compare_ml_std("LcpK0spp", "MBvspt_ntrkl", -1, "data/std_results/Lc_19_corryield.root",
 #               1./5.75 / SIGMA0, None, 1, ["histoYieldCorr"], ["corrYield_19"])
-#compare_ml_std("LcpK0spp", "MBvspt_ntrkl", -1, "data/std_results/Lc_1029_corryield.root",
+# compare_ml_std("LcpK0spp", "MBvspt_ntrkl", -1, "data/std_results/Lc_1029_corryield.root",
 #               1./5.75 / SIGMA0, None, 2, ["histoYieldCorr"], ["corrYield_1029"])
-#compare_ml_std("LcpK0spp", "MBvspt_ntrkl", -1, "data/std_results/Lc_3059_corryield.root",
+# compare_ml_std("LcpK0spp", "MBvspt_ntrkl", -1, "data/std_results/Lc_3059_corryield.root",
 #                1./5.75 / SIGMA0, None, 3, ["histoYieldCorr"], ["corrYield_3059"])
 
 # RATIOS
 ###########
 # Lc / D0 #
 ###########
-compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
-                     "data/std_results/HFPtSpectrum_LcpKpi_merged_20191010.root",
-                     "data/std_results/HFPtSpectrum_D0_merged_20191010.root", 1./5.75, None, None,
-                     0, ["histoSigmaCorr"], ["histoSigmaCorr"], ["histoSigmaCorr"])
-#compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
+compare_ml_std_ratio(
+    "LcpK0spp",
+    "D0pp",
+    "MBvspt_ntrkl",
+    -1,
+    "data/std_results/HFPtSpectrum_LcpKpi_merged_20191010.root",
+    "data/std_results/HFPtSpectrum_D0_merged_20191010.root",
+    1.0 / 5.75,
+    None,
+    None,
+    0,
+    ["histoSigmaCorr"],
+    ["histoSigmaCorr"],
+    ["histoSigmaCorr"],
+)
+# compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
 #                     "data/std_results/Lc_19_corryield.root",
 #                     "data/std_results/D0_19_corryield.root", 1./5.75 / SIGMA0, 1. / SIGMA0,
 #                     None, 1, ["histoYieldCorr"], ["corrYield_19"], ["corrYield_19"])
-#compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
+# compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
 #                     "data/std_results/Lc_1029_corryield.root",
 #                     "data/std_results/D0_1029_corryield.root", 1./5.75 / SIGMA0, 1. / SIGMA0,
 #                     None, 2, ["histoYieldCorr"], ["corrYield_1029"], ["corrYield_1029"])
-#compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
+# compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
 #                     "data/std_results/Lc_3059_corryield.root",
 #                     "data/std_results/D0_3059_corryield.root", 1./5.75 / SIGMA0, 1. / SIGMA0,
 #                     None, 3, ["histoYieldCorr"], ["corrYield_3059"], ["corrYield_3059"])
 # PRELIM RESULTS
-compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
-                     "data/std_results/HFPtSpectrum_LcpKpi_2016_prel_20191010.root",
-                     "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root", 1./5.75,
-                     None, [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])], 0,
-                     ["histoSigmaCorr"], ["histoSigmaCorr"], ["histoSigmaCorr"], "_prelim")
+compare_ml_std_ratio(
+    "LcpK0spp",
+    "D0pp",
+    "MBvspt_ntrkl",
+    -1,
+    "data/std_results/HFPtSpectrum_LcpKpi_2016_prel_20191010.root",
+    "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root",
+    1.0 / 5.75,
+    None,
+    [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])],
+    0,
+    ["histoSigmaCorr"],
+    ["histoSigmaCorr"],
+    ["histoSigmaCorr"],
+    "_prelim",
+)
 
 ###########
 # Ds / D0 #
 ###########
 
-compare_ml_std_ratio("Dspp", "D0pp", "MBvspt_ntrkl", -1,
-                     "data/std_results/HFPtSpectrum_Ds_merged_20191010.root",
-                     "data/std_results/HFPtSpectrum_D0_merged_20191010.root", None, None, None,
-                     0, ["histoSigmaCorr"], ["hCrossSectionStatisticError"], ["histoSigmaCorr"])
+compare_ml_std_ratio(
+    "Dspp",
+    "D0pp",
+    "MBvspt_ntrkl",
+    -1,
+    "data/std_results/HFPtSpectrum_Ds_merged_20191010.root",
+    "data/std_results/HFPtSpectrum_D0_merged_20191010.root",
+    None,
+    None,
+    None,
+    0,
+    ["histoSigmaCorr"],
+    ["hCrossSectionStatisticError"],
+    ["histoSigmaCorr"],
+)
 if FILES_NOT_FOUND:
     print("FILES NOT FOUND:")
     for f in FILES_NOT_FOUND:
