@@ -277,7 +277,7 @@ LcpKpi:
       pkl_skimmed_merge_for_ml_all: LHC22pp/mltotdata
       pkl_evtcounter_all: LHC22pp/evttotdata
       #select_jobs: [[hy_189959], [hy_189000]]
-      mcreweights: [../Analyses]
+      mcreweights: [../Analyses] #list of periods
     mc:
       nprocessesparallel: 60
       maxfiles : [-1, -1] #list of periods
@@ -298,7 +298,7 @@ LcpKpi:
                                  LHC22pp_mc/prod_LHC22b1a/pklskmlmc] #list of periods
       pkl_skimmed_merge_for_ml_all: LHC22pp_mc/prod_LHC22/mltotmc
       pkl_evtcounter_all: LHC22pp_mc/prod_LHC22/evttotmc
-      mcreweights: [../Analyses, ../Analyses]
+      mcreweights: [../Analyses, ../Analyses] #list of periods
   ml:
     evtsel: null
     triggersel:
@@ -322,7 +322,7 @@ LcpKpi:
     binmax: [2,4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: MultiClassification
     ncorescrossval: 10
-    prefix_dir_ml: /data2/MLhep/
+    prefix_dir_ml: /data2/vkucera/MLhep/
     mlplot: mlplot # to be removed
     mlout: mlout # to be removed
 
@@ -346,11 +346,11 @@ LcpKpi:
 
   mlapplication:
     data:
-      prefix_dir_app: /data2/MLhep/
+      prefix_dir_app: /data2/vkucera/MLhep/
       pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
-      prefix_dir_app: /data2/MLhep/
+      prefix_dir_app: /data2/vkucera/MLhep/
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc,
                         LHC22pp_mc/MLapplication/prod_LHC22b1a/skpkldecmc,] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged,
@@ -405,12 +405,12 @@ LcpKpi:
 
       data:
         runselection: [null] #FIXME
-        prefix_dir_res: /data2/MLhep/
+        prefix_dir_res: /data2/vkucera/MLhep/
         results: [LHC22pp/Results/prod_LHC22o/resultsdata] #list of periods
         resultsallp: LHC22pp/Results/resultsdatatot
       mc:
         runselection: [null, null] #FIXME
-        prefix_dir_res: /data2/MLhep/
+        prefix_dir_res: /data2/vkucera/MLhep/
         results: [LHC22pp_mc/Results/prod_LHC22b1b/resultsmc,
                   LHC22pp_mc/Results/prod_LHC22b1a/resultsmc] #list of periods
         resultsallp: LHC22pp_mc/Results/prod_LHC22/resultsmctot

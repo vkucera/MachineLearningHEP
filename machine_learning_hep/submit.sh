@@ -20,7 +20,7 @@ DBDIR="data_run3"
 # DATABASE="Dspp"
 # DATABASE="LcpK0spp"
 # DATABASE="LcpKpi"
-DATABASE="LcToPKPi"
+DATABASE="LcToPKPi_newformat"
 
 # SUFFIX="_0417"
 # SUFFIX="_0304"
