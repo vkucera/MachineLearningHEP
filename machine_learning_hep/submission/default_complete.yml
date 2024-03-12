@@ -35,7 +35,7 @@ ml_study: # mlout, mlplot
   docorrelation: false
   dolearningcurve: false
   doapplytodatamc: false
-  doscancuts: false
+  doscancuts: false # up till here should work
   doefficiency: false
   dosignifopt: false
   doboundary: false
@@ -45,13 +45,13 @@ ml_study: # mlout, mlplot
 
 mlapplication:
   data:
-    doapply: false # pkl_skimmed_dec (pklskdec)
-    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
-    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
+    doapply: true # pkl_skimmed_dec (pklskdec)
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged) NOT NEEDED
+    docontinueafterstop: true # set to true to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
-    doapply: false # pkl_skimmed_dec (pklskdec)
-    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
-    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
+    doapply: true # pkl_skimmed_dec (pklskdec)
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged) NOT NEEDED
+    docontinueafterstop: true # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
   type: "YYYY" # used unless specified explicitly as do_entire_analysis -a type_ana
