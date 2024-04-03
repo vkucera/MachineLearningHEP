@@ -162,8 +162,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     h_zg.SetBinContent(1, 0.0)
                     for i in range(5):
                         h2_invmass_zg = rfile.Get(f'h2jet_invmass_zg_{ipt}')
-                        h_invmass = h2_invmass_zg.ProjectionX(f'h_invmass_zg_{ipt}_proj_{i}')
-                        # h_invmass = rfile.Get(f'hmass_zg_{ipt}_{i}')
+                        h_invmass = h2_invmass_zg.ProjectionX(f'h_invmass_zg_{ipt}_proj_{i}', i+1, i+2, "e")
                         _, func_sig, _ = self._fit_mass(h_invmass)
                         self._save_hist(h_invmass, f'hmass_zg_fitted_{ipt}_{i}_{mcordata}.png')
                         h_zg.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/h_invmass.GetBinWidth(1)))
