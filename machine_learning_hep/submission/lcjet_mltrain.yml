@@ -24,11 +24,11 @@ mergingperiods: # pkl_skimmed_merge_for_ml_all
     activate: false
 
 ml_study: # mlout, mlplot
-  activate: false
+  activate: true
   dotraining: true
   dotesting: true
-  doplotdistr: true
-  doroc: false
+  doplotdistr: false
+  doroc: true
   doroctraintest: true
   doimportance: false
   doimportanceshap: false
@@ -68,11 +68,7 @@ analysis:
     response: false # processer: process_response
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
-  steps:
-    fit:
-    subtract_sidebands:
-    extract_signals:
-    qa:
+  # steps:
 
 systematics:
   cutvar:

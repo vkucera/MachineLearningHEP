@@ -6,30 +6,30 @@ conversion: # pkl
   mc:
     activate: false
   data:
-    activate: false
+    activate: true
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
     activate: false
   data:
-    activate: false
+    activate: true
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: false
   data:
-    activate: false
+    activate: true
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
     activate: false
   data:
-    activate: false
+    activate: true
 
 ml_study: # mlout, mlplot
   activate: false
-  dotraining: true
-  dotesting: true
-  doplotdistr: true
+  dotraining: false
+  dotesting: false
+  doplotdistr: false
   doroc: false
-  doroctraintest: true
+  doroctraintest: false
   doimportance: false
   doimportanceshap: false
   docorrelation: false
@@ -68,11 +68,15 @@ analysis:
     response: false # processer: process_response
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
-  steps:
-    fit:
-    subtract_sidebands:
-    extract_signals:
-    qa:
+  doqa: false
+  dofit: false # analyzer: fit
+  # Control the yield systematic uncertainty
+  dosyst: false # analyzer: yield_syst
+  dojetstudies: false # analyzer: fit, efficiency, sideband_sub
+  doeff: false # analyzer: efficiency
+  docross: false # analyzer: makenormyields
+  doplots: false # analyzer: plotternormyields
+  doplotsval: false # analyzer: plottervalidation
 
 systematics:
   cutvar:
