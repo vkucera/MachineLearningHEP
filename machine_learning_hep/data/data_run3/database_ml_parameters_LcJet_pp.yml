@@ -233,8 +233,8 @@ Lcpp_jet:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_191669/
-      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0037/hy_372089] #list of periods
+      prefix_dir: /data2/MLhep/real/train_191951/
+      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0037/hy_372811] #list of periods
       pkl: ['${USER}/lcjet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/lcjet/pklsk'] #list of periods
       pkl_skimmed_merge_for_ml: ['${USER}/lcjet/pklskml'] #list of periods
@@ -250,8 +250,8 @@ Lcpp_jet:
       seedmerge: [12] #list of periods
       period: [mctest_nima] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_191606/
-      unmerged_tree_dir: [/alice/cern.ch/user/a/alihyperloop/outputs/0019]
+      prefix_dir: /data2/MLhep/sim/train_191952/
+      unmerged_tree_dir: [merged]
       pkl: ['${USER}/lcjet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/lcjet/pklsk'] #list of periods
       pkl_skimmed_merge_for_ml: ['${USER}/lcjet/pklskml'] #list of periods
@@ -395,7 +395,7 @@ Lcpp_jet:
         par_start: {1: 2.286}
         # par_fix:
         par_constrain: {2: [0, .1]}
-        range: [1.9, 2.6]
+        range: [2., 2.5]
       mass_fit_lim: [1.9, 2.6] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
 
