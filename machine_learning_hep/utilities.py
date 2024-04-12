@@ -20,13 +20,11 @@ import multiprocessing as mp
 from datetime import datetime
 import pickle
 import bz2
-import glob
 import gzip
 import lzma
 import time
 import os
 import sys
-import shutil
 import math
 from array import array
 import numpy as np
@@ -48,22 +46,31 @@ logger = get_logger()
 # pylint: disable=line-too-long, consider-using-f-string, too-many-lines
 # pylint: disable=unspecified-encoding, consider-using-generator, invalid-name, import-outside-toplevel
 
-# TODO: check usage of df and/or arrays
-def fill_hist(hist, arr, weights = None, write = False):
-    assert arr.ndim in [1, 2], 'fill_hist requires 1- or 2-d array'
-    if len(arr) == 0:
+def fill_hist(hist, dfi: pd.DataFrame, weights = None, write = False):
+    """
+    Fill histogram from dataframe
+
+    :param hist: ROOT.TH1,2,3
+    :param dfi: dataframe with 1 to 3 columns
+    :param weights: weights per row
+    :param write: call Write() after filling
+    """
+    assert dfi.ndim == 1 or dfi.shape[1] in [1, 2, 3], 'fill_hist supports only 1-,2-,3-d histograms'
+    if len(dfi) == 0:
         return
-    if arr.ndim == 1:
-        hist.FillN(len(arr), np.float64(arr), weights or 0)
-    # TODO: check df shape
-    elif arr.ndim == 2:
-        hist.FillN(len(arr), np.float64(arr.iloc[:, 0]), np.float64(arr.iloc[:, 1]),
-                   weights or np.float64(len(arr)*[1.]))
+    if dfi.ndim == 1:
+        hist.FillN(len(dfi), np.float64(dfi), weights or 0)
+    elif dfi.shape[1] == 2:
+        hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]),
+                   weights or np.float64(len(dfi)*[1.]))
+    elif dfi.shape[1] == 3:
+        hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]), np.float64(dfi.iloc[:, 2]),
+                   weights or np.float64(len(dfi)*[1.]))
     if write:
         hist.Write()
 
 def hist2array(hist):
-    assert hist.GetDimension() == 1
+    assert hist.GetDimension() == 1, 'can only convert 1-d histogram'
     return [hist.GetBinContent(x) for x in range(hist.GetNbinsX())]
 
 def array2hist(arr, hist):
@@ -161,154 +168,28 @@ def selectdfrunlist(dfr, runlist, runvar):
 
 def count_df_length_pkl(*pkls):
     """
-    Count all entries in all pkls
+    Return total number of entries in all pkls
     """
-    count = 0
-    for pkl in pkls:
-        df = read_df(pkl)
-        count += len(df.index)
-    return count
+    return sum(len(read_df(pkl)) for pkl in pkls)
 
 def merge_method(listfiles, namemerged):
     """
-    Merge list of dataframes into one
+    Merge dataframes from all files and write to single file
     """
-    dflist = []
-    for myfilename in listfiles:
-        df = read_df(myfilename)
-        dflist.append(df)
-    dftot = pd.concat(dflist)
-    write_df(dftot, namemerged)
-
-def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disable=too-many-branches
-    """
-    List all files in a subdirectory structure
-    """
-    if not os.path.isdir(main_dir):
-        logger.error("input directory <%s> does not exist", main_dir)
-
-    files = glob.glob(f'{main_dir}/**/{filenameinput}', recursive=True)
-    listfolders = [os.path.relpath(os.path.dirname(file), main_dir) for file in files]
-
-    if select:
-        # Select only folders with a matching sub-string in their paths
-        list_folders_tmp = []
-        for sel_sub_string in select:
-            list_folders_tmp.extend([folder for folder in listfolders if sel_sub_string in folder])
-        listfolders = list_folders_tmp
-
-    if maxfiles != -1:
-        listfolders = listfolders[:maxfiles]
-
-    return  listfolders
-
-def create_folder_struc(maindir, listpath):
-    """
-    Reproduce the folder structure as input
-    """
-    for path in listpath:
-        path = path.split("/")
-        folder = maindir
-        for _, element in enumerate(path):
-            folder = os.path.join(folder, element)
-            if not os.path.exists(folder):
-                os.makedirs(folder)
-
-def checkdirlist(dirlist):
-    """
-    Checks if list of folder already exist, to not overwrite by accident
-    """
-    exfolders = 0
-    for mydir in dirlist:
-        if os.path.exists(mydir):
-            print("rm -rf ", mydir)
-            exfolders = exfolders - 1
-    return exfolders
-
-def checkdir(mydir):
-    """
-    Checks if folder already exist, to not overwrite by accident
-    """
-    exfolders = 0
-    if os.path.exists(mydir):
-        print("rm -rf ", mydir)
-        exfolders = -1
-    return exfolders
-
-def checkmakedir(mydir):
-    """
-    Makes directory using 'mkdir'
-    """
-    if os.path.exists(mydir):
-        logger.warning("Using existing folder %s", mydir)
-        return
-    logger.debug("creating folder %s", mydir)
-    os.makedirs(mydir)
-
-def checkmakedirlist(dirlist):
-    """
-    Makes directories from list using 'mkdir'
-    """
-    for mydir in dirlist:
-        checkmakedir(mydir)
-
-def delete_dir(path: str):
-    """
-    Delete directory if it exists. Return True if success, False otherwise.
-    """
-    if not os.path.isdir(path):
-        logger.warning("Directory %s does not exist", path)
-        return True
-    logger.warning("Deleting directory %s", path)
-    try:
-        shutil.rmtree(path)
-    except OSError:
-        logger.error("Error: Failed to delete directory %s", path)
-        return False
-    return True
-
-def delete_dirlist(dirlist: str):
-    """
-    Delete directories from list. Return True if success, False otherwise.
-    """
-    for path in dirlist:
-        if not delete_dir(path):
-            return False
-    return True
-
-def appendfiletolist(mylist, namefile):
-    """
-    Append filename to list
-    """
-    return [os.path.join(path, namefile) for path in mylist]
-
-def appendmainfoldertolist(prefolder, mylist):
-    """
-    Append base foldername to paths in list
-    """
-    return [os.path.join(prefolder, path) for path in mylist]
-
-def createlist(prefolder, mylistfolder, namefile):
-    """
-    Appends base foldername + filename in list
-    """
-    listfiles = appendfiletolist(mylistfolder, namefile)
-    listfiles = appendmainfoldertolist(prefolder, listfiles)
-    return listfiles
+    df_merged = pd.concat(read_df(filename) for filename in listfiles)
+    write_df(df_merged, namemerged)
 
 def seldf_singlevar(dataframe, var, minval, maxval):
     """
     Make projection on variable using [X,Y), e.g. pT or multiplicity
     """
-    dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)]
-    return dataframe
+    return dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)]
 
 def seldf_singlevar_inclusive(dataframe, var, minval, maxval):
     """
     Make projection on variable using [X,Y), e.g. pT or multiplicity
     """
-    dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] <= maxval)]
-    return dataframe
+    return dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] <= maxval)]
 
 def split_df_classes(dataframe_, var_class_, output_labels_):
     """
@@ -322,8 +203,7 @@ def createstringselection(var, low, high):
     Create string of main dataframe selection (e.g. pT)
     Used as suffix for storing ML plots
     """
-    string_selection = f"dfselection_{var}_{low:.1f}_{high:.1f}"
-    return string_selection
+    return f"dfselection_{var}_{low:.1f}_{high:.1f}"
 
 def mergerootfiles(listfiles, mergedfile, tmp_dir):
     """

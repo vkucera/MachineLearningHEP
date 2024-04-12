@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -24,8 +24,8 @@ import pandas as pd
 #pylint: disable=import-error, no-name-in-module, consider-using-f-string
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.utilities import selectdfrunlist
-from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, \
-        seldf_singlevar_inclusive, openfile
+from machine_learning_hep.utilities_files import create_folder_struc
+from machine_learning_hep.utilities import seldf_singlevar, seldf_singlevar_inclusive, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.utilities import fill_hist

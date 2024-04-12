@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -55,9 +55,8 @@ class MLLoggerFormatter(logging.Formatter):
     reset = '\x1b[0m'
 
     # Define default format string
-    def __init__(self, fmt=None,
-                 datefmt=None, style='%', color=False):
-        fmt = fmt or '%(levelname)s in %(pathname)s:%(lineno)d:\n ↳ %(message)s'
+    def __init__(self, fmt=None, datefmt=None, style='%', color=False):
+        fmt = fmt or '%(levelname)s %(asctime)s - %(pathname)s:%(lineno)d:\n ↳ %(message)s'
         logging.Formatter.__init__(self, fmt, datefmt, style)
         self.color = color
 
