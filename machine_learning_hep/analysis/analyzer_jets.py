@@ -194,6 +194,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             heff_match = h_match.Clone('hjeteff_match')
             heff_match.Sumw2()
             heff_match.Divide(h_gen)
+            self.heff = heff_match
             self._save_hist(h_gen, 'hjet_gen.png', 'mc')
             self._save_hist(h_det, 'hjet_det.png', 'mc')
             self._save_hist(heff, 'hjet_efficiency.png', 'mc')
