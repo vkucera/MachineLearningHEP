@@ -22,15 +22,15 @@ jobs:
     strategy:
       max-parallel: 6
       matrix:
-        os: [ubuntu-latest, macOS-latest]
-        python-version: [3.9]
+        os: [ubuntu-latest, macOS-13]
+        python-version: ['3.9']
         #test-tool: [pylint, flake8, pytest]
         test-tool: [pylint, pytest]
 
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
