@@ -12,14 +12,15 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+# pylint: disable=import-error, no-name-in-module, consider-using-f-string
+
 """
 main script for doing data processing, machine learning and analysis
 """
 import math
 import array
 import numpy as np
-# pylint: disable=import-error, no-name-in-module, consider-using-f-string
-from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utils.hist import fill_hist
 from machine_learning_hep.utilities import selectdfrunlist
@@ -210,6 +211,10 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                 df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
             else:
                 df_reco_sel_fd = df_reco_presel_fd.copy()
+
+            if self.do_custom_analysis_cuts:
+                df_reco_sel_pr = self.apply_cuts_ptbin(df_reco_sel_pr, ipt)
+                df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_sel_fd, ipt)
 
             val = len(df_gen_sel_pr)
             err = math.sqrt(val)
