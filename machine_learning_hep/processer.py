@@ -198,9 +198,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 bin_id = bin_matching[i]
                 self.lpt_probcutfin.append(lpt_probcutfin_tmp[bin_id])
 
-        if self.mltype != "MultiClassification":
-            if self.lpt_probcutfin < self.lpt_probcutpre:
-                print("FATAL error: probability cut final must be tighter!")
+        if self.mltype == "MultiClassification":
+            for probcutfin, probcutpre in zip(self.lpt_probcutfin, self.lpt_probcutpre):
+                if probcutfin[0] > probcutpre[0] or probcutfin[1] < probcutpre[1] or probcutfin[2] < probcutpre[2]:
+                    self.logger.fatal("Probability cut final: %s must be tighter than presel %s!\n" \
+                            "Verify that bkg prob presel > final, and other cuts presel < final",
+                            self.lpt_probcutfin, self.lpt_probcutpre)
+        elif self.lpt_probcutfin < self.lpt_probcutpre:
+            self.logger.fatal("Probability cut final: %s must be tighter (smaller values) than presel %s!",
+                    self.lpt_probcutfin, self.lpt_probcutpre)
 
         if self.mltype == "MultiClassification":
             self.l_selml = []
