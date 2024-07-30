@@ -4,14 +4,14 @@ download:
     activate: false
 conversion: # pkl
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: false
@@ -60,18 +60,13 @@ analysis:
   doperperiod: false
   data:
     histomass: true # processer: process_histomass
-    dojetsystematics: false # analyzer: jetsystematics
   mc:
     histomass: true # processer: process_histomass
     efficiency: true # processer: process_efficiency
-    efficiency_resp: false # analyzer: efficiency
-    response: false # processer: process_response
-    feeddown: false # analyzer: feeddown
-    dounfolding: false # analyzer: unfolding, unfolding_closure
   steps: # list steps (name of method in analyzer) to run
     fit:
-    efficiency:
-    makenormyields:
+    # efficiency:
+    # makenormyields:
     init:
     qa:
     calculate_efficiencies:
