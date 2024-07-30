@@ -35,7 +35,7 @@ ml_study: # mlout, mlplot
   docorrelation: false
   dolearningcurve: false
   doapplytodatamc: false
-  doscancuts: false
+  doscancuts: false # up till here should work
   doefficiency: false
   dosignifopt: false
   doboundary: false
@@ -46,11 +46,11 @@ ml_study: # mlout, mlplot
 mlapplication:
   data:
     doapply: false # pkl_skimmed_dec (pklskdec)
-    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged) NOT NEEDED
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
     doapply: false # pkl_skimmed_dec (pklskdec)
-    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged) NOT NEEDED
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
@@ -59,20 +59,25 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: false # processer: process_histomass
+    histomass: true # processer: process_histomass
+    dojetsystematics: false # analyzer: jetsystematics
   mc:
-    histomass: false # processer: process_histomass
-    efficiency: false # processer: process_efficiency
+    histomass: true # processer: process_histomass
+    efficiency: true # processer: process_efficiency
+    efficiency_resp: false # analyzer: efficiency
+    response: false # processer: process_response
+    feeddown: false # analyzer: feeddown
+    dounfolding: false # analyzer: unfolding, unfolding_closure
   steps: # list steps (name of method in analyzer) to run
     fit:
-    #efficiency:
-    #makenormyields:
-    #init:
-    #qa:
-    #calculate_efficiencies:
-    #estimate_feeddown:
-    #subtract_sidebands:
-    #extract_signals:
+    efficiency:
+    makenormyields:
+    init:
+    qa:
+    calculate_efficiencies:
+    estimate_feeddown:
+    subtract_sidebands:
+    extract_signals:
 
 systematics:
   cutvar:
