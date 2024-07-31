@@ -486,13 +486,13 @@ LcJet_pp:
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME
-        results: ['/home/${USER}/mlhep/data/test/lcjet/resultsMBjetvspt'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/data/test/lcjet/resultsMBjetvspt_all'
+        results: ['/home/${USER}/mlhep/data/test/lcjet/jet_obs/default/default/resultsMBjetvspt'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/data/test/lcjet/jet_obs/default/default/resultsMBjetvspt_all'
       mc: &mc_out_default
         runselection: [null,null] #FIXME
-        results: ['/home/${USER}/mlhep/data/mctest/lcjet/prod_LHC24d3a/resultsMBjetvspt',
-                  '/home/${USER}/mlhep/data/mctest/lcjet/prod_LHC24d3b/resultsMBjetvspt'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/data/mctest/lcjet/resultsMBjetvspt_all'
+        results: ['/home/${USER}/mlhep/data/mctest/lcjet/jet_obs/prod_LHC24d3a/default/default/resultsMBjetvspt',
+                  '/home/${USER}/mlhep/data/mctest/lcjet/jet_obs/prod_LHC24d3b/default/default/resultsMBjetvspt'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/data/mctest/lcjet/jet_obs/default/default/resultsMBjetvspt_all'
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -569,6 +569,19 @@ LcJet_pp:
 
     jet_qa:
       <<: *jet_default
+      data: &data_out_default_qa
+        runselection: [null] #FIXME
+        results: ['/home/${USER}/mlhep/data/test/lcjet/jet_qa/default/default/resultsMBjetvspt'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/data/test/lcjet/jet_qa/default/default/resultsMBjetvspt_all'
+      mc: &mc_out_default_qa
+        runselection: [null,null] #FIXME
+        results: ['/home/${USER}/mlhep/data/mctest/lcjet/jet_qa/default/default/prod_LHC24d3a/resultsMBjetvspt',
+                  '/home/${USER}/mlhep/data/mctest/lcjet/jet_qa/default/default/prod_LHC24d3b/resultsMBjetvspt'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/data/mctest/lcjet/jet_qa/default/default/resultsMBjetvspt_all'
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_default_qa
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_default_qa
 
     jet_rg:
       <<: *jet_default
