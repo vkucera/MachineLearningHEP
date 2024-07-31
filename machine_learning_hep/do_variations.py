@@ -392,11 +392,11 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
                         (timestamp, analysis, cat, format_varname(var, index, n_var))
                     print("Logfile: %s" % logfile)
                     if script_name:
-                        script_lines.append("python do_entire_analysis.py " \
+                        script_lines.append("mlhep " \
                             "-a %s -r %s -d %s -c > %s 2>&1\n" % (analysis, config, yaml_out, logfile))
                     else:
                         with open(logfile, "w") as ana_out:
-                            subprocess.Popen(shlex.split("python do_entire_analysis.py " \
+                            subprocess.Popen(shlex.split("mlhep " \
                                 "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)), \
                                 stdout=ana_out, stderr=ana_out, universal_newlines=True)
 
