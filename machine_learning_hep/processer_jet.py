@@ -189,8 +189,21 @@ class ProcesserJets(Processer):
 
             if self.mcordata == 'mc':
                 df, _ = self.split_df(df, self.cfg('frac_mcana', .2))
-            if len(df) == 0:
-                return
+                if len(df) == 0:
+                    return
+                # print('MC det', df.index.get_level_values(0).unique(), flush=True)
+                if f := self.cfg('closure.exclude_feeddown_det'):
+                    self.logger.info('excluding feeddown det')
+                    dfquery(df, f, inplace=True)
+                if f := self.cfg('closure.filter_reflections'):
+                    self.logger.info('excluding reflections')
+                    dfquery(df, f, inplace=True)
+                if self.cfg('closure.use_matched'):
+                    self.logger.info('using matched')
+                    if idx := self.cfg('efficiency.index_match'):
+                        df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
+                        dfquery(df, 'idx_match >= 0', inplace=True)
+
             # remove entries that would end up in under-/overflow bins to save compute time
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
@@ -251,9 +264,10 @@ class ProcesserJets(Processer):
             if not '-' in var}
         h_mctruth = {
             (cat, var): create_hist(
-                f'h_mctruth_{cat}_{var}',
-                f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
-                self.binarray_ptjet, self.binarrays_obs[var])
+                # f'h_mctruth_{cat}_{var}',
+                f'h_ptjet-pthf-{var}_{cat}_gen',
+                f";p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}",
+                self.binarray_ptjet, self.binarray_pthf, self.binarrays_obs[var])
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
         response_matrix = {
@@ -329,15 +343,21 @@ class ProcesserJets(Processer):
                 # TODO: add support for more complex observables
                 if '-' in var or self.cfg(f'observables.{var}.arraycols'):
                     continue
+
+                if self.cfg('closure.use_matched'):
+                    self.logger.info('using matched for truth')
+                    df_mcana, _ = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
+                else:
+                    df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
+                if f := self.cfg('closure.exclude_feeddown_gen'):
+                    self.logger.info('excluding feeddown gen')
+                    dfquery(df_mcana, f, inplace=True)
+                fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
+
                 if cat in dfmatch and dfmatch[cat] is not None:
                     self._prepare_response(dfmatch[cat], h_effkine, h_response, response_matrix, cat, var)
-
-                    # TODO: switch to matched sample if needed
-                    # dfgen[cat].info()
-                    # dfana = dfquery(dfgen[cat], '(isd0_gen & seld0_gen) or (isd0bar_gen & seld0bar_gen)')
-                    df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
-                    fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', f'{var}_gen']])
-                    _, df_mccorr = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
+                    f = self.cfg('frac_mcana', .2)
+                    _, df_mccorr = self.split_df(dfmatch[cat], f if f < 1. else 0.)
                     self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, response_matrix_frac, cat, var)
 
             for name, obj in itertools.chain(
@@ -357,6 +377,7 @@ class ProcesserJets(Processer):
         var_max = max(self.binarrays_obs[var])
 
         df = dfi
+        # TODO: check ptjet/shape ranges
         df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
                     (df[var] >= var_min) & (df[var] < var_max)]
         fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])

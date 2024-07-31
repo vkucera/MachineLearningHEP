@@ -31,10 +31,16 @@ class RooFitter:
             if comp == 'model':
                 model = fn
         m = ws.var(var_m)
-        if range_m := fit_spec.get('range'):
-            m.setRange(range_m[0], range_m[1])
+        # if range_m := fit_spec.get('range'):
+        #     m.setRange(range_m[0], range_m[1])
         dh = ROOT.RooDataHist("dh", "dh", [m], Import=hist)
-        res = model.fitTo(dh, Save=True, PrintLevel=-1)
+        if range_m := fit_spec.get('range'):
+            m.setRange('fit', *range_m)
+            # print(f'using fit range: {range_m}, var range: {m.getRange("fit")}')
+            res = model.fitTo(dh, Range=(range_m[0], range_m[1]), Save=True, PrintLevel=-1)
+            # model.Print('v')
+        else:
+            res = model.fitTo(dh, Save=True, PrintLevel=-1)
         frame = m.frame() if plot else None
         if plot:
             dh.plotOn(frame)

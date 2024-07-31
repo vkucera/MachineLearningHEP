@@ -74,7 +74,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_range = {}
         self.hcandeff = None
         self.hcandeff_np = None
-        self.hfeeddown_det = {}
+        self.hfeeddown_det = { 'mc': {}, 'data': {}}
         self.n_events = {}
         self.n_colls = {}
 
@@ -139,6 +139,33 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         hproj = project_hist(h, axes[3:], {1: [2,2]}) # temporary select higher jet pt bin
                         self._save_hist(hproj, f'qa/h_{var}_{mcordata}.png')
 
+        with TFile(self.n_fileeff) as rfile:
+            for var in self.observables['all']:
+                if '-' in var:
+                    continue
+                h_gen = []
+                h_ineff = {'pr': [], 'np': []}
+                for cat in ('pr', 'np'):
+                    if fh := rfile.Get(f'h_ptjet-pthf-{var}_{cat}_gen'):
+                        h_gen.append(fh)
+                        for ipt in range(self.nbins):
+                            h = project_hist(fh, [0, 2], {1: (ipt+1, ipt+1)})
+                            self._save_hist(h, f'qa/h_ptjet-{var}_{cat}_gen_ptbin{ipt}.png')
+                            h = h.Clone()
+                            h.Scale(self.hcandeff[ipt+1] if cat == 'pr' else self.hcandeff_np[ipt+1])
+                            self._save_hist(h, f'qa/h_ptjet-{var}_{cat}_exp_ptbin{ipt}.png')
+                            h_ineff[cat].append(h)
+                    else:
+                        self.logger.error('could not find %s', f'h_ptjet-pthf-{var}_{cat}_gen')
+                        rfile.ls()
+
+                h_sum = sum_hists(h_gen)
+                for ipt in range(self.nbins):
+                    h = project_hist(h_sum, [0, 2], {1: (ipt+1, ipt+1)})
+                    self._save_hist(h, f'qa/h_ptjet-{var}_all_gen_ptbin{ipt}.png')
+
+                    h_exp = sum_hists([h_ineff['pr'][ipt], h_ineff['np'][ipt]])
+                    self._save_hist(h_exp, f'qa/h_ptjet-{var}_all_exp_ptbin{ipt}.png')
 
     #region efficiency
     def calculate_efficiencies(self):
@@ -146,7 +173,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         cats = {'pr', 'np'}
         rfilename = self.n_fileeff
         with TFile(rfilename) as rfile:
-            bins_ptjet = (2, 3)
+            bins_ptjet = (1, 4)
             # TODO: fix projection range
             h_gen = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_gen'), [1], {0: bins_ptjet}) for cat in cats}
             h_det = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_det'), [1], {0: bins_ptjet}).Clone(f'h_eff_{cat}')
@@ -181,7 +208,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             return
 
         self.logger.debug('scaling hist %s (ipt %i) with 1. / %g', hist.GetName(), ipt, eff)
-        hist.Scale(1.0 / eff)
+        hist.Scale(1. / eff)
 
 
     #region fitting
@@ -303,6 +330,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                             f'roofit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
                         # if level == 'mc':
                         #     roo_ws.Print()
+                        # TODO: save snapshot per level
+                        # roo_ws.saveSnapshot(level, None)
                         self.roo_ws[level][ipt] = roo_ws
                         self.roows[ipt] = roo_ws
                         if roo_res.status() == 0:
@@ -313,13 +342,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                             var_m = fitcfg.get('var', 'm')
                             if roo_ws.pdf("bkg"):
                                 self.fit_func_bkg[level][ipt] = roo_ws.pdf("bkg").asTF(roo_ws.var(var_m))
-                            self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin(), roo_ws.var(var_m).getMax())
+                            self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin('fit'),
+                                                          roo_ws.var(var_m).getMax('fit'))
+                            self.logger.info('fit range for %s-%i: %s', level, ipt, self.fit_range[level][ipt])
                         else:
                             self.logger.error('RooFit failed for %s bin %d', level, ipt)
 
 
     #region sidebands
-    # pylint: disable=too-many-branches,too-many-statements
+    # pylint: disable=too-many-branches,too-many-statements,too-many-locals
     def _subtract_sideband(self, hist, var, mcordata, ipt):
         """
         Subtract sideband distributions, assuming mass on first axis
@@ -332,7 +363,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self._save_hist(hist, f'sideband/h_mass-ptjet{label}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
 
         mean = self.fit_mean[mcordata][ipt]
+        # self.logger.info('means %g, %g', mean, self.roows[ipt].var('mean').getVal())
         sigma = self.fit_sigma[mcordata][ipt]
+        # self.logger.info('sigmas %g, %g', sigma, self.roows[ipt].var('sigma_g1').getVal())
         fit_range = self.fit_range[mcordata][ipt]
         if mean is None or sigma is None or fit_range is None:
             self.logger.error('no fit parameters for %s bin %d', hist.GetName(), ipt)
@@ -353,7 +386,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             'sideband_right': (mean + regcfg['right'][0] * sigma, mean + regcfg['right'][1] * sigma)
         }
         if regions['sideband_left'][1] < fit_range[0] or regions['sideband_right'][0] > fit_range[1]:
-            # TODO: restore to critical
+            # TODO: change back to critical
             self.logger.error('sidebands %s not in fit range %s, fix regions!', regions, fit_range)
         for reg, lim in regions.items():
             if lim[0] < fit_range[0] or lim[1] > fit_range[1]:
@@ -364,9 +397,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         bins = {key: tuple(map(axis.FindBin, region)) for key, region in regions.items()}
         limits = {key: (axis.GetBinLowEdge(bins[key][0]), axis.GetBinUpEdge(bins[key][1]))
                   for key in regions}
+        self.logger.info('Using for %s-%i: %s, %s', mcordata, ipt, regions, limits)
 
         fh = {}
         area = {}
+        var_m = self.roows[ipt].var("m")
         for region in regions:
             # project out the mass regions (first axis)
             axes = list(range(get_dim(hist)))[1:]
@@ -376,6 +411,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
             area[region] = f.Integral(*limits[region])
 
+        self.logger.info('areas for %s-%s: %g, %g, %g',
+                         mcordata, ipt, area['signal'], area['sideband_left'], area['sideband_right'])
         areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
 
         fh_sideband = sum_hists(
@@ -384,13 +421,59 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         fh_subtracted = fh['signal'].Clone(f'h_ptjet{label}_subtracted_{ipt}_{mcordata}')
         ensure_sumw2(fh_subtracted)
-        fh_subtracted.Add(fh_sideband, -areaNormFactor)
+        if mcordata == 'data' or not self.cfg('closure.exclude_feeddown_det'):
+            fh_subtracted.Add(fh_sideband, -areaNormFactor)
+
+        roows = self.roows[ipt]
+        roows.var('mean').setVal(self.fit_mean[mcordata][ipt])
+        roows.var('sigma_g1').setVal(self.fit_sigma[mcordata][ipt])
+        var_m.setRange('signal', *limits['signal'])
+        var_m.setRange('sidel', *limits['sideband_left'])
+        var_m.setRange('sider', *limits['sideband_right'])
+        # correct for reflections
+        if self.cfg('corr_refl') and (mcordata == 'data' or not self.cfg('closure.filter_reflections')):
+            pdf_sig = self.roows[ipt].pdf('sig')
+            pdf_refl = self.roows[ipt].pdf('refl')
+            pdf_bkg = self.roows[ipt].pdf('bkg')
+            frac_sig = roows.var('frac').getVal() if mcordata == 'data' else 1.
+            frac_bkg = 1. - frac_sig
+            fac_sig = frac_sig * (1. - roows.var('frac_refl').getVal())
+            fac_refl = frac_sig * roows.var('frac_refl').getVal()
+            fac_bkg = frac_bkg
+
+            area_sig_sig = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m),
+                                                  ROOT.RooFit.Range('signal')).getVal() * fac_sig
+            area_refl_sig = pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m),
+                                                    ROOT.RooFit.Range('signal')).getVal() * fac_refl
+            area_refl_sidel = pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m),
+                                                      ROOT.RooFit.Range('sidel')).getVal() * fac_refl
+            area_refl_sider = pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m),
+                                                      ROOT.RooFit.Range('sider')).getVal() * fac_refl
+            area_refl_side = area_refl_sidel + area_refl_sider
+            area_bkg_sig = pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m),
+                                                  ROOT.RooFit.Range('signal')).getVal() * fac_bkg
+            area_bkg_sidel = pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m),
+                                                    ROOT.RooFit.Range('sidel')).getVal() * fac_bkg
+            area_bkg_sider = pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m),
+                                                    ROOT.RooFit.Range('sider')).getVal() * fac_bkg
+            area_bkg_side = area_bkg_sidel + area_bkg_sider
+
+            scale_bkg = area_bkg_sig / area_bkg_side if mcordata == 'data' else 1.
+            corr = area_sig_sig / (area_sig_sig + area_refl_sig - area_refl_side * scale_bkg)
+            self.logger.info('Correcting %s-%i for reflections with factor %g', mcordata, ipt, corr)
+            fh_subtracted.Scale(corr)
+
         # clip negative values to 0
         for ibin in range(fh_subtracted.GetNcells()):
             if fh_subtracted.GetBinContent(ibin) < 0:
                 fh_subtracted.SetBinContent(ibin, 0.)
                 fh_subtracted.SetBinError(ibin, 0.)
-        fh_subtracted.Scale(1.0 / 0.954) # TODO: calculate from region
+
+        pdf_sig = self.roows[ipt].pdf('sig')
+        frac_sig = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal()
+        self.logger.info('correcting %s-%i for fractional signal area: %g', mcordata, ipt, frac_sig)
+
+        fh_subtracted.Scale(1. / frac_sig)
         self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
 
         if get_dim(hist) == 2: # TODO: extract 1d distribution also in case of higher dimension
@@ -416,6 +499,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 for var in [None] + self.observables['all']:
+                    self.logger.info('Running analysis for %s using %s', var, method)
                     label = f'-{var}' if var else ''
                     self.logger.debug('looking for %s', f'h_mass-ptjet-pthf{label}')
                     if fh := rfile.Get(f'h_mass-ptjet-pthf{label}'):
@@ -425,18 +509,23 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         for ipt in range(self.nbins):
                             h = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
                             ensure_sumw2(h)
-                            if method == 'sidesub':
+                            if mcordata == 'mc' and self.cfg('closure.pure_signal'):
+                                self.logger.info('assuming pure signal, projecting hist')
+                                h = project_hist(h, axes_proj[1:], {})
+                            elif method == 'sidesub':
                                 h = self._subtract_sideband(h, var, mcordata, ipt)
                             elif method == 'sigextr':
                                 h = self._extract_signal(h, var, mcordata, ipt)
                             else:
                                 self.logger.critical('invalid method %s', method)
-                            self._correct_efficiency(h, ipt)
+                            if mcordata == 'data' or not self.cfg('closure.use_matched'):
+                                self.logger.info('correcting efficiency')
+                                self._correct_efficiency(h, ipt)
                             fh_sub.append(h)
                         fh_sum = sum_hists(fh_sub)
                         self._save_hist(fh_sum, f'h_ptjet{label}_{method}_effscaled_{mcordata}.png')
 
-                        if mcordata == 'data':
+                        if mcordata == 'data': # TODO: temporary
                             self._subtract_feeddown(fh_sum, var, mcordata)
                         self._save_hist(fh_sum, f'h_ptjet{label}_{method}_{mcordata}.png')
 
@@ -525,7 +614,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             powheg_xsection = rfile.Get('fHistXsection')
             powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
         self.logger.info('powheg scale factor %g', powheg_xsection_scale_factor)
-        self.logger.info('number of collisions %g', self.n_colls['data'])
+        self.logger.info('number of collisions in data: %g', self.n_colls['data'])
+        self.logger.info('number of collisions in MC: %g', self.n_colls['mc'])
 
         df = pd.read_parquet(self.cfg('fd_parquet'))
         col_mapping = {'dr': 'delta_r_jet', 'zpar': 'z'} # TODO: check mapping
@@ -608,21 +698,26 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 hfeeddown_det.Divide(hkinematiceff_np_detgencuts)
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_kineeffscaled.png')
 
-                hfeeddown_det.Scale(self.cfg('branching_ratio'))
                 # TODO: check scaling
-                hfeeddown_det.Scale(self.n_colls['data'] * powheg_xsection_scale_factor /
-                                    self.cfg('xsection_inel'))
+                hfeeddown_det.Scale(powheg_xsection_scale_factor * self.cfg('branching_ratio'))
+                hfeeddown_det_mc = hfeeddown_det.Clone()
+                hfeeddown_det_mc.SetName(hfeeddown_det_mc.GetName() + '_mc')
+                hfeeddown_det.Scale(self.n_colls['data'] / self.cfg('xsection_inel'))
+                hfeeddown_det_mc.Scale(self.n_colls['mc'] / self.cfg('xsection_inel_mc'))
+
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final.png')
-                self.hfeeddown_det[var] = hfeeddown_det
+                self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final_mc.png')
+                self.hfeeddown_det['data'][var] = hfeeddown_det
+                self.hfeeddown_det['mc'][var] = hfeeddown_det_mc
 
 
     def _subtract_feeddown(self, hist, var, mcordata):
     # TODO: store and retrieve for correct variable
-        if var not in self.hfeeddown_det:
+        if var not in self.hfeeddown_det[mcordata]:
             if var is not None:
                 self.logger.error('No feeddown information available for %s, cannot subtract', var)
             return
-        if h_fd := self.hfeeddown_det[var]:
+        if h_fd := self.hfeeddown_det[mcordata][var]:
             if get_dim(hist) == 1:
                 h_fd = project_hist(h_fd, [0], {})
             assert get_dim(h_fd) == get_dim(hist)
@@ -633,7 +728,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
     #region unfolding
     def _unfold(self, hist, var, mcordata):
-        self.logger.info('Unfolding for %s', var)
+        self.logger.debug('Unfolding for %s', var)
         suffix = '_frac' if mcordata == 'mc' else ''
         with TFile(self.n_fileeff) as rfile:
             h_response = rfile.Get(f'h_response_pr_{var}{suffix}')
@@ -652,14 +747,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     np.asarray([hbin[0][0], hbin[1][0], hbin[2][0], hbin[3][0], hbin[4][0]], 'i'))
                 eff = self.hcandeff.GetBinContent(hbin[4][0])
                 for _ in range(int(n)):
-                    response_matrix_pr.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1], 1./eff)
+                    response_matrix_pr.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1],
+                                            1./eff if mcordata == 'data' else 1.)
 
             # response_matrix_pr = rfile.Get(f'h_effkine_pr_det_nocuts_{var}_h_effkine_pr_gen_nocuts_{var}')
 
             h_effkine_pr_detnogencuts = rfile.Get(f'h_effkine_pr_det_nocuts_{var}{suffix}')
             h_effkine_pr_detgencuts = rfile.Get(f'h_effkine_pr_det_cut_{var}{suffix}')
             ensure_sumw2(h_effkine_pr_detgencuts)
-
             h_effkine_pr_detgencuts.Divide(h_effkine_pr_detnogencuts)
             self._save_hist(h_effkine_pr_detgencuts, f'uf/h_effkine-ptjet-{var}_pr_det_{mcordata}.png', 'text')
 
@@ -677,6 +772,20 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             h_effkine_pr_gendetcuts.Divide(h_effkine_pr_gennodetcuts)
             self._save_hist(h_effkine_pr_gendetcuts, f'uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png', 'text')
 
+            # TODO: move, has nothing to do with unfolding
+            if mcordata == 'mc':
+                h_mctruth_pr = rfile.Get(f'h_ptjet-pthf-{var}_pr_gen')
+                if h_mctruth_pr:
+                    h_mctruth_pr = project_hist(h_mctruth_pr, [0, 2], {})
+                    self._save_hist(h_mctruth_pr, f'h_ptjet-{var}_pr_mctruth.png', 'text')
+                    h_mctruth_all = h_mctruth_pr.Clone()
+                    h_mctruth_np = rfile.Get(f'h_ptjet-pthf-{var}_np_gen')
+                    if h_mctruth_np:
+                        h_mctruth_np = project_hist(h_mctruth_np, [0, 2], {})
+                        self._save_hist(h_mctruth_np, f'h_ptjet-{var}_np_mctruth.png', 'text')
+                        h_mctruth_all.Add(h_mctruth_np)
+                        self._save_hist(h_mctruth_all, f'h_ptjet-{var}_all_mctruth.png', 'text')
+
             h_unfolding_output = []
             for n in range(self.cfg('unfolding_iterations', 8)):
                 unfolding_object = ROOT.RooUnfoldBayes(response_matrix_pr, fh_unfolding_input, n + 1)
@@ -688,11 +797,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 h_unfolding_output.append(fh_unfolding_output)
 
                 if mcordata == 'mc':
-                    h_mctruth = rfile.Get(f'h_mctruth_pr_{var}')
-                    if h_mctruth:
+                    if h_mctruth_pr:
                         h_mcunfolded = fh_unfolding_output.Clone()
-                        h_mcunfolded.Divide(h_mctruth)
+                        h_mcunfolded.Divide(h_mctruth_pr)
                         self._save_hist(h_mcunfolded, f'uf/h_ptjet-{var}_{mcordata}_closure{n}.png', 'text')
+                        for ibin in range(get_nbins(h_mcunfolded, 0)):
+                            h = project_hist(h_mcunfolded, [1], {0: (ibin+1,ibin+1)})
+                            self._save_hist(h, f'uf/h_{var}_{mcordata}_closure{n}_ptjet{ibin}.png', 'text')
                     else:
                         self.logger.error('Could not find histogram %s', f'h_mctruth_pr_{var}')
                         rfile.ls()

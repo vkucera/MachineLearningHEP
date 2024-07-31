@@ -394,6 +394,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             dfs[df_name][tag] = np.array(
                                 tag_bit_df(dfs[df_name], value['var'], value['req'], value.get('abs', False)),
                                 dtype=int)
+
                 if 'swap' in df_spec:
                     self.logger.debug(' %s -> swap', df_name)
                     spec = df_spec['swap']
