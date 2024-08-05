@@ -41,11 +41,17 @@ class RooFitter:
             # model.Print('v')
         else:
             res = model.fitTo(dh, Save=True, PrintLevel=-1)
-        frame = m.frame() if plot else None
+        frame = None
         if plot:
+            c = ROOT.TCanvas()
+            c.SetLogy()
+            c.cd()
+            frame = m.frame()
             dh.plotOn(frame)
             model.plotOn(frame)
-            model.paramOn(frame)
+            model.paramOn(frame, Layout=(.65,1.,.9))
+            frame.getAttText().SetTextFont(42)
+            frame.getAttText().SetTextSize(.03)
             try:
                 for pdf in model.pdfList():
                     model.plotOn(frame, ROOT.RooFit.Components(pdf),
@@ -59,6 +65,8 @@ class RooFitter:
             #     if comp != 'model':
             #         model.plotOn(frame, ROOT.RooFit.Components(comp),
             #                      ROOT.RooFit.LineStyle(ROOT.ELineStyle.kDashed))
+            # c.Modified()
+            # c.Update()
         return (res, ws, frame)
 
 
