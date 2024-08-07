@@ -1,7 +1,7 @@
 categories:
     default:
-        activate: no
-        processor: true
+        activate: yes
+        processor: false
         label: "default"
         correlation: "corr"
         rms: true
@@ -13,7 +13,7 @@ categories:
                 label: ["default"]
                 diffs: {}
     fitting:
-        activate: yes
+        activate: no
         processor: false
         label: "fitting"
         correlation: "corr"
@@ -22,14 +22,14 @@ categories:
         rms_both_sides: true
         variations:
             bkgfunc:
-                activate: [yes]
+                activate: [no]
                 label: ["bkg. func."]
                 diffs:
                     analysis:
                         jet_obs:
                             bkgfunc: [0]
             masspeak:
-                activate: [yes]
+                activate: [no]
                 label: ["mass peak"]
                 diffs:
                     analysis:
@@ -37,7 +37,7 @@ categories:
                             masspeak:    [2.2864]
                             masspeaksec: [2.2864]
             massmin:
-                activate: [yes, yes]
+                activate: [no, no]
                 label:
                     - "mass min. 2.18"
                     - "mass min. 2.16"
@@ -46,7 +46,7 @@ categories:
                         jet_obs:
                             massmin: [1.76, 1.74]
             massmax:
-                activate: [yes, yes]
+                activate: [no, no]
                 label:
                     - "mass max. 2.46"
                     - "mass max. 2.456"
@@ -62,7 +62,7 @@ categories:
                         jet_obs:
                             rebin: [12]
             fix_mean:
-                activate: [yes]
+                activate: [no]
                 label: ["fix mean"]
                 diffs:
                     analysis:
@@ -85,7 +85,7 @@ categories:
         rms_both_sides: true
         variations:
             sigma:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [no, no, no, no, no, no, no, no]
                 label:
                     - "#it{signal} = 1.6 #sigma"
                     - "#it{signal} = 1.7 #sigma"
@@ -101,26 +101,22 @@ categories:
                             signal_sigma: [1.6  , 1.7  , 1.8  , 1.9  , 2.1  , 2.2  , 2.3  , 2.4]
                             sigma_scale:  [0.890, 0.911, 0.928, 0.943, 0.964, 0.972, 0.979, 0.984]
             ranges:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [yes, yes]
                 label:
-                    - "#it{sb} = [8,4]#cup[4,8]"
-                    - "#it{sb} = [8,4]#cup[4,9]"
-                    - "#it{sb} = [9,4]#cup[4,8]"
-                    - "#it{sb} = [9,5]#cup[5,9]"
-                    - "#it{sb} = [9,4]#cup[5,9]"
-                    - "#it{sb} = [9,5]#cup[4,9]"
-                    - "#it{sb} = [9,4]#cup[5,8]"
-                    - "#it{sb} = [8,5]#cup[4,9]"
-                    - "#it{sb} = [9,7]#cup[4,9]"
-                    - "#it{sb} = [9,4]#cup[7,9]"
+                    - "#it{sb} = [-6,-3]#cup[3,6]"
+                    - "#it{sb} = [-5,-3]#cup[3,5]"
                 diffs:
                     analysis:
                         jet_obs:
-                            sideband_sigma_2_left:  [ 8 ,  8 , "#", "#", "#", "#", "#",  8 , "#", "#"]
-                            sideband_sigma_1_left:  ["#", "#", "#",  5 , "#",  5 , "#",  5 ,  7 , "#"]
-                            sideband_sigma_1_right: ["#", "#", "#",  5 ,  5 , "#",  5 , "#", "#",  7 ]
-                            sideband_sigma_2_right: [ 8 , "#",  8 , "#", "#", "#",  8 , "#", "#", "#"]
-
+                            sidesub:
+                                   - - regions:
+                                        left: [-6., -3.]
+                                        signal: [-2., 2.]
+                                        right: [3., 6.]
+                                   - - regions:
+                                        left: [-5., -3.]
+                                        signal: [-2., 2.]
+                                        right: [3., 5.]
             sb_left:
                 activate: [no]
                 label: ["left sb only"]
@@ -153,18 +149,28 @@ categories:
                 diffs:
                     analysis:
                         jet_obs:
-                            powheg_path_nonprompt:
-                                - /data/POWHEG/trees_powheg_fd_F1_R05.root
-                                - /data/POWHEG/trees_powheg_fd_F05_R1.root
-                                - /data/POWHEG/trees_powheg_fd_F2_R1.root
-                                - /data/POWHEG/trees_powheg_fd_F1_R2.root
-                                - /data/POWHEG/trees_powheg_fd_F2_R2.root
-                                - /data/POWHEG/trees_powheg_fd_F05_R05.root
-                                - /data/POWHEG/trees_powheg_fd_Mhigh.root
-                                - /data/POWHEG/trees_powheg_fd_Mlow.root
-                                - /data/POWHEG/trees_powheg_fd_NoEvtGen.root
+                            fd_root:
+                                - /data2/vkucera/powheg/trees_powheg_fd_F1_R05.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F05_R1.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F2_R1.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F1_R2.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F2_R2.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F05_R05.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_Mhigh.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_Mlow.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_NoEvtGen.root
+                            fd_parquet:
+                                - /data2/jklein/powheg/Lc_powheg_fd_F1_R05.parquet
+                                - /data2/jklein/powheg/Lc_powheg_fd_F05_R1.parquet
+                                - /data2/jklein/powheg/Lc_powheg_fd_F2_R1.parquet
+                                - /data2/jklein/powheg/Lc_powheg_fd_F1_R2.parquet
+                                - /data2/jklein/powheg/Lc_powheg_fd_F2_R2.parquet
+                                - /data2/jklein/powheg/Lc_powheg_fd_F05_R05.parquet
+                                - /data2/jklein/powheg/Lc_powheg_fd_Mhigh.parquet
+                                - /data2/jklein/powheg/Lc_powheg_fd_Mlow.parquet
+                                - /data2/jklein/powheg/Lc_powheg_fd_NoEvtGen.parquet
     prior:
-        activate: yes
+        activate: no
         processor: true
         label: "prior"
         correlation: "corr"
@@ -173,7 +179,7 @@ categories:
         rms_both_sides: true
         variations:
             flat:
-                activate: [yes]
+                activate: [no]
                 label: ["flat"]
                 diffs:
                     analysis:
@@ -181,7 +187,7 @@ categories:
                             doprior: [true]
                             niterunfoldingchosen: [4]
     regularisation:
-        activate: yes
+        activate: no
         processor: false
         label: "regularisation"
         correlation: "corr"
@@ -190,14 +196,14 @@ categories:
         rms_both_sides: true
         variations:
             iter:
-                activate: [yes, yes]
+                activate: [no, no]
                 label: ["down (3)", "up (7)"]
                 diffs:
                     analysis:
                         jet_obs:
                             niterunfoldingchosen: [3, 7]
     normalisation:
-        activate: yes
+        activate: no
         processor: false
         label: "#it{#sigma}_{MB}"
         correlation: "corr"
@@ -206,14 +212,14 @@ categories:
         rms_both_sides: true
         variations:
             crosssection:
-                activate: [yes, yes]
+                activate: [no, no]
                 label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
                 diffs:
                     analysis:
                         jet_obs:
                             xsection_inel: [54.91, 60.69]
     tracking:
-        activate: yes
+        activate: no
         processor: true
         label: "tracking eff."
         correlation: "corr"
@@ -222,7 +228,7 @@ categories:
         rms_both_sides: true
         variations:
             efficiency:
-                activate: [yes]
+                activate: [no]
                 label: ["eff. down"]
                 diffs:
                   multi:
@@ -255,7 +261,7 @@ categories:
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskdecmerged]] #list of periods
 
     binning:
-        activate: yes
+        activate: no
         processor: true
         label: "binning"
         correlation: "corr"
@@ -264,7 +270,7 @@ categories:
         rms_both_sides: true
         variations:
             pt_jet:
-                activate: [yes, yes, no, no]
+                activate: [no, no, no, no]
                 label:
                     - "#it{p}_{T}^{jet} 5#rightarrow4"
                     - "#it{p}_{T}^{jet} 35#rightarrow40"
@@ -279,7 +285,7 @@ categories:
                             sel_binmax2_gen:     ["#", [7,15,40], [5,7,15,35], [35]]
 
     cutvar:
-        activate: yes  # High RAM consumption
+        activate: no  # High RAM consumption
         processor: true
         label: "cuts"
         correlation: "corr"
@@ -288,7 +294,7 @@ categories:
         rms_both_sides: true
         variations:
             cutvar:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no]
                 label:
                     - "prob cut: 0.80"
                     - "prob cut: 0.79"
