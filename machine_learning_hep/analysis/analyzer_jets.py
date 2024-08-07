@@ -23,7 +23,7 @@ from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.fitting.roofitter import RooFitter
-from machine_learning_hep.utilities import folding
+from machine_learning_hep.utilities import folding, make_plot, draw_latex_lines, get_colour, get_marker
 from machine_learning_hep.utils.hist import (bin_array, create_hist,
                                              fill_hist_fast, get_axis, get_dim,
                                              get_nbins, project_hist,
@@ -37,14 +37,21 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         super().__init__(datap, case, typean, period)
 
         # output directories
-        self.d_resultsallpmc = (datap["analysis"][typean]["mc"]["results"][period]
+        self.d_resultsallpmc = (datap["analysis"][typean]["mc"]["results"][period] \
                                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"])
-        self.d_resultsallpdata = (datap["analysis"][typean]["data"]["results"][period]
+        self.d_resultsallpdata = (datap["analysis"][typean]["data"]["results"][period] \
                                   if period is not None else datap["analysis"][typean]["data"]["resultsallp"])
 
         # input directories (processor output)
         self.d_resultsallpmc_proc = self.d_resultsallpmc
         self.d_resultsallpdata_proc = self.d_resultsallpdata
+        # use a different processor output
+        if "data_proc" in datap["analysis"][typean]:
+            self.d_resultsallpdata_proc = datap["analysis"][typean]["data_proc"]["results"][period] \
+                    if period is not None else datap["analysis"][typean]["data_proc"]["resultsallp"]
+        if "mc_proc" in datap["analysis"][typean]:
+            self.d_resultsallpmc_proc = datap["analysis"][typean]["mc_proc"]["results"][period] \
+                if period is not None else datap["analysis"][typean]["mc_proc"]["resultsallp"]
 
         # input files
         n_filemass_name = datap["files_names"]["histofilename"]
@@ -86,6 +93,36 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.roo_ws_ptjet = {}
         self.roows = {}
 
+        # plotting
+        self.p_latexnhadron = self.cfg('latexnamehadron')
+        self.latex_labels_obs = { var: spec["label"] for var, spec in self.cfg('observables', {}).items() if '-' not in var and 'arraycols' not in spec}
+        self.latex_labels_y = { var: spec["label_y"] for var, spec in self.cfg('observables', {}).items() if '-' not in var and 'arraycols' not in spec}
+        self.text_range_pt_cand = f"{self.bins_candpt[0]:g} < #it{{p}}_{{T}}^{{{self.p_latexnhadron}}}/(GeV/#it{{c}}) < {self.bins_candpt[-1]:g}"
+
+        # official figures
+        self.size_can = [800, 800]
+        self.offsets_axes = [0.8, 1.1]
+        self.margins_can = [0.1, 0.13, 0.05, 0.03]
+        self.font_size = 0.035
+        self.opt_leg_g = "FP" # for systematic uncertainties in the legend
+        self.opt_plot_g = "2"
+        self.x_latex = 0.18
+        self.y_latex_top = 0.88
+        self.y_step = 0.05
+        # axes titles
+        # self.title_x = self.v_varshape_latex
+        # self.title_y = "(1/#it{N}_{jet}) d#it{N}/d%s" % self.v_varshape_latex
+        # self.title_full = ";%s;%s" % (self.title_x, self.title_y)
+        # self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
+        # text
+        self.text_alice = "#bf{ALICE} Preliminary, pp, #sqrt{#it{s}} = 13 TeV"
+        # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"
+        self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.p_latexnhadron
+        self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet ch}| < 0.5"
+        self.text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| < 0.8"
+        self.text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
+        self.text_acc_h = "|#it{y}| < 0.8"
+        self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
 
     #region helpers
     def _save_canvas(self, canvas, filename):
@@ -347,8 +384,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.roo_ws_ptjet[level] = [[None] * self.nbins] * 10
             rfilename = self.n_filemass_mc if "mc" in level else self.n_filemass
             fitcfg = None
+            self.logger.debug(f"Opening file {rfilename}.")
             with TFile(rfilename) as rfile:
-                h = rfile.Get('h_mass-ptjet-pthf')
+                if not rfile:
+                    self.logger.critical(f"File {rfilename} not found.")
+                name_histo = "h_mass-ptjet-pthf"
+                self.logger.debug(f"Opening histogram {name_histo}.")
+                h = rfile.Get(name_histo)
+                if not h:
+                    self.logger.critical(f"Histogram {name_histo} not found.")
                 for iptjet, ipt in itertools.product(itertools.chain((None,), range(1, get_nbins(h, 1) - 1)),
                                                      range(get_nbins(h, 2))):
                     self.logger.debug('fitting %s - %i', level, ipt)
@@ -496,7 +540,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             fh[region] = project_hist(hist, axes, {0: bins[region]})
             self.logger.info("Projecting %s to %s in %s: %g entries", hist, axes, bins[region], fh[region].GetEntries())
             self._save_hist(fh[region],
-                            f'sideband/h_ptjet{label}_{region}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
+                            f'sideband/h_ptjet{label}_{region}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png') # 2D
             # TODO: calculate areas per ptjet bin
             f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
             area[region] = f.Integral(*limits[region])
@@ -602,11 +646,42 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh_subtracted.Scale(1. / frac_sig)
         self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
 
+        if get_dim(hist) == 2: # TODO: extract 1d distribution also in case of higher dimension
+            c = TCanvas()
+            fh['signal'].SetLineColor(ROOT.kRed)
+            fh['signal'].Draw()
+            fh_sideband.SetLineColor(ROOT.kCyan)
+            fh_sideband.Draw("same")
+            fh_subtracted.Draw("same")
+            fh_subtracted.GetYaxis().SetRangeUser(
+                0., max(fh_subtracted.GetMaximum(), fh['signal'].GetMaximum(), fh_sideband.GetMaximum()))
+            self._save_canvas(c, f'sideband/h_ptjet{label}_overview_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
+        else:
+            # Make plot
+            leg_pos = [0.7, 0.8, 0.9, 0.9]
+            y_margin_up = 0.25
+            y_margin_down = 0.05
+            list_obj = [fh['signal'], fh_sideband, fh_subtracted]
+            list_obj = [project_hist(h, [1], {0: (1, 1)}) for h in list_obj]
+            labels_obj = ["total", "background", "signal"]
+            colours = [get_colour(i) for i in range(len(list_obj))]
+            markers = [get_marker(i) for i in range(len(list_obj))]
+            can, _ = make_plot(f'h_ptjet{label}_overview_{ptrange[0]}-{ptrange[1]}_{mcordata}',
+                                list_obj=list_obj,
+                                labels_obj=labels_obj,
+                                range_x=[0.3, 1],
+                                title=f";{self.latex_labels_obs[var]};yield",
+                                offsets_xy=self.offsets_axes, colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=self.margins_can)
+            # Draw LaTeX
+            l_latex = draw_latex_lines([self.text_jets, self.text_range_pt_cand], x=self.x_latex, y=self.y_latex_top, y_step=self.y_step, font_size=self.font_size)
+            can.SaveAs(f'fig/{self.case}/{self.typean}/sideband/{can.GetName()}.pdf')
+
         return fh_subtracted
 
 
     # region analysis
     def _analyze(self, method = 'sidesub'):
+        self.logger.info("Running analysis")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
@@ -621,6 +696,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         for ipt in range(self.nbins):
                             h_in = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
                             ensure_sumw2(h_in)
+                            # Signal extraction
                             if method == 'sidesub':
                                 h = self._subtract_sideband(h_in, var, mcordata, ipt)
                             elif method == 'sigextr':
@@ -640,6 +716,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 if self.cfg('closure.pure_signal'):
                                     self.logger.debug('assuming pure signal, using projection')
                                     h = h_proj
+                            # Efficiency correction
                             if mcordata == 'data' or not self.cfg('closure.use_matched'):
                                 self.logger.info('correcting efficiency')
                                 self._correct_efficiency(h, ipt)
@@ -660,6 +737,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 self._save_canvas(c, filename)
 
                         fh_sum_fdsub = fh_sum.Clone()
+                        # Feed-down subtraction
                         if mcordata == 'data' or not self.cfg('closure.exclude_feeddown_det'):
                             self._subtract_feeddown(fh_sum_fdsub, var, mcordata)
                         self._save_hist(fh_sum_fdsub, f'h_ptjet{label}_{method}_{mcordata}.png')
@@ -699,11 +777,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                             jetptrange = (axis_jetpt.GetBinLowEdge(j+1), axis_jetpt.GetBinUpEdge(j+1))
                             self._save_hist(
                                 hproj, f'uf/h_{var}_{method}_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}.png')
+                        # Unfolding
                         fh_unfolded = self._unfold(fh_sum, var, mcordata)
                         for i, h in enumerate(fh_unfolded):
                             self._save_hist(h, f'h_ptjet-{var}_{method}_unfolded_{mcordata}_{i}.png')
                         for j in range(get_nbins(h, 0)):
                             jetptrange = (axis_jetpt.GetBinLowEdge(j+1), axis_jetpt.GetBinUpEdge(j+1))
+                            text_range_pt_jet = f"{jetptrange[0]:g} < #it{{p}}_{{T}}^{{jet ch}}/(GeV/#it{{c}}) < {jetptrange[1]:g}"
                             c = TCanvas()
                             for i, h in enumerate(fh_unfolded):
                                 hproj = project_hist(h, [1], {0: (j+1, j+1)})
@@ -714,6 +794,23 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 c.cd()
                                 hcopy = hproj.DrawCopy('same' if i > 0 else '')
                                 hcopy.SetLineColor(i+1)
+                                # Normalise
+                                hproj.Scale(1. / hproj.Integral(), "width")
+                                # Make plot
+                                leg_pos=[0.7, 0.8, 0.9, 0.9]
+                                colours = [get_colour(0)]
+                                markers = [get_marker(0)]
+                                y_margin_up = 0.25
+                                y_margin_down = 0.05
+                                can, _ = make_plot(f"h_{var}_{method}_unfolded_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}",
+                                                   list_obj=[hproj],
+                                                   labels_obj=[f"{mcordata}"],
+                                                   range_x=[0.3, 1],
+                                                   title=f";{self.latex_labels_obs[var]};{self.latex_labels_y[var]}",
+                                                   offsets_xy=self.offsets_axes, colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=self.margins_can)
+                                # Draw LaTeX
+                                l_latex = draw_latex_lines([self.text_jets, text_range_pt_jet, self.text_range_pt_cand], x=self.x_latex, y=self.y_latex_top, y_step=self.y_step, font_size=self.font_size)
+                                can.SaveAs(f'fig/{self.case}/{self.typean}/{can.GetName()}.pdf')
                             self._save_canvas(c,
                                               f'uf/h_{var}_{method}_convergence_{mcordata}_' +
                                               f'jetpt-{jetptrange[0]}-{jetptrange[1]}.png')
