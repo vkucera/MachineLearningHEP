@@ -557,6 +557,15 @@ def draw_latex(latex, colour=1, textsize=0.03):
     latex.SetTextFont(42)
     latex.Draw()
 
+def draw_latex_lines(lines: "list[str]", x=0.18, y=0.85, y_step=0.05, font_size=0.04):
+    list_latex = []
+    for line in lines:
+        latex = TLatex(x, y, line)
+        list_latex.append(latex)
+        draw_latex(latex, textsize=font_size, colour=1)
+        y -= y_step
+    return list_latex
+
 def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
               list_obj=None, labels_obj=None,
               leg_pos=None, opt_leg_h="P", opt_leg_g="P",
@@ -820,7 +829,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
 
     # save canvas if necessary info provided
     if path and name and suffix:
-        can.SaveAs("{path}/{name}.{suffix}")
+        can.SaveAs(f"{path}/{name}.{suffix}")
 
     return can, list_new
 
