@@ -785,7 +785,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
     # get plotting y range
     y_min_plot, y_max_plot = y_min, y_max
     if isinstance(margins_y, list) and len(margins_y) == 2:
-        y_min_plot, y_max_plot = get_plot_range(y_min, y_max, *margins_y, log_y)
+        y_min_plot, y_max_plot = get_plot_range(y_min, y_max, margins_y[0], margins_y[1], log_y)
     if isinstance(range_y, list) and len(range_y) == 2:
         y_min_plot, y_max_plot = range_y
 
