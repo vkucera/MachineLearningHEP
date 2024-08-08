@@ -17,9 +17,11 @@ Methods to: manage input/output
 import os
 from numbers import Number
 from inspect import isclass
-from machine_learning_hep.logger import get_logger
 
 import yaml  # pylint: disable=import-error
+
+from machine_learning_hep.logger import get_logger
+
 
 def dict_yamlable(params):
     """make dictionary ready for yaml.safe_dump
