@@ -61,7 +61,7 @@ def parse_yaml(filepath):
 def dump_yaml_from_dict(to_yaml, path):
     path = os.path.expanduser(path)
     with open(path, "w") as stream:
-        yaml.safe_dump(to_yaml, stream, default_flow_style=False, allow_unicode=False)
+        yaml.safe_dump(to_yaml, stream, default_flow_style=False, allow_unicode=False, sort_keys=False)
 
 
 def checkdir(path):

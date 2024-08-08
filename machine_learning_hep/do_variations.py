@@ -296,7 +296,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
         msg_err("Bad structure.")
         sys.exit(1)
 
-    #print(yaml.safe_dump(dic_in, default_flow_style=False))
+    #print(yaml.safe_dump(dic_in, default_flow_style=False, sort_keys=False))
 
     new_files = [] # List of created database files.
     script_lines = [] # Execution lines written into a script.
@@ -306,7 +306,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
     yaml_out = yaml_in[:i_dot] + "_orig" + yaml_in[i_dot:]
     print("\nSaving the original database to %s" % yaml_out)
     with open(yaml_out, 'w') as file_out:
-        yaml.safe_dump(dic_in, file_out, default_flow_style=False)
+        yaml.safe_dump(dic_in, file_out, default_flow_style=False, sort_keys=False)
     new_files.append(yaml_out)
 
     if proc is not None:
@@ -366,7 +366,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
                     msg_warn("Empty diffs. No changes to make.")
                 modify_dictionary(dic_new, dic_var_single_slice)
 
-                #print(yaml.safe_dump(dic_db, default_flow_style=False))
+                #print(yaml.safe_dump(dic_db, default_flow_style=False, sort_keys=False))
 
                 # Save the new database.
                 i_dot = yaml_in.rfind(".") # Find the position of the suffix.
@@ -374,7 +374,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
                     (cat, format_varname(var, index, n_var)) + yaml_in[i_dot:]
                 print("Saving the new database to %s" % yaml_out)
                 with open(yaml_out, 'w') as file_out:
-                    yaml.safe_dump(dic_db, file_out, default_flow_style=False)
+                    yaml.safe_dump(dic_db, file_out, default_flow_style=False, sort_keys=False)
                 new_files.append(yaml_out)
 
                 # Start the analysis.
