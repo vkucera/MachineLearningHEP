@@ -557,13 +557,13 @@ def draw_latex(latex, colour=1, textsize=0.03):
     latex.SetTextFont(42)
     latex.Draw()
 
-def draw_latex_lines(lines: "list[str]", x=0.18, y=0.85, y_step=0.05, font_size=0.04):
+def draw_latex_lines(lines: "list[str]", x_start=0.18, y_start=0.85, y_step=0.05, font_size=0.04):
     list_latex = []
     for line in lines:
-        latex = TLatex(x, y, line)
+        latex = TLatex(x_start, y_start, line)
         list_latex.append(latex)
         draw_latex(latex, textsize=font_size, colour=1)
-        y -= y_step
+        y_start -= y_step
     return list_latex
 
 def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
