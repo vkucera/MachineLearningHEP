@@ -1,21 +1,21 @@
-#############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
-##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
-## This program is free software: you can redistribute it and/or modify it ##
-##  under the terms of the GNU General Public License as published by the  ##
-## Free Software Foundation, either version 3 of the License, or (at your  ##
-## option) any later version. This program is distributed in the hope that ##
-##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
-##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
-##           See the GNU General Public License for more details.          ##
-##    You should have received a copy of the GNU General Public License    ##
-##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
-#############################################################################
+#  © Copyright CERN 2018. All rights not expressly granted are reserved.  #
+#                 Author: Gian.Michele.Innocenti@cern.ch                  #
+# This program is free software: you can redistribute it and/or modify it #
+#  under the terms of the GNU General Public License as published by the  #
+# Free Software Foundation, either version 3 of the License, or (at your  #
+# option) any later version. This program is distributed in the hope that #
+#  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  #
+#     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+#           See the GNU General Public License for more details.          #
+#    You should have received a copy of the GNU General Public License    #
+#   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 """
 Script to run the analysis with variations of the database parameters
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
+
+# pylint: disable=consider-using-f-string
 
 import os
 import sys
@@ -25,7 +25,7 @@ import subprocess
 import shlex
 from copy import deepcopy
 import datetime
-import yaml
+import yaml  # pylint: disable=import-error
 
 def msg_err(message: str):
     '''Print an error message.'''
@@ -287,9 +287,9 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
 
 def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     '''Main function'''
-    with open(yaml_in, 'r') as file_in:
+    with open(yaml_in, 'r', encoding="utf-8") as file_in:
         dic_in = yaml.safe_load(file_in)
-    with open(yaml_diff, 'r') as file_diff:
+    with open(yaml_diff, 'r', encoding="utf-8") as file_diff:
         dic_diff = yaml.safe_load(file_diff)
 
     if not healthy_structure(dic_diff):
@@ -305,7 +305,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
     i_dot = yaml_in.rfind(".") # Find the position of the suffix.
     yaml_out = yaml_in[:i_dot] + "_orig" + yaml_in[i_dot:]
     print("\nSaving the original database to %s" % yaml_out)
-    with open(yaml_out, 'w') as file_out:
+    with open(yaml_out, 'w', encoding="utf-8") as file_out:
         yaml.safe_dump(dic_in, file_out, default_flow_style=False, sort_keys=False)
     new_files.append(yaml_out)
 
@@ -373,7 +373,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
                 yaml_out = yaml_in[:i_dot] + "_%s_%s" % \
                     (cat, format_varname(var, index, n_var)) + yaml_in[i_dot:]
                 print("Saving the new database to %s" % yaml_out)
-                with open(yaml_out, 'w') as file_out:
+                with open(yaml_out, 'w', encoding="utf-8") as file_out:
                     yaml.safe_dump(dic_db, file_out, default_flow_style=False, sort_keys=False)
                 new_files.append(yaml_out)
 
@@ -395,13 +395,13 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
                         script_lines.append("python do_entire_analysis.py " \
                             "-a %s -r %s -d %s -c > %s 2>&1\n" % (analysis, config, yaml_out, logfile))
                     else:
-                        with open(logfile, "w") as ana_out:
+                        with open(logfile, "w", encoding="utf-8") as ana_out:
                             subprocess.Popen(shlex.split("python do_entire_analysis.py " \
                                 "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)), \
                                 stdout=ana_out, stderr=ana_out, universal_newlines=True)
 
     if analysis and script_name:
-        with open(script_name, "w") as script_file:
+        with open(script_name, "w", encoding="utf-8") as script_file:
             script_file.writelines(script_lines)
             print(f"\nExecution lines written in {script_name}.")
 
