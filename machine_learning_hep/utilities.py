@@ -1,16 +1,14 @@
-#############################################################################
-##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
-##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
-## This program is free software: you can redistribute it and/or modify it ##
-##  under the terms of the GNU General Public License as published by the  ##
-## Free Software Foundation, either version 3 of the License, or (at your  ##
-## option) any later version. This program is distributed in the hope that ##
-##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
-##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
-##           See the GNU General Public License for more details.          ##
-##    You should have received a copy of the GNU General Public License    ##
-##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
-#############################################################################
+#  © Copyright CERN 2024. All rights not expressly granted are reserved.  #
+#                 Author: Gian.Michele.Innocenti@cern.ch                  #
+# This program is free software: you can redistribute it and/or modify it #
+#  under the terms of the GNU General Public License as published by the  #
+# Free Software Foundation, either version 3 of the License, or (at your  #
+# option) any later version. This program is distributed in the hope that #
+#  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  #
+#     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+#           See the GNU General Public License for more details.          #
+#    You should have received a copy of the GNU General Public License    #
+#   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 """
 Script containing all helper functions
@@ -28,9 +26,9 @@ import time
 from array import array
 from datetime import datetime
 
-import lz4
-import numpy as np
-import pandas as pd
+import lz4 # pylint: disable=import-error
+import numpy as np # pylint: disable=import-error
+import pandas as pd # pylint: disable=import-error
 from ROOT import (TH1, TH1F,  # pylint: disable=import-error, no-name-in-module
                   TCanvas, TGraph, TGraphAsymmErrors, TLatex, TLegend, TObject,
                   TRandom3, kBlack, kBlue, kCyan, kFullCircle, kFullCross,
@@ -368,10 +366,10 @@ def folding(h_input, response_matrix, h_output):
             err = 0.0
             index_x_out = a + h_output.GetNbinsX()*b
             for k in range(h_input.GetNbinsX()):
-                for l in range(h_input.GetNbinsY()):
-                    index_x_in = k + h_input.GetNbinsX()*l
-                    val += h_input.GetBinContent(k+1, l+1) * response_matrix(index_x_out, index_x_in)
-                    err += h_input.GetBinError(k+1, l+1)**2 * response_matrix(index_x_out, index_x_in)**2
+                for m in range(h_input.GetNbinsY()):
+                    index_x_in = k + h_input.GetNbinsX()*m
+                    val += h_input.GetBinContent(k+1, m+1) * response_matrix(index_x_out, index_x_in)
+                    err += h_input.GetBinError(k+1, m+1)**2 * response_matrix(index_x_out, index_x_in)**2
             h_output.SetBinContent(a+1, b+1, val)
             h_output.SetBinError(a+1, b+1, math.sqrt(err))
     return h_output
