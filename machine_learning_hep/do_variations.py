@@ -396,7 +396,8 @@ def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disa
                             "-a %s -r %s -d %s -c > %s 2>&1\n" % (analysis, config, yaml_out, logfile))
                     else:
                         with open(logfile, "w", encoding="utf-8") as ana_out:
-                            subprocess.Popen(shlex.split("python do_entire_analysis.py "  # pylint: disable=consider-using-with
+                            subprocess.Popen(  # pylint: disable=consider-using-with
+                                shlex.split("python do_entire_analysis.py "
                                 "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)),
                                 stdout=ana_out, stderr=ana_out, universal_newlines=True)
 
