@@ -642,7 +642,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
         if offsets_xy:
             graph.GetXaxis().SetTitleOffset(offsets_xy[0])
             graph.GetYaxis().SetTitleOffset(offsets_xy[1])
-        if leg and n_labels > counter_plot and isinstance(labels_obj, list[str]) and len(labels_obj[counter_plot]) > 0:
+        if leg and n_labels > counter_plot and isinstance(labels_obj, list) and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(graph, labels_obj[counter_plot], opt_leg_g)
         if isinstance(opt_plot_g, list):
             opt_plot = opt_plot_g
@@ -679,7 +679,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
             opt_leg = opt_leg_h
         else:
             opt_leg = [opt_leg_h]*(counter_plot+1)
-        if leg and n_labels > counter_plot and isinstance(labels_obj, list[str]) and len(labels_obj[counter_plot]) > 0:
+        if leg and n_labels > counter_plot and isinstance(labels_obj, list) and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg[counter_plot])
         print(f"Plotting {histogram.GetName()} with option {opt_plot[counter_plot]}")
         histogram.Draw(opt_plot[counter_plot])
