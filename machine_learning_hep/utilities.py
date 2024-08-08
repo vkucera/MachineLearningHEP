@@ -29,9 +29,9 @@ from datetime import datetime
 import lz4  # pylint: disable=import-error
 import numpy as np  # pylint: disable=import-error
 import pandas as pd  # pylint: disable=import-error
-from ROOT import TH1F  # pylint: disable=import-error, no-name-in-module
 from ROOT import (
     TH1,
+    TH1F,
     TCanvas,
     TGraph,
     TGraphAsymmErrors,
