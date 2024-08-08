@@ -692,7 +692,7 @@ def draw_latex_lines(lines: "list[str]", x_start=0.18, y_start=0.85, y_step=0.05
     return list_latex
 
 
-def make_plot( # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
+def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
     name,
     can=None,
     pad=0,
