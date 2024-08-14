@@ -704,12 +704,12 @@ D0jet_pp:
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME # used but useless
-        results: ['/home/${USER}/mlhep/data/test/d0jet/resultsMBjetvspt'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/data/test/d0jet/resultsMBjetvspt_all'
+        results: ['/home/${USER}/mlhep/d0jet/jet_obs/default/default/results'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/d0jet/jet_obs/default/default/results_all'
       mc: &mc_out_default
         runselection: [null] #FIXME # used but useless
-        results: ['/home/${USER}/mlhep/data/mctest/d0jet/resultsMBjetvspt'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/data/mctest/d0jet/resultsMBjetvspt_all'
+        results: ['/home/${USER}/mlhep/d0jet/jet_obs/default/default/results'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/d0jet/jet_obs/default/default/results_all'
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -780,8 +780,8 @@ D0jet_pp:
 
     # Rest is obsolete
 
-    jet_qa:
-      <<: *jet_default
+    # jet_qa:
+    #   <<: *jet_default
 
     jet_rg:
       <<: *jet_default
