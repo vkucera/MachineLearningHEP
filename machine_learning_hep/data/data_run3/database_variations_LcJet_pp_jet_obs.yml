@@ -109,11 +109,11 @@ categories:
                     analysis:
                         jet_obs:
                             sidesub:
-                                   - - regions:
+                                - - regions:
                                         left: [-6., -3.]
                                         signal: [-2., 2.]
                                         right: [3., 6.]
-                                   - - regions:
+                                - - regions:
                                         left: [-5., -3.]
                                         signal: [-2., 2.]
                                         right: [3., 5.]
@@ -124,7 +124,6 @@ categories:
                     analysis:
                         jet_obs:
                             sidebandleftonly: [true]
-
     feeddown:
         activate: yes
         processor: false
@@ -259,7 +258,6 @@ categories:
                       pkl_skimmed_decmerged: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pklskdecmerged,
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskdecmerged,
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskdecmerged]] #list of periods
-
     binning:
         activate: no
         processor: true
@@ -283,7 +281,6 @@ categories:
                             sel_binmax2_reco:    ["#", [7,15,40], [5,7,15,35], [35]]
                             sel_binmin2_gen:  [[4,7,15], "#", [4,5,7,15],  [5]]
                             sel_binmax2_gen:     ["#", [7,15,40], [5,7,15,35], [35]]
-
     cutvar:
         activate: no  # High RAM consumption
         processor: true

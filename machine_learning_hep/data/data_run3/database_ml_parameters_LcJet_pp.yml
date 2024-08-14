@@ -569,8 +569,8 @@ LcJet_pp:
       # - Null
       # - Null
 
-    jet_qa:
-      <<: *jet_default
+    # jet_qa:
+    #   <<: *jet_default
 
     jet_rg:
       <<: *jet_default

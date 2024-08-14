@@ -10,9 +10,9 @@ CONFIG="lcjet"
 
 # Config file suffix
 # STAGE="complete"
-STAGE="all"
+# STAGE="all"
 # STAGE="ana"
-# STAGE="variations"
+STAGE="variations"
 
 # Suffix of the analysis database
 # DATABASE="D0Jet_pp"
