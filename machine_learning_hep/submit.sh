@@ -27,7 +27,8 @@ DB_DEFAULT="${DIR_THIS}/${DBDIR}/database_ml_parameters_${DATABASE}.yml"
 if [[ "${STAGE}" == "variations" ]]; then
     echo "Running the variation script for the ${ANALYSIS} analysis from ${DATABASE}"
     DB_VARIATION="${DIR_THIS}/${DBDIR}/database_variations_${DATABASE}_${ANALYSIS}.yml"
-    "${DIR_THIS}/submit_variations.sh" "${DB_DEFAULT}" "${DB_VARIATION}" "${ANALYSIS}"
+    CONFIG_FILE="${DIR_THIS}/submission/${CONFIG}_all.yml"
+    "${DIR_THIS}/submit_variations.sh" "${DB_DEFAULT}" "${DB_VARIATION}" "${ANALYSIS}" "${CONFIG_FILE}"
 else
     CONFIG_FILE="${DIR_THIS}/submission/${CONFIG}_${STAGE}.yml"
     CMD_ANA="mlhep -a ${ANALYSIS} -r ${CONFIG_FILE} -d ${DB_DEFAULT} -c --delete"

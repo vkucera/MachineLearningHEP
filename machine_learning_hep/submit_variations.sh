@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[ "$3" ] || { echo "Usage: $0 <default database> <variation database> <analysis>"; exit 0; }
+[ "$4" ] || { echo "Usage: $0 <default database> <variation database> <analysis>"; exit 0; }
 
 ErrExit() { echo "Error"; exit 1; }
 
@@ -10,6 +10,7 @@ DIR_THIS="$(dirname "$(realpath "$0")")"
 DB_DEFAULT="$1"
 DB_VARIATION="$2"
 ANALYSIS="$3"
+CONFIG_FILE="$4"
 RUN=0
 CMD_VAR="python ${DIR_THIS}/do_variations.py ${DB_DEFAULT} ${DB_VARIATION}"
 NJOBS=5 # number of parallel jobs
@@ -29,7 +30,7 @@ done
 
 if ((RUN)); then
   echo -e "\nRunning variations"
-  { ${CMD_VAR} -a "${ANALYSIS}" -s "$SCRIPT" && parallel --will-cite --progress -j $NJOBS < "$SCRIPT"; } || ErrExit
+  { ${CMD_VAR} -a "${ANALYSIS}" -r "${CONFIG_FILE}" -s "$SCRIPT" && parallel --will-cite --progress -j $NJOBS < "$SCRIPT"; } || ErrExit
 else
   echo -e "\nCleaning"
   ${CMD_VAR} -c -s "$SCRIPT" || ErrExit
