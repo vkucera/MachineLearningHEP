@@ -1,0 +1,276 @@
+categories:
+    default:
+        activate: yes
+        processor: false
+        label: "default"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            default:
+                activate: [yes]
+                label: ["default"]
+                diffs: {}
+    fitting:
+        activate: yes
+        processor: false
+        label: "fitting"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            bkgfunc: # TODO: mass_roofit
+                activate: [no]
+                label: ["bkg. func."]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            todo: [0]
+            sigfunc: # TODO: mass_roofit
+                activate: [no]
+                label: ["sig. func."]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            todo: [0]
+            massmin: # TODO: mass_roofit
+                activate: [no]
+                label:
+                    - "mass min. 2.18"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            massmin: [1.75]
+            rebin:
+                activate: [yes]
+                label: ["rebin"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            bin_width: [0.01]
+            reflections:
+                activate: [yes]
+                label: ["ignored"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                                corr_refl: [false]
+    sideband:
+        activate: no
+        processor: false
+        label: "sideband sub."
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            sigma:  # TODO
+                activate: [no, no]
+                label:
+                    - "#it{signal} = 1.6 #sigma"
+                    - "#it{signal} = 1.7 #sigma"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            sidesub:
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-1.6, 1.6]
+                                        right: [3., 5.5]
+                                - - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-1.7, 1.7]
+                                        right: [3., 5.5]
+            ranges: # TODO
+                activate: [no, no]
+                label:
+                    - "#it{sb} = [-6,-3]#cup[3,6]"
+                    - "#it{sb} = [-5,-3]#cup[3,5]"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            sidesub:
+                                - - regions:
+                                        left: [-6., -3.]
+                                        signal: [-2., 2.]
+                                        right: [3., 6.]
+                                - - regions:
+                                        left: [-5., -3.]
+                                        signal: [-2., 2.]
+                                        right: [3., 5.]
+            sb_left:  # not for D0
+                activate: [no]
+                label: ["left sb only"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            sidebandleftonly: [true]
+    feeddown:
+        activate: yes
+        processor: false
+        label: "feed-down"
+        correlation: "corr"
+        rms: false
+        symmetrise: false
+        rms_both_sides: false
+        variations:
+            tune:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label:
+                    - "#it{f}_{F} = 1, #it{f}_{R} = 0.5"
+                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 1"
+                    - "#it{f}_{F} = 2, #it{f}_{R} = 1"
+                    - "#it{f}_{F} = 1, #it{f}_{R} = 2"
+                    - "#it{f}_{F} = 2, #it{f}_{R} = 2"
+                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 0.5"
+                    - "#it{m}_{b} high"
+                    - "#it{m}_{b} low"
+                    - "no EvtGen"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            fd_root:
+                                - /data2/vkucera/powheg/trees_powheg_fd_F1_R05.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F05_R1.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F2_R1.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F1_R2.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F2_R2.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_F05_R05.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_Mhigh.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_Mlow.root
+                                - /data2/vkucera/powheg/trees_powheg_fd_NoEvtGen.root
+                            fd_parquet:
+                                - /data2/jklein/powheg/powheg_fd_F1_R05.parquet
+                                - /data2/jklein/powheg/powheg_fd_F05_R1.parquet
+                                - /data2/jklein/powheg/powheg_fd_F2_R1.parquet
+                                - /data2/jklein/powheg/powheg_fd_F1_R2.parquet
+                                - /data2/jklein/powheg/powheg_fd_F2_R2.parquet
+                                - /data2/jklein/powheg/powheg_fd_F05_R05.parquet
+                                - /data2/jklein/powheg/powheg_fd_Mhigh.parquet
+                                - /data2/jklein/powheg/powheg_fd_Mlow.parquet
+                                - /data2/jklein/powheg/powheg_fd_NoEvtGen.parquet
+    prior:
+        activate: no
+        processor: true
+        label: "prior"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            flat: # TODO
+                activate: [no]
+                label: ["flat"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            doprior: [true]
+                            niterunfoldingchosen: [4]
+    regularisation:
+        activate: yes
+        processor: false
+        label: "regularisation"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            iter: # TODO
+                activate: [yes, yes]
+                label: ["down (3)", "up (7)"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            unfolding_iterations_sel: [3, 7]
+    normalisation:
+        activate: yes
+        processor: false
+        label: "#it{#sigma}_{MB}"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            crosssection:
+                activate: [yes, yes]
+                label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            xsection_inel: [54.91, 60.69] # TODO
+    tracking: # TODO
+        activate: no
+        processor: true
+        label: "tracking eff."
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            efficiency:
+                activate: [no]
+                label: ["eff. down"]
+                diffs:
+                  multi:
+                    mc:
+                      unmerged_tree_dir: [[/data/TTree/vAN-20220820_ROOT6-1/pp_sim/713_20220822-1048/merged,
+                                          /data/TTree/vAN-20220820_ROOT6-1/pp_sim/713_20220822-1048/merged,
+                                          /data/TTree/vAN-20220820_ROOT6-1/pp_sim/713_20220822-1048/merged]] #list of periods
+                      pkl: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pkl,
+                            /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pkl,
+                            /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pkl]] #list of periods
+                      pkl_skimmed: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pklsk,
+                                    /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklsk,
+                                    /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklsk]] #list of periods
+                      pkl_skimmed_merge_for_ml: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pklskml,
+                                                 /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskml,
+                                                 /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskml]] #list of periods
+                      pkl_skimmed_merge_for_ml_all: [/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_mc_prodD2H_mltot_trkeff]
+                      pkl_evtcounter_all: [/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_mc_prodD2H_evttot_trkeff]
+
+                  ml:
+                    mlplot: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/mlplot] # to be removed
+                    mlout: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/mlout] # to be removed
+                  mlapplication:
+                    mc:
+                      pkl_skimmed_dec: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pklskdec,
+                                        /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskdec,
+                                        /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskdec]] #list of periods
+                      pkl_skimmed_decmerged: [[/data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2016_mc_prodD2H/713_20220822-1048/pklskdecmerged,
+                                              /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskdecmerged,
+                                              /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskdecmerged]] #list of periods
+    binning:
+        activate: yes
+        processor: true
+        label: "binning"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            pt_jet:
+                activate: [yes]
+                label:
+                    - "#it{p}_{T}^{jet} 5#rightarrow4"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            bins_ptjet: [[4, 7, 15, 30, 50]]
+    cutvar:
+        activate: yes
+        processor: true
+        label: "BDT cuts"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            cutvar:
+                activate: [yes]
+                label:
+                    - "prob cut 1"
+                diffs:
+                    sel_reco_skim:
+                            - ["mlBkgScore < 0.1", "mlBkgScore < 0.2", "mlBkgScore < 0.3", "mlBkgScore < 0.4", "mlBkgScore < 0.5", "mlBkgScore < 0.6", "mlBkgScore < 0.7", "mlBkgScore < 0.8"]
