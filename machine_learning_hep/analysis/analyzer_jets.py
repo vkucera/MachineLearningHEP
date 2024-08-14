@@ -1,16 +1,14 @@
-#############################################################################
-##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
-##                                                                         ##
-## This program is free software: you can redistribute it and/or modify it ##
-##  under the terms of the GNU General Public License as published by the  ##
-## Free Software Foundation, either version 3 of the License, or (at your  ##
-## option) any later version. This program is distributed in the hope that ##
-##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
-##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
-##           See the GNU General Public License for more details.          ##
-##    You should have received a copy of the GNU General Public License    ##
-##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
-#############################################################################
+#  © Copyright CERN 2024. All rights not expressly granted are reserved.  #
+#                                                                         #
+# This program is free software: you can redistribute it and/or modify it #
+#  under the terms of the GNU General Public License as published by the  #
+# Free Software Foundation, either version 3 of the License, or (at your  #
+# option) any later version. This program is distributed in the hope that #
+#  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  #
+#     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+#           See the GNU General Public License for more details.          #
+#    You should have received a copy of the GNU General Public License    #
+#   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 import itertools
 import os
@@ -119,7 +117,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         # self.title_full = ";%s;%s" % (self.title_x, self.title_y)
         # self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
         # text
-        self.text_alice = "#bf{ALICE} Preliminary, pp, #sqrt{#it{s}} = 13 TeV"
+        self.text_alice = "#bf{ALICE} Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"
         # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"
         self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.p_latexnhadron
         self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet ch}| < 0.5"
