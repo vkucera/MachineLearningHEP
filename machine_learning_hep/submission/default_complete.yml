@@ -35,7 +35,7 @@ ml_study: # mlout, mlplot
   docorrelation: false
   dolearningcurve: false
   doapplytodatamc: false
-  doscancuts: false # up till here should work
+  doscancuts: false
   doefficiency: false
   dosignifopt: false
   doboundary: false
