@@ -30,16 +30,16 @@ from machine_learning_hep.utils.hist import (bin_array, create_hist,
                                              scale_bin, sum_hists, ensure_sumw2)
 
 
-class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
+class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too-many-lines
     species = "analyzer"
 
     def __init__(self, datap, case, typean, period):
         super().__init__(datap, case, typean, period)
 
         # output directories
-        self.d_resultsallpmc = (datap["analysis"][typean]["mc"]["results"][period] \
+        self.d_resultsallpmc = (datap["analysis"][typean]["mc"]["results"][period]
                                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"])
-        self.d_resultsallpdata = (datap["analysis"][typean]["data"]["results"][period] \
+        self.d_resultsallpdata = (datap["analysis"][typean]["data"]["results"][period]
                                   if period is not None else datap["analysis"][typean]["data"]["resultsallp"])
 
         # input directories (processor output)
@@ -77,7 +77,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_func_bkg = {}
         self.fit_range = {}
         self.hcandeff = {'pr': None, 'np': None}
+        self.hcandeff_gen = {}
+        self.hcandeff_det = {}
         self.h_eff_ptjet_pthf = {}
+        self.h_effnew_ptjet_pthf = {'pr': None, 'np': None}
+        self.h_effnew_pthf = {'pr': None, 'np': None}
         self.hfeeddown_det = { 'mc': {}, 'data': {}}
         self.n_events = {}
         self.n_colls = {}
@@ -195,13 +199,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         with TFile(self.n_fileeff) as rfile:
             h_gen = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_gen') for cat in cats}
             h_det = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_det') for cat in cats}
-            h_det_gencuts = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_det_gencuts') for cat in cats}
+            h_genmatch = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_genmatch') for cat in cats}
+            h_detmatch = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_detmatch') for cat in cats}
+            h_detmatch_gencuts = {cat: rfile.Get(f'h_ptjet-pthf_{cat}_detmatch_gencuts') for cat in cats}
             n_bins_ptjet = get_nbins(h_gen['pr'], 0)
 
             # Run 2 efficiencies
             bins_ptjet = (1, n_bins_ptjet)
             h_gen_proj = {cat: project_hist(h_gen[cat], [1], {0: bins_ptjet}) for cat in cats}
-            h_det_proj = {cat: project_hist(h_det_gencuts[cat], [1], {0: bins_ptjet}) for cat in cats}
+            h_det_proj = {cat: project_hist(h_detmatch_gencuts[cat], [1], {0: bins_ptjet}) for cat in cats}
 
             for cat in cats:
                 self._save_hist(h_gen_proj[cat], f'eff/h_pthf_{cat}_gen.png')
@@ -226,6 +232,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
             # Run 3 efficiencies
             for cat in cats:
+                # gen-level efficiency for feeddown estimation
+                h_eff_gen = h_genmatch[cat].Clone()
+                h_eff_gen.Divide(h_gen[cat])
+                self._save_hist(h_eff_gen, f'eff/h_effgen_{cat}.png')
+                self.hcandeff_gen[cat] = h_eff_gen
+
+                # matching loss
+                h_eff_match = h_detmatch[cat].Clone()
+                h_eff_match.Divide(h_det[cat])
+                self._save_hist(h_eff_match, f'eff/h_effmatch_{cat}.png')
+
                 h_response = rfile.Get(f'h_response_{cat}_fPt')
                 h_response_ptjet = project_hist(h_response, [0, 2], {})
                 h_response_pthf = project_hist(h_response, [1, 3], {})
@@ -244,7 +261,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 h_in = h_gen[cat].Clone()
                 self._save_hist(project_hist(h_in, [1], {}), f'eff/h_pthf_{cat}_gen.png')
                 h_in.Multiply(h_effkine_gen)
-                h_out = h_in.Clone()
+                h_out = h_in.Clone() # should derive this from the response matrix instead
                 h_out = folding(h_in, rm, h_out)
                 h_out.Divide(h_effkine_det)
                 self._save_hist(project_hist(h_out, [1], {}), f'eff/h_pthf_{cat}_gen_folded.png')
@@ -253,14 +270,25 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 ensure_sumw2(eff)
                 eff.Divide(h_out)
                 self._save_hist(eff, f'eff/h_ptjet-pthf_effnew_{cat}.png')
+                self.h_effnew_ptjet_pthf[cat] = eff
+
+                proj_range = (2, get_nbins(h_det[cat], 0))
+                eff_avg = project_hist(h_det[cat], [1], {0: proj_range})
+                ensure_sumw2(eff_avg)
+                eff_avg.Divide(project_hist(h_out, [1], {0: proj_range}))
+                self._save_hist(eff, f'eff/h_pthf_effnew_{cat}.png')
+                self.h_effnew_pthf[cat] = eff_avg
 
                 c = TCanvas()
                 c.cd()
                 hc_eff = self.hcandeff[cat].DrawCopy()
                 hc_eff.SetLineColor(ROOT.kViolet)
                 hc_eff.SetLineWidth(3)
+                hc_eff_avg = eff_avg.DrawCopy("same")
+                hc_eff_avg.SetLineColor(ROOT.kGreen)
+                hc_eff_avg.SetLineWidth(10)
                 amax = hc_eff.GetMaximum()
-                for iptjet in reversed(range(get_nbins(eff, 0) - 1)):
+                for iptjet in reversed(range(1, get_nbins(eff, 0) - 1)):
                     h = project_hist(eff, [1], {0: (iptjet+1, iptjet+1)})
                     h.SetName(h.GetName() + f'_ptjet{iptjet}')
                     h.Draw('same')
@@ -276,8 +304,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             return
 
         if self.cfg('efficiency.correction_method') == 'run3':
-            raise NotImplementedError
-        if self.cfg('efficiency.correction_method') == 'run2_2d':
+            eff = self.h_effnew_pthf['pr'].GetBinContent(ipt + 1)
+            eff_old = self.hcandeff['pr'].GetBinContent(ipt + 1)
+            self.logger.info('Using Run 3 efficiency %g instead of %g',
+                             eff, eff_old)
+            hist.Scale(1. / eff)
+        elif self.cfg('efficiency.correction_method') == 'run2_2d':
             self.logger.info('using Run 2 efficiencies per jet pt bin')
             if not self.h_eff_ptjet_pthf['pr']:
                 self.logger.error('no efficiency available for %s', hist.GetName())
@@ -540,13 +572,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             fh[region] = project_hist(hist, axes, {0: bins[region]})
             self.logger.info("Projecting %s to %s in %s: %g entries", hist, axes, bins[region], fh[region].GetEntries())
             self._save_hist(fh[region],
-                            f'sideband/h_ptjet{label}_{region}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png') # 2D
-            # TODO: calculate areas per ptjet bin
-            f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
-            area[region] = f.Integral(*limits[region])
-
-        self.logger.info('areas for %s-%s: %g, %g, %g',
-                         mcordata, ipt, area['signal'], area['sideband_left'], area['sideband_right'])
+                            f'sideband/h_ptjet{label}_{region}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
 
         fh_subtracted = fh['signal'].Clone(f'h_ptjet{label}_subtracted_{ipt}_{mcordata}')
         ensure_sumw2(fh_subtracted)
@@ -555,10 +581,38 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             [fh['sideband_left'], fh['sideband_right']], f'h_ptjet{label}_sideband_{ipt}_{mcordata}')
         ensure_sumw2(fh_sideband)
 
-        if (area['sideband_left'] + area['sideband_right']) > 0.:
-            # TODO: scale ptjet bins separately
-            areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
-            fh_sideband.Scale(areaNormFactor)
+        subtract_sidebands = False
+        if mcordata == 'data' and self.cfg('sidesub_per_ptjet'):
+            self.logger.info('Subtracting sidebands in pt jet bins')
+            for iptjet in range(1, get_nbins(fh_subtracted, 0)):
+                if rws := self.roo_ws_ptjet[mcordata][iptjet][ipt]:
+                    f = rws.pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
+                else:
+                    self.logger.error('Could not retrieve roows for %s-%i-%i', mcordata, iptjet, ipt)
+                    continue
+                area = {region: f.Integral(*limits[region]) for region in regions}
+                self.logger.info('areas for %s-%s: %g, %g, %g',
+                                 mcordata, ipt, area['signal'], area['sideband_left'], area['sideband_right'])
+                if (area['sideband_left'] + area['sideband_right']) > 0.:
+                    subtract_sidebands = True
+                    areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
+                    # TODO: extend to higher dimensions
+                    for ibin in range(get_nbins(fh_subtracted, 1)):
+                        scale_bin(fh_sideband, areaNormFactor, iptjet + 1, ibin + 1)
+        else:
+            for region in regions:
+                f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
+                area[region] = f.Integral(*limits[region])
+
+            self.logger.info('areas for %s-%s: %g, %g, %g',
+                             mcordata, ipt, area['signal'], area['sideband_left'], area['sideband_right'])
+
+            if (area['sideband_left'] + area['sideband_right']) > 0.:
+                subtract_sidebands = True
+                areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
+                fh_sideband.Scale(areaNormFactor)
+
+        if subtract_sidebands:
             self._save_hist(fh_sideband,
                             f'sideband/h_ptjet{label}_sideband_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
             fh_subtracted.Add(fh_sideband, -1.)
@@ -977,6 +1031,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             n = h_response.GetBinContent(
                 np.asarray([hbin[0][0], hbin[1][0], hbin[2][0], hbin[3][0], hbin[4][0]], 'i'))
             eff = h_eff.GetBinContent(hbin[4][0]) if h_eff else 1.
+            if np.isclose(eff, 0.):
+                self.logger.error('efficiency 0 for %s', hbin[4])
+                continue
             for _ in range(int(n)):
                 rm.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1], 1./eff)
         # rm.Mresponse().Print()
