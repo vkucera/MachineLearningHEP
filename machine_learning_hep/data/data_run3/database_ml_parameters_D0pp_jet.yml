@@ -400,7 +400,7 @@ D0jet_pp:
           level: mc
           query: '(isd0 & seld0bar) or (isd0bar & seld0)'
 
-      corr_refl: true
+      corr_refl: true  # systematics
       fit_levels: ['mcsig', 'mcrefl', 'mc', 'data']
       mass_roofit:
         - level: mcsig
