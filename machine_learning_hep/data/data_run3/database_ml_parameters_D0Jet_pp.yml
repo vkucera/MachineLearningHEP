@@ -20,7 +20,7 @@ D0jet_pp:
   sel_gen_unp: "fPt > 1. and fPt < 10."
   sel_cen_unp: null
   sel_good_evt_unp: null
-  sel_reco_skim: ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"]
+  sel_reco_skim: ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"] # systematics
   # sel_reco_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
   sel_gen_skim: [null,null,null,null,null,null,null,null] # sel_skim_binmin bins
   sel_skim_binmin: [1,3,4,5,6,8,12,16] # skimming pt bins (sel_skim_binmin bins)
@@ -29,25 +29,25 @@ D0jet_pp:
   dofullevtmerge: false
 
   # obsolete, to be removed
-  var_cand: fCandidateSelFlag
-  # var_swap: fIsCandidateSwapped
-  bitmap_sel:
-    var_name: fFlagMcMatchRec
-    var_name_gen: fFlagMcMatchGen
-    var_name_origgen: fOriginMcGen
-    var_name_origrec: fOriginMcRec
-    var_isstd: isstd
-    var_ismcsignal: ismcsignal
-    var_ismcprompt: ismcprompt
-    var_ismcfd: ismcfd
-    var_ismcbkg: ismcbkg
-    var_ismcrefl: ismcrefl
-    isstd : [[1],[]]
-    ismcsignal: [[0],[]]
-    ismcprompt: [[0],[1]]
-    ismcfd: [[1],[0]]
-    ismcbkg: [[],[1]]
-    ismcrefl: [[1],[1]] # probably missing from tree creator
+  # var_cand: fCandidateSelFlag
+  # # var_swap: fIsCandidateSwapped
+  # bitmap_sel:
+  #   var_name: fFlagMcMatchRec
+  #   var_name_gen: fFlagMcMatchGen
+  #   var_name_origgen: fOriginMcGen
+  #   var_name_origrec: fOriginMcRec
+  #   var_isstd: isstd
+  #   var_ismcsignal: ismcsignal
+  #   var_ismcprompt: ismcprompt
+  #   var_ismcfd: ismcfd
+  #   var_ismcbkg: ismcbkg
+  #   var_ismcrefl: ismcrefl
+  #   isstd : [[1],[]]
+  #   ismcsignal: [[0],[]]
+  #   ismcprompt: [[0],[1]]
+  #   ismcfd: [[1],[0]]
+  #   ismcbkg: [[],[1]]
+  #   ismcrefl: [[1],[1]] # probably missing from tree creator
 
   #region dfs
   dfs:
@@ -132,7 +132,7 @@ D0jet_pp:
         index: fIndexD0CJETCOS
         trees:
           O2d0cjetco: [fPosZ, fCentrality, fEventSel]
-        filter: "abs(fPosZ) < 10."
+        filter: "abs(fPosZ) < 10." # systematics?
       jetdata:
         level: data
         index: fIndexD0CJETOS
@@ -303,7 +303,7 @@ D0jet_pp:
     binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    prefix_dir_ml: /data2/${USER}/MLhep/
+    prefix_dir_ml: /data2/jklein/MLhep/
     mlplot: mlplot
     mlout: mlout
 
@@ -327,11 +327,11 @@ D0jet_pp:
 
   mlapplication:
     data:
-      prefix_dir_app: /data2/${USER}/
+      prefix_dir_app: /data2/jklein/
       pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
-      prefix_dir_app: /data2/${USER}/
+      prefix_dir_app: /data2/jklein/
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged] #list of periods
     modelname: xgboost
@@ -349,24 +349,25 @@ D0jet_pp:
 
   #region analysis
   analysis:
-    anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
+    anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp # used in analysis/analyzerdhadrons_mult.py
     fd_method: "Nb" #fc, Nb
     cctype: "pp"
-    inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
-    dir_general_plots: /data2/${USER}/data/analysis_plots
+    inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root # used in /home/vkucera/alice/MachineLearningHEP/machine_learning_hep/hf_pt_spectrum.py
+    dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
       sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      bins_ptjet: [5, 7, 15, 30, 50]
+      sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins) # FIXME: move the last edge in sel_an_binmin
+      bins_ptjet: [5, 7, 15, 30, 50] # systematics
+      # TODO: split rec and gen binning
       bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70]
 
-      sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
+      # sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
 
       # TODO: add separate binnings for MC and data
       observables:
         zg:
-          bins_fix: [6, -.1, .5]
+          bins_fix: [6, -.1, .5] # split rec and gen? # systematics?
           label: '#it{z}_{g}'
         nsd:
           bins_fix: [10, -.5, 9.5]
@@ -399,12 +400,12 @@ D0jet_pp:
           level: mc
           query: '(isd0 & seld0bar) or (isd0bar & seld0)'
 
-      corr_refl: true
+      corr_refl: true  # systematics
       fit_levels: ['mcsig', 'mcrefl', 'mc', 'data']
       mass_roofit:
         - level: mcsig
           datasel: mcsig
-          range: [1.69, 2.04]
+          range: [1.69, 2.04] # systematics? or propagate bg fit uncertainty directly?
           components:
             sig:
               fn: 'Gaussian::peak(m[1.,5.], mean[1.85,1.89], sigma_g1[.01,.08])'
@@ -626,12 +627,12 @@ D0jet_pp:
         - ptrange: [16., 100.]
           regions:
             left: [-2., -2.]
-            signal: [-2., 2.]
-            right: [3., 5.]
+            signal: [-2., 2.] # systematics?
+            right: [3., 5.] # systematics?
         - regions:
-            left: [-5.5, -3.]
-            signal: [-2., 2.]
-            right: [3., 5.5]
+            left: [-5.5, -3.] # systematics?
+            signal: [-2., 2.] # systematics?
+            right: [3., 5.5] # systematics?
 
       # mass_fit:
       #   func_sig: 'gaus'
@@ -640,15 +641,16 @@ D0jet_pp:
       #   # par_fix: {1: 1.86}
       #   par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
       #   range: [1.695, 2.06]
-      mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
-      bin_width: 0.005 # bin width of the invariant mass histogram
+      mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]; used in processer for binarray_mass  (not used for fit range!)
+      bin_width: 0.005 # bin width of the invariant mass histogram # systematics?
       efficiency:
         extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar']
         filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'
         index_match: fIndexArrayD0CMCPJETOS_hf
         correction_method: run3
 
-      unfolding_iterations: 8
+      unfolding_iterations: 8 # used, maximum iteration
+      unfolding_iterations_sel: 8 # not used, selected iteration # systematics
       closure:
         pure_signal: true
         exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
@@ -656,56 +658,56 @@ D0jet_pp:
         filter_reflections: '(isd0 & seld0) or (isd0bar & seld0bar)'
         use_matched: false
 
-      frac_mcana: .2
-      fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root'
-      fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_central.parquet'
+      frac_mcana: .2 # fraction of MC sample for the closure
+      fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root' # systematics
+      fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_central.parquet' # systematics
 
-      branching_ratio: 3.95e-2
-      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
-      xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events
+      branching_ratio: 3.95e-2 # used
+      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events # used # systematics
+      xsection_inel_mc: .65 # 1.68 # (mb) cross-section of minimum-bias events # used
 
       # obsolete?
-      proc_type: Jets
-      useperiod: [1] #list of periods
-      usejetptbinned_deff: false
-      doeff_resp: true #efficiency correction for the response matrix
-      unmatched_gen: true
+      proc_type: Jets # used
+      useperiod: [1] #list of periods # used
+      # usejetptbinned_deff: false
+      # doeff_resp: true #efficiency correction for the response matrix
+      # unmatched_gen: true
       latexnamehadron: "D^{0}"
-      latexnamedecay: "K^{#minus} #pi^{#plus}"
-      var_binning2: pt_jet
-      var_binning2_gen: pt_gen_jet
-      latexbin2var: "#it{p}_{T}^{jet ch}"
-      sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:      [15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
-      var_binningshape: zg_jet
-      var_binningshape_gen: zg_gen_jet
-      var_shape_latex: "#it{z}_{g}"
-      sel_binminshape_reco: [-0.1,0.1,0.2,0.3,0.4]
-      sel_binmaxshape_reco:      [0.1,0.2,0.3,0.4,0.5]
-      sel_binminshape_gen:  [-0.1,0.1,0.2,0.3,0.4]
-      sel_binmaxshape_gen:       [0.1,0.2,0.3,0.4,0.5]
-      sel_closure_frac: 0.2
-      triggerbit: INT7
+      # latexnamedecay: "K^{#minus} #pi^{#plus}"
+      # var_binning2: pt_jet
+      # var_binning2_gen: pt_gen_jet
+      # latexbin2var: "#it{p}_{T}^{jet ch}"
+      # sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      # sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
+      # sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      # sel_binmax2_gen:      [15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
+      # var_binningshape: zg_jet
+      # var_binningshape_gen: zg_gen_jet
+      # var_shape_latex: "#it{z}_{g}"
+      # sel_binminshape_reco: [-0.1,0.1,0.2,0.3,0.4]
+      # sel_binmaxshape_reco:      [0.1,0.2,0.3,0.4,0.5]
+      # sel_binminshape_gen:  [-0.1,0.1,0.2,0.3,0.4]
+      # sel_binmaxshape_gen:       [0.1,0.2,0.3,0.4,0.5]
+      # sel_closure_frac: 0.2
+      # triggerbit: INT7
       #jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       #jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
       #jetsel_reco: "abs(y_cand) < 0.8 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
       #jetsel_gen_matched_reco: "abs(eta_gen_jet) < 5.0"
-      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
-      jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
-      jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
-      jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
+      # jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
+      # jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
+      # jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
+      # jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
       evtsel: null # fIsEventReject==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data: &data_out_default
-        runselection: [null] #FIXME
+        runselection: [null] #FIXME # used but useless
         results: ['/home/${USER}/mlhep/data/test/d0jet/resultsMBjetvspt'] #list of periods
         resultsallp: '/home/${USER}/mlhep/data/test/d0jet/resultsMBjetvspt_all'
       mc: &mc_out_default
-        runselection: [null] #FIXME
+        runselection: [null] #FIXME # used but useless
         results: ['/home/${USER}/mlhep/data/mctest/d0jet/resultsMBjetvspt'] #list of periods
         resultsallp: '/home/${USER}/mlhep/data/mctest/d0jet/resultsMBjetvspt_all'
       data_proc: # alternative processor output used as the analyzer input
@@ -713,7 +715,7 @@ D0jet_pp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
 
-      # simple fitter START
+      # simple fitter START # used in /home/vkucera/alice/MachineLearningHEP/cplusutilities/mass_fitter.C
       sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
       bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
       masspeak: 1.864
@@ -723,6 +725,7 @@ D0jet_pp:
       fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
       masspeaksec: 1.864
 
+      # obsolete (uses Ali... fitter)
       # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
       # If SetFixGaussianSigma true: sigma fixed to sigma_initial
       # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
@@ -730,40 +733,41 @@ D0jet_pp:
       SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
 
-      fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
-      use_reflections: true
+      # fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+      # sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
+      # use_reflections: true
       # simple fitter END
 
-      signal_sigma: 2.0
-      sigma_scale: 0.9545
-      sideband_sigma_1_left: 4
-      sideband_sigma_2_left: 9
-      sideband_sigma_1_right: 4
-      sideband_sigma_2_right: 9
-      sidebandleftonly: false
+      # signal_sigma: 2.0
+      # sigma_scale: 0.9545
+      # sideband_sigma_1_left: 4
+      # sideband_sigma_2_left: 9
+      # sideband_sigma_1_right: 4
+      # sideband_sigma_2_right: 9
+      # sidebandleftonly: false
 
-      niterunfolding: 15
-      niterunfoldingchosen: 4
+      # niterunfolding: 15
+      # niterunfoldingchosen: 4
 
-      doprior: false
-      domodeldep: false
-      path_modeldep: /home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/D0_Substructure_Simulations_Output.root
+      # doprior: false
+      # domodeldep: false
+      # path_modeldep: /home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/D0_Substructure_Simulations_Output.root
 
-      powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 
-      powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
-      powheg_prompt_variations_path: /data/POWHEG/trees_powheg_pr_
-      powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
+      # replace with fd_root...
+      # powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
+      # powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
+      # powheg_prompt_variations_path: /data/POWHEG/trees_powheg_pr_
+      # powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
 
-      pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
-      pythia8_prompt_variations: ["default", "charm_lo"] #["default","colour0soft"]
-      pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
+      # pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
+      # pythia8_prompt_variations: ["default", "charm_lo"] #["default","colour0soft"]
+      # pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
       variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_zg.yml
 
       # Additional cuts applied before mass histogram is filled
-      use_cuts: False
+      # use_cuts: False
       # cuts: # (sel_an_binmin bins)
       # - Null
       # - Null
@@ -773,6 +777,8 @@ D0jet_pp:
       # - Null
       # - Null
       # - Null
+
+    # Rest is obsolete
 
     jet_qa:
       <<: *jet_default
