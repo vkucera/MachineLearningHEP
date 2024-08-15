@@ -434,14 +434,14 @@ def main(
                     if script_name:
                         script_lines.append(
                             "mlhep "
-                            "-a %s -r %s -d %s -c > %s 2>&1\n" % (analysis, config, yaml_out, logfile)
+                            "-a %s -r %s -d %s -b -c > %s 2>&1\n" % (analysis, config, yaml_out, logfile)
                         )
                     else:
                         with open(logfile, "w", encoding="utf-8") as ana_out:
                             subprocess.Popen(  # pylint: disable=consider-using-with
                                 shlex.split(
                                     "mlhep "
-                                    "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)
+                                    "-a %s -r %s -d %s -b -c" % (analysis, config, yaml_out)
                                 ),
                                 stdout=ana_out,
                                 stderr=ana_out,
