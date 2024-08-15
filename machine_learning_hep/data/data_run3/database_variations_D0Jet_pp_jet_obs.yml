@@ -13,7 +13,7 @@ categories:
                 label: ["default"]
                 diffs: {}
     fitting:
-        activate: yes
+        activate: no
         processor: false
         label: "fitting"
         correlation: "corr"
@@ -108,7 +108,7 @@ categories:
                         jet_obs:
                             sidebandleftonly: [true]
     feeddown:
-        activate: yes
+        activate: no
         processor: false
         label: "feed-down"
         correlation: "corr"
@@ -169,7 +169,7 @@ categories:
                             doprior: [true]
                             niterunfoldingchosen: [4]
     regularisation:
-        activate: yes
+        activate: no
         processor: false
         label: "regularisation"
         correlation: "corr"
@@ -242,7 +242,7 @@ categories:
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskdecmerged,
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskdecmerged]] #list of periods
     binning:
-        activate: yes
+        activate: no
         processor: true
         label: "binning"
         correlation: "corr"
@@ -261,7 +261,7 @@ categories:
     cutvar:
         activate: yes
         processor: true
-        label: "BDT cuts"
+        label: "BDT cut"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -270,7 +270,7 @@ categories:
             cutvar:
                 activate: [yes]
                 label:
-                    - "prob cut 1"
+                    - "cut 0.5"
                 diffs:
                     sel_reco_skim:
-                            - ["mlBkgScore < 0.1", "mlBkgScore < 0.2", "mlBkgScore < 0.3", "mlBkgScore < 0.4", "mlBkgScore < 0.5", "mlBkgScore < 0.6", "mlBkgScore < 0.7", "mlBkgScore < 0.8"]
+                            - ["mlBkgScore < 0.01", "mlBkgScore < 0.02", "mlBkgScore < 0.03", "mlBkgScore < .04", "mlBkgScore < 0.07", "mlBkgScore < 0.13", "mlBkgScore < 0.23", "mlBkgScore < 0.26"]
