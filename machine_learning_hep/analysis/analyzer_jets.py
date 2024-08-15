@@ -97,6 +97,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.roo_ws_ptjet = {}
         self.roows = {}
 
+        self.n_iter_unfold_sel = datap["analysis"][typean]["unfolding_iterations_sel"]
 
     #region helpers
     def _save_canvas(self, canvas, filename):
@@ -783,6 +784,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                     hproj,
                                     f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
                                     f'jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}.png')
+                                # Save the default unfolding iteration separately.
+                                if i == self.n_iter_unfold_sel - 1:
+                                    hproj_sel = hproj.Clone(f"{hproj.GetName()}_sel")
+                                    hproj_sel.Scale(1. / hproj_sel.Integral(), "width")
+                                    self._save_hist(
+                                        hproj_sel,
+                                        f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
+                                        f'jetpt-{jetptrange[0]}-{jetptrange[1]}_sel.png')
                                 c.cd()
                                 hcopy = hproj.DrawCopy('same' if i > 0 else '')
                                 hcopy.SetLineColor(i+1)
