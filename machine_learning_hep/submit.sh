@@ -10,12 +10,12 @@ CONFIG="d0jet"
 
 # Config file suffix
 # STAGE="complete"
-STAGE="all"
-# STAGE="ana"
+# STAGE="all"
+STAGE="ana"
 # STAGE="variations"
 
 # Suffix of the analysis database
-DATABASE="D0Jet_pp"
+DATABASE="D0pp_jet"
 # DATABASE="LcJet_pp"
 
 # Name of the analysis section in the analysis database
@@ -30,7 +30,7 @@ if [[ "${STAGE}" == "variations" ]]; then
     "${DIR_THIS}/submit_variations.sh" "${DB_DEFAULT}" "${DB_VARIATION}" "${ANALYSIS}"
 else
     CONFIG_FILE="${DIR_THIS}/submission/${CONFIG}_${STAGE}.yml"
-    CMD_ANA="mlhep -a ${ANALYSIS} -r ${CONFIG_FILE} -d ${DB_DEFAULT} -c --delete"
+    CMD_ANA="mlhep -a ${ANALYSIS} -r ${CONFIG_FILE} -d ${DB_DEFAULT} -b --delete"
     echo "Running the \"${STAGE}\" stage of the \"${CONFIG}\" configuration of the \"${ANALYSIS}\" analysis from ${DATABASE}"
     ${CMD_ANA}
 fi || { echo "Error"; exit 1; }
