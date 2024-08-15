@@ -126,22 +126,22 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.s_gen_skim = datap["sel_gen_skim"]
 
         #bitmap
-        self.b_mcrefl = datap["bitmap_sel"].get("ismcrefl", None)
+        # self.b_mcrefl = datap["bitmap_sel"].get("ismcrefl", None)
 
         #variables name
         self.v_train = datap["variables"]["var_training"]
-        self.v_bitvar = datap["bitmap_sel"]["var_name"]
-        self.v_bitvar_gen = datap["bitmap_sel"]["var_name_gen"]
-        self.v_bitvar_origgen = datap["bitmap_sel"]["var_name_origgen"]
-        self.v_bitvar_origrec = datap["bitmap_sel"]["var_name_origrec"]
-        self.v_candtype = datap["var_cand"]
-        self.v_swap = datap.get("var_swap", None)
-        self.v_isstd = datap["bitmap_sel"]["var_isstd"]
-        self.v_ismcsignal = datap["bitmap_sel"]["var_ismcsignal"]
-        self.v_ismcprompt = datap["bitmap_sel"]["var_ismcprompt"]
-        self.v_ismcfd = datap["bitmap_sel"]["var_ismcfd"]
-        self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
-        self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]
+        # self.v_bitvar = datap["bitmap_sel"]["var_name"]
+        # self.v_bitvar_gen = datap["bitmap_sel"]["var_name_gen"]
+        # self.v_bitvar_origgen = datap["bitmap_sel"]["var_name_origgen"]
+        # self.v_bitvar_origrec = datap["bitmap_sel"]["var_name_origrec"]
+        # self.v_candtype = datap["var_cand"]
+        # self.v_swap = datap.get("var_swap", None)
+        # self.v_isstd = datap["bitmap_sel"]["var_isstd"]
+        # self.v_ismcsignal = datap["bitmap_sel"]["var_ismcsignal"]
+        # self.v_ismcprompt = datap["bitmap_sel"]["var_ismcprompt"]
+        # self.v_ismcfd = datap["bitmap_sel"]["var_ismcfd"]
+        # self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
+        # self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]
         self.v_var_binning = datap["var_binning"]
         self.v_invmass = datap["variables"].get("var_inv_mass", "inv_mass")
         self.v_rapy = datap["variables"].get("var_y", "y_cand")
@@ -277,7 +277,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                     self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)]
             self.lpt_gendecmerged = [os.path.join(self.d_pkl_decmerged, self.lpt_gensk[ipt])
                                      for ipt in range(self.p_nptbins)]
-        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
+        # self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
  #       if os.path.exists(self.d_root) is False:
