@@ -60,9 +60,11 @@ def shrink_err_x(graph, width=0.1):
 
 # pylint: disable=too-many-instance-attributes, too-many-statements
 class AnalyzerJetSystematics:
-    def __init__(self, path_database_analysis: str, typean: str):
+    def __init__(self, path_database_analysis: str, typean: str, var: str):
         self.logger = get_logger()
         self.typean = typean
+        self.var = var
+        self.method = "sidesub"
 
         with open(path_database_analysis, "r", encoding="utf-8") as file_in:
             db_analysis = yaml.safe_load(file_in)
@@ -261,17 +263,15 @@ class AnalyzerJetSystematics:
 
         # get the default (central value) result histograms
 
-        var = "zpar"
-        method = "sidesub"
         input_histograms_default = []
         # eff_default = []
         for ibin2 in range(self.p_nbin2_gen):
-            name_hist_unfold_2d = f'h_ptjet-{var}_{method}_unfolded_data_0'
+            name_hist_unfold_2d = f'h_ptjet-{self.var}_{self.method}_unfolded_data_0'
             if not (hist_unfold := input_file_default.Get(name_hist_unfold_2d)):
                 self.logger.critical(make_message_notfound(name_hist_unfold_2d, eff_file_default))
             axis_jetpt = get_axis(hist_unfold, 0)
             jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
-            name_his = f'h_{var}_{method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
+            name_his = f'h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
             input_histograms_default.append(input_file_default.Get(name_his))
             if not input_histograms_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_his, path_def))
@@ -315,7 +315,7 @@ class AnalyzerJetSystematics:
                         "Variation: %s, %s"
                         % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var])
                     )
-                    name_hist_unfold_2d = f'h_ptjet-{var}_{method}_unfolded_data_0'
+                    name_hist_unfold_2d = f'h_ptjet-{self.var}_{self.method}_unfolded_data_0'
                     if not (hist_unfold := input_files_sys[sys_cat][sys_var].Get(name_hist_unfold_2d)):
                         self.logger.critical(make_message_notfound(name_hist_unfold_2d, eff_file))
                     axis_jetpt = get_axis(hist_unfold, 0)
@@ -340,7 +340,7 @@ class AnalyzerJetSystematics:
                         )
                     else:
                         jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
-                        name_his = f'h_{var}_{method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
+                        name_his = f'h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
                     sys_var_histo = input_files_sys[sys_cat][sys_var].Get(name_his)
                     # sys_var_histo_eff = input_files_eff[sys_cat][sys_var].Get(name_eff)
                     path_file = path_def.replace(string_default, string_catvar)
@@ -1215,8 +1215,11 @@ def main(args=None):
     parser.add_argument("--analysis", "-a", dest="type_ana", help="choose type of analysis", required=True)
     args = parser.parse_args(args)
 
-    analyser = AnalyzerJetSystematics(args.database_analysis, args.type_ana)
-    analyser.jetsystematics()
+    list_vars = ["zg", "nsd", "rg", "zpar"]
+    list_vars = ["zpar"]
+    for var in list_vars:
+        analyser = AnalyzerJetSystematics(args.database_analysis, args.type_ana, var)
+        analyser.jetsystematics()
 
 
 if __name__ == "__main__":
