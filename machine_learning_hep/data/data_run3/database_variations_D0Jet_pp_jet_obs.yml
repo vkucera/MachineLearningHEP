@@ -92,11 +92,31 @@ categories:
                     analysis:
                         jet_obs:
                             sidesub:
-                                - - regions:
+                                - - level: mc
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 3.]
+                                  - ptrange: [16., 100.]
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 5.]
+                                  - regions:
                                         left: [-6., -3.]
                                         signal: [-2., 2.]
                                         right: [3., 6.]
-                                - - regions:
+                                - - level: mc
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 3.]
+                                  - ptrange: [16., 100.]
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 5.]
+                                  - regions:
                                         left: [-5., -3.]
                                         signal: [-2., 2.]
                                         right: [3., 5.]
