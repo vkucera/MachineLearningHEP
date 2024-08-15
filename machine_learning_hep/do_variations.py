@@ -416,8 +416,7 @@ def main(
                 if analysis:
                     if do_processor and not delete_output_dirs(dic_new, analysis, varstring):
                         sys.exit(1)
-                    if not do_processor:
-                        config = config.replace(suffix_config_default, suffix_config_ana)
+                    config_final = config if do_processor else config.replace(suffix_config_default, suffix_config_ana)
                     print(
                         "Starting the analysis \x1b[1;32m%s\x1b[0m for the variation "
                         "\x1b[1;32m%s: %s\x1b[0m" % (analysis, label_cat, format_varlabel(label_var, index, n_var))
@@ -434,14 +433,14 @@ def main(
                     if script_name:
                         script_lines.append(
                             "mlhep "
-                            "-a %s -r %s -d %s -b -c > %s 2>&1\n" % (analysis, config, yaml_out, logfile)
+                            "-a %s -r %s -d %s -b -c > %s 2>&1\n" % (analysis, config_final, yaml_out, logfile)
                         )
                     else:
                         with open(logfile, "w", encoding="utf-8") as ana_out:
                             subprocess.Popen(  # pylint: disable=consider-using-with
                                 shlex.split(
                                     "mlhep "
-                                    "-a %s -r %s -d %s -b -c" % (analysis, config, yaml_out)
+                                    "-a %s -r %s -d %s -b -c" % (analysis, config_final, yaml_out)
                                 ),
                                 stdout=ana_out,
                                 stderr=ana_out,
