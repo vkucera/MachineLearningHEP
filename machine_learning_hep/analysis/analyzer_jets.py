@@ -764,15 +764,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
                         if not var:
                             continue
-                        axis_jetpt = get_axis(fh_sum, 0)
-                        for j in range(get_nbins(fh_sum, 0)):
+                        axis_jetpt = get_axis(fh_sum_fdsub, 0)
+                        for j in range(get_nbins(fh_sum_fdsub, 0)):
                             # TODO: generalize to higher dimensions
-                            hproj = project_hist(fh_sum, [1], {0: [j+1, j+1]})
+                            hproj = project_hist(fh_sum_fdsub, [1], {0: [j+1, j+1]})
                             jetptrange = (axis_jetpt.GetBinLowEdge(j+1), axis_jetpt.GetBinUpEdge(j+1))
                             self._save_hist(
                                 hproj, f'uf/h_{var}_{method}_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}.png')  # variation not OK
                         # Unfolding
-                        fh_unfolded = self._unfold(fh_sum, var, mcordata)
+                        fh_unfolded = self._unfold(fh_sum_fdsub, var, mcordata)
                         for i, h in enumerate(fh_unfolded):
                             self._save_hist(h, f'h_ptjet-{var}_{method}_unfolded_{mcordata}_{i}.png')
                         for j in range(get_nbins(h, 0)):
