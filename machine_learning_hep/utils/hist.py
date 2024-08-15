@@ -48,6 +48,9 @@ def get_nbins(hist, axis:int):
 def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
     # TODO: add consistent suffix for projections
     # TODO: add option for uncertainties ???
+    if not hist:
+        print("Got null object")
+        return None
     if len(axes) == 2:
         axes = axes[:] # slice to avoid modifying the list passed as parameter
         axes.reverse() # compensation for ROOT signature using ydim, xdim for 2d projection
@@ -107,7 +110,7 @@ def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
                 hproj.Reset()
             return hproj
         raise ValueError
-
+    print(f"Got object {hist.GetName()}, {type(hist)}")
     raise NotImplementedError
 
 
