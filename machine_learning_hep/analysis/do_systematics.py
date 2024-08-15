@@ -189,31 +189,12 @@ class AnalyzerJetSystematics:
         self.d_resultsallpmc = datap["analysis"][typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["resultsallp"]
 
-        # input directories (processor output)
-        self.d_resultsallpmc_proc = self.d_resultsallpmc
-        self.d_resultsallpdata_proc = self.d_resultsallpdata
-        # use a different processor output
-        if "data_proc" in datap["analysis"][typean]:
-            self.d_resultsallpdata_proc = datap["analysis"][typean]["data_proc"]["resultsallp"]
-        if "mc_proc" in datap["analysis"][typean]:
-            self.d_resultsallpmc_proc = datap["analysis"][typean]["mc_proc"]["resultsallp"]
-
         # input files
-        n_filemass_name = datap["files_names"]["histofilename"]
-        self.n_filemass = os.path.join(self.d_resultsallpdata_proc, n_filemass_name)
-        self.n_filemass_mc = os.path.join(self.d_resultsallpmc_proc, n_filemass_name)
-        self.n_fileeff = datap["files_names"]["efffilename"]
-        self.n_fileeff = os.path.join(self.d_resultsallpmc_proc, self.n_fileeff)
-        self.n_fileresp = datap["files_names"]["respfilename"]
-        self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
 
-        # output files
-        self.file_yields = os.path.join(self.d_resultsallpdata, "yields.root")
-        self.file_efficiency = os.path.join(self.d_resultsallpmc, "efficiencies.root")
-        self.file_sideband = os.path.join(self.d_resultsallpdata, "sideband_subtracted.root")
-        self.file_feeddown = os.path.join(self.d_resultsallpdata, "feeddown.root")
-        self.file_unfold = os.path.join(self.d_resultsallpdata, "unfolding_results.root")
-        self.file_unfold_closure = os.path.join(self.d_resultsallpdata, "unfolding_closure.root")
+        file_eff_name = datap["files_names"]["efffilename"]
+        self.file_efficiency = os.path.join(self.d_resultsallpmc, file_eff_name)
+        file_result_name = datap["files_names"]["resultfilename"]
+        self.file_unfold = os.path.join(self.d_resultsallpdata, file_result_name)
 
         # official figures
         self.shape = typean[len("jet_") :]
@@ -266,11 +247,9 @@ class AnalyzerJetSystematics:
             print("Jet pT rec max variations: ", self.lvar2_binmax_reco_sys)
             print("Jet pT gen min variations: ", self.lvar2_binmin_gen_sys)
             print("Jet pT gen max variations: ", self.lvar2_binmax_gen_sys)
-            return
 
         path_def = self.file_unfold
         path_eff = self.file_efficiency
-        path_hm = self.file_yields
         input_file_default = TFile.Open(path_def)
         eff_file_default = TFile.Open(path_eff)
         file_sys_out = TFile.Open("%s/systematics_results.root" % self.d_resultsallpdata, "recreate")
@@ -294,28 +273,21 @@ class AnalyzerJetSystematics:
 
         input_files_sys = []
         input_files_eff = []
-        input_files_signif = []
         for sys_cat in range(self.n_sys_cat):
             input_files_sysvar = []
             input_files_sysvar_eff = []
-            input_files_sysvarsignif = []
             for sys_var, varname in enumerate(self.systematic_varnames[sys_cat]):
                 path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
                 input_files_sysvar.append(TFile.Open(path))
                 eff_file = path_eff.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
                 input_files_sysvar_eff.append(TFile.Open(eff_file))
-                signif_file = path_hm.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
-                input_files_sysvarsignif.append(TFile.Open(signif_file))
 
                 if not input_files_sysvar[sys_var]:
                     self.logger.fatal(make_message_notfound(path))
                 if not input_files_sysvar_eff[sys_var]:
                     self.logger.fatal(make_message_notfound(eff_file))
-                if not input_files_sysvarsignif[sys_var]:
-                    self.logger.fatal(make_message_notfound(signif_file))
             input_files_sys.append(input_files_sysvar)
             input_files_eff.append(input_files_sysvar_eff)
-            input_files_signif.append(input_files_sysvarsignif)
 
         # get the variation result histograms
 

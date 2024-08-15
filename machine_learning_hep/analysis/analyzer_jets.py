@@ -59,6 +59,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.n_fileeff = os.path.join(self.d_resultsallpmc_proc, self.n_fileeff)
         self.n_fileresp = datap["files_names"]["respfilename"]
         self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
+        file_result_name = datap["files_names"]["resultfilename"]
+        self.n_fileresult = os.path.join(self.d_resultsallpdata, file_result_name)
 
         self.observables = {
             'qa': ['zg', 'rg', 'nsd', 'zpar', 'dr', 'lntheta', 'lnkt', 'lntheta-lnkt'],
@@ -84,11 +86,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.n_events = {}
         self.n_colls = {}
 
-        self.path_fig = Path(f'fig/{self.case}/{self.typean}')
+        self.path_fig = Path(f'{os.path.expandvars(self.d_resultsallpdata)}/fig')
         for folder in ['qa', 'fit', 'roofit', 'sideband', 'signalextr', 'sidesub', 'sigextr', 'fd', 'uf', 'eff']:
             (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
 
-        self.rfigfile = TFile(str(self.path_fig / 'output.root'), 'recreate')
+        self.file_out_histo = TFile(self.n_fileresult, 'recreate')
 
         self.fitter = RooFitter()
         self.roo_ws = {}
@@ -98,11 +100,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
     #region helpers
     def _save_canvas(self, canvas, filename):
-        # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
-        canvas.SaveAs(f'fig/{self.case}/{self.typean}/{filename}')
+        canvas.SaveAs(f'{self.path_fig}/{filename}')
 
 
-    def _save_hist(self, hist, filename, option = ''):
+    def _save_hist(self, hist, filename, option=''):
         if not hist:
             self.logger.error('no histogram for <%s>', filename)
             # TODO: remove file if it exists?
@@ -114,7 +115,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self._save_canvas(c, filename)
         rfilename = filename.split('/')[-1]
         rfilename = rfilename.removesuffix('.png')
-        self.rfigfile.WriteObject(hist, rfilename)
+        self.file_out_histo.WriteObject(hist, rfilename)
 
 
     #region fundamentals

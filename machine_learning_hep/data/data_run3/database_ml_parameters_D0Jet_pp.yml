@@ -237,6 +237,7 @@ D0jet_pp:
     efffilename: "effhisto.root"
     respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
+    resultfilename: "output.root"
 
   #region multi
   multi:
@@ -765,7 +766,7 @@ D0jet_pp:
       # pythia8_prompt_variations: ["default", "charm_lo"] #["default","colour0soft"]
       # pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_run3/database_variations_D0Jet_pp_jet_obs.yml
+      variations_db: database_variations_D0Jet_pp_jet_obs.yml
 
       # Additional cuts applied before mass histogram is filled
       # use_cuts: False
