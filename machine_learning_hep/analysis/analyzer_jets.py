@@ -24,7 +24,7 @@ from machine_learning_hep.fitting.roofitter import RooFitter
 from machine_learning_hep.utilities import folding, make_plot, draw_latex_lines, get_colour, get_marker
 from machine_learning_hep.utils.hist import (bin_array, create_hist,
                                              fill_hist_fast, get_axis, get_dim,
-                                             get_nbins, project_hist,
+                                             get_nbins, project_hist, print_histogram,
                                              scale_bin, sum_hists, ensure_sumw2)
 
 
@@ -734,7 +734,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                         # Feed-down subtraction
                         if mcordata == 'data' or not self.cfg('closure.exclude_feeddown_det'):
                             self._subtract_feeddown(fh_sum_fdsub, var, mcordata)
-                        self._save_hist(fh_sum_fdsub, f'h_ptjet{label}_{method}_{mcordata}.png')
+                        self._save_hist(fh_sum_fdsub, f'h_ptjet{label}_{method}_{mcordata}.png')  # variation OK
 
                         if get_dim(fh_sum) > 1:
                             axes = list(range(get_dim(fh_sum)))
@@ -759,7 +759,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                 h_sig.GetYaxis().SetRangeUser(0., 1.1 * ymax)
                                 jetptrange = (axis_jetpt.GetBinLowEdge(iptjet+1), axis_jetpt.GetBinUpEdge(iptjet+1))
                                 filename = (f'{method}/h_{label[1:]}_{method}_fdsub' +
-                                            f'_ptjet-{jetptrange[0]}-{jetptrange[1]}.png')
+                                            f'_ptjet-{jetptrange[0]}-{jetptrange[1]}.png')  # variation OK
                                 self._save_canvas(c, filename)
 
                         if not var:
@@ -770,7 +770,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             hproj = project_hist(fh_sum, [1], {0: [j+1, j+1]})
                             jetptrange = (axis_jetpt.GetBinLowEdge(j+1), axis_jetpt.GetBinUpEdge(j+1))
                             self._save_hist(
-                                hproj, f'uf/h_{var}_{method}_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}.png')
+                                hproj, f'uf/h_{var}_{method}_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}.png')  # variation not OK
                         # Unfolding
                         fh_unfolded = self._unfold(fh_sum, var, mcordata)
                         for i, h in enumerate(fh_unfolded):
@@ -788,6 +788,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                 if i == self.n_iter_unfold_sel - 1:
                                     hproj_sel = hproj.Clone(f"{hproj.GetName()}_sel")
                                     hproj_sel.Scale(1. / hproj_sel.Integral(), "width")
+                                    print(f"Final histogram ({jetptrange[0]} to {jetptrange[1]})")
+                                    print_histogram(hproj_sel)
                                     self._save_hist(
                                         hproj_sel,
                                         f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
@@ -938,7 +940,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 hfeeddown_det_mc.Scale(self.n_colls['mc'] / self.cfg('xsection_inel_mc'))
 
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final.png')
-                self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final_mc.png')
+                self._save_hist(hfeeddown_det_mc, f'fd/h_ptjet-{var}_feeddown_det_final_mc.png')
                 self.hfeeddown_det['data'][var] = hfeeddown_det
                 self.hfeeddown_det['mc'][var] = hfeeddown_det_mc
 
