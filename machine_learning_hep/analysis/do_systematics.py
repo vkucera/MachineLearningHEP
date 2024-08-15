@@ -75,7 +75,8 @@ class AnalyzerJetSystematics:
         # LaTeX string
         self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
-        self.v_varshape_latex = datap["analysis"][self.typean]["var_shape_latex"]
+        self.v_varshape_latex = datap["analysis"][self.typean]["observables"][self.var]["label"]
+        self.v_ylabel_latex = datap["analysis"][self.typean]["observables"][self.var]["label_y"]
 
         # first variable (hadron pt)
         self.v_var_binning = datap["var_binning"]  # name
@@ -214,12 +215,12 @@ class AnalyzerJetSystematics:
         self.y_step = 0.05
         # axes titles
         self.title_x = self.v_varshape_latex
-        self.title_y = "(1/#it{N}_{jet}) d#it{N}/d%s" % self.v_varshape_latex
+        self.title_y = self.v_ylabel_latex
         self.title_full = ";%s;%s" % (self.title_x, self.title_y)
         self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
         # text
         # self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV"
-        self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13 TeV"
+        self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"
         self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.p_latexnhadron
         self.text_jets_ratio = "#Lambda_{c}^{+}, D^{0} -tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet ch}| < 0.5"
@@ -282,13 +283,16 @@ class AnalyzerJetSystematics:
 
         # get the files containing result variations
 
+        path_input_files_sys = []
         input_files_sys = []
         input_files_eff = []
         for sys_cat in range(self.n_sys_cat):
+            path_input_files_sysvar = []
             input_files_sysvar = []
             input_files_sysvar_eff = []
             for sys_var, varname in enumerate(self.systematic_varnames[sys_cat]):
                 path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
+                path_input_files_sysvar.append(path)
                 input_files_sysvar.append(TFile.Open(path))
                 eff_file = path_eff.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
                 input_files_sysvar_eff.append(TFile.Open(eff_file))
@@ -296,6 +300,7 @@ class AnalyzerJetSystematics:
                     self.logger.critical(make_message_notfound(path))
                 if not input_files_sysvar_eff[sys_var]:
                     self.logger.critical(make_message_notfound(eff_file))
+            path_input_files_sys.append(path_input_files_sysvar)
             input_files_sys.append(input_files_sysvar)
             input_files_eff.append(input_files_sysvar_eff)
 
@@ -317,7 +322,7 @@ class AnalyzerJetSystematics:
                     )
                     name_hist_unfold_2d = f'h_ptjet-{self.var}_{self.method}_unfolded_data_0'
                     if not (hist_unfold := input_files_sys[sys_cat][sys_var].Get(name_hist_unfold_2d)):
-                        self.logger.critical(make_message_notfound(name_hist_unfold_2d, eff_file))
+                        self.logger.critical(make_message_notfound(name_hist_unfold_2d, path_input_files_sys[sys_cat][sys_var]))
                     axis_jetpt = get_axis(hist_unfold, 0)
                     # signif_check = True
                     string_catvar = self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var]
@@ -414,7 +419,7 @@ class AnalyzerJetSystematics:
             # )
             input_histograms_default[ibin2].SetTitle("")
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
-            input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
+            input_histograms_default[ibin2].SetYTitle(self.v_ylabel_latex)
             input_histograms_default[ibin2].Draw()
             print_histogram(input_histograms_default[ibin2])
 
@@ -446,7 +451,7 @@ class AnalyzerJetSystematics:
             )
             draw_latex(latex)
             # leg_sysvar.Draw("same")
-            csysvar.SaveAs("%s/sys_var_all_%s.eps" % (self.d_resultsallpdata, suffix))
+            csysvar.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_all.eps")
 
             continue
 
@@ -480,7 +485,7 @@ class AnalyzerJetSystematics:
                         )
                         input_histograms_default[ibin2].SetTitle("")
                         input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
-                        input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
+                        input_histograms_default[ibin2].SetYTitle(self.v_ylabel_latex)
                         input_histograms_default[ibin2].Draw()
                     leg_sysvar_each.AddEntry(
                         input_histograms_sys[ibin2][sys_cat][sys_var], self.systematic_varlabels[sys_cat][sys_var], "P"
@@ -978,7 +983,7 @@ class AnalyzerJetSystematics:
             )
             input_histograms_default[ibin2].SetTitle("")
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
-            input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
+            input_histograms_default[ibin2].SetYTitle(self.v_ylabel_latex)
             input_histograms_default[ibin2].Draw("AXIS")
             # input_histograms_default[ibin2].Draw("")
             setup_tgraph(tgsys[ibin2], get_colour(7, 0))
@@ -1216,7 +1221,6 @@ def main(args=None):
     args = parser.parse_args(args)
 
     list_vars = ["zg", "nsd", "rg", "zpar"]
-    list_vars = ["zpar"]
     for var in list_vars:
         analyser = AnalyzerJetSystematics(args.database_analysis, args.type_ana, var)
         analyser.jetsystematics()

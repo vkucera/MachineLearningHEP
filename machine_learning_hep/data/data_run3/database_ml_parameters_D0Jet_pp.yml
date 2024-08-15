@@ -688,7 +688,7 @@ D0jet_pp:
       sel_binmax2_gen:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
       # var_binningshape: zg_jet
       # var_binningshape_gen: zg_gen_jet
-      var_shape_latex: "shape"
+      # var_shape_latex: "shape"
       # sel_binminshape_reco: [-0.1,0.1,0.2,0.3,0.4]
       # sel_binmaxshape_reco:      [0.1,0.2,0.3,0.4,0.5]
       # sel_binminshape_gen:  [-0.1,0.1,0.2,0.3,0.4]
