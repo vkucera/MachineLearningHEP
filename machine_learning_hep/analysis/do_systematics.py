@@ -25,7 +25,7 @@ import yaml
 # pylint: disable=import-error, no-name-in-module
 from ROOT import TH1F, TCanvas, TFile, TGraphAsymmErrors, TLatex, TLegend, gStyle  # , TLine
 
-from machine_learning_hep.utils.hist import get_axis
+from machine_learning_hep.utils.hist import get_axis, print_histogram
 
 from machine_learning_hep.do_variations import (
     format_varlabel,
@@ -252,12 +252,12 @@ class AnalyzerJetSystematics:
             print("Jet pT gen max variations: ", self.lvar2_binmax_gen_sys)
 
         path_def = self.file_unfold
-        path_eff = self.file_efficiency
         input_file_default = TFile.Open(path_def)
-        eff_file_default = TFile.Open(path_eff)
-        file_sys_out = TFile.Open("%s/systematics_results.root" % self.d_resultsallpdata, "recreate")
         if not input_file_default:
             self.logger.critical(make_message_notfound(path_def))
+        path_eff = self.file_efficiency
+        eff_file_default = TFile.Open(path_eff)
+        file_sys_out = TFile.Open("%s/systematics_results.root" % self.d_resultsallpdata, "recreate")
 
         # get the default (central value) result histograms
 
@@ -275,6 +275,8 @@ class AnalyzerJetSystematics:
             input_histograms_default.append(input_file_default.Get(name_his))
             if not input_histograms_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_his, path_def))
+            print(f"Default histogram ({jetptrange[0]} to {jetptrange[1]})")
+            print_histogram(input_histograms_default[ibin2])
             # name_eff = "eff_mult%d" % ibin2
             # eff_default.append(eff_file_default.Get(name_eff))
 
@@ -352,6 +354,7 @@ class AnalyzerJetSystematics:
                     # input_histograms_eff.append(sys_var_histo_eff)
                     if not input_histograms_syscatvar[sys_var]:
                         self.logger.critical(make_message_notfound(name_his, path_file))
+                    print_histogram(sys_var_histo)
                     # if not input_histograms_eff[sys_var]:
                     #     self.logger.critical(make_message_notfound(name_eff, path_eff_file))
                     if debug:
@@ -379,13 +382,13 @@ class AnalyzerJetSystematics:
             input_histograms_sys.append(input_histograms_syscat)
             # input_histograms_sys_eff.append(input_histograms_syscat_eff)
 
-        return
-
         # plot the variations
+
+        print("Categories: %d", self.n_sys_cat)
+        # self.logger.info("Categories: %d", self.n_sys_cat)
 
         for ibin2 in range(self.p_nbin2_gen):
             # plot all the variations together
-
             suffix = "%s_%g_%g" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             nsys = 0
             csysvar = TCanvas("csysvar_%s" % suffix, "systematic variations" + suffix)
@@ -406,23 +409,35 @@ class AnalyzerJetSystematics:
             input_histograms_default[ibin2].GetYaxis().SetRangeUser(
                 *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
             )
-            input_histograms_default[ibin2].GetXaxis().SetRangeUser(
-                round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2)
-            )
+            # input_histograms_default[ibin2].GetXaxis().SetRangeUser(
+            #     round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2)
+            # )
             input_histograms_default[ibin2].SetTitle("")
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
             input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
             input_histograms_default[ibin2].Draw()
+            print_histogram(input_histograms_default[ibin2])
+
+            self.logger.info("Categories: %d", self.n_sys_cat)
+            print("Categories: %d" % self.n_sys_cat)
+
             for sys_cat in range(self.n_sys_cat):
+                self.logger.info("Category: %s", self.systematic_catlabels[sys_cat])
+                print("Category: %s" % self.systematic_catlabels[sys_cat])
                 for sys_var in range(self.systematic_variations[sys_cat]):
+                    self.logger.info("Variation: %s", self.systematic_varlabels[sys_cat][sys_var])
+                    print("Variation: %s" % self.systematic_varlabels[sys_cat][sys_var])
                     leg_sysvar.AddEntry(
                         input_histograms_sys[ibin2][sys_cat][sys_var],
                         ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])),
                         "P",
                     )
+                    self.logger.info("Adding label %s", ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])))
+                    print("Adding label %s" % ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])))
                     setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var], get_colour(nsys + 1))
                     input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
+
             latex = TLatex(
                 0.15,
                 0.82,
@@ -432,6 +447,8 @@ class AnalyzerJetSystematics:
             draw_latex(latex)
             # leg_sysvar.Draw("same")
             csysvar.SaveAs("%s/sys_var_all_%s.eps" % (self.d_resultsallpdata, suffix))
+
+            continue
 
             # plot the variations for each category separately
 
@@ -676,6 +693,9 @@ class AnalyzerJetSystematics:
                 draw_latex(latex)
                 leg_sysvar_eff_ratio.Draw("same")
                 csysvar_eff_ratio.SaveAs("%s/sys_var_eff_ratio_%s_%s.eps" % (self.d_resultsallpdata, suffix2, suffix))
+
+        return
+
 
         # calculate the systematic uncertainties
 
