@@ -52,7 +52,7 @@ categories:
                             bin_width: [0.01]
             reflections:
                 activate: [yes]
-                label: ["ignored"]
+                label: ["reflections ignored"]
                 diffs:
                     analysis:
                         jet_obs:
@@ -142,15 +142,15 @@ categories:
                                 - /data2/vkucera/powheg/trees_powheg_fd_Mlow.root
                                 - /data2/vkucera/powheg/trees_powheg_fd_NoEvtGen.root
                             fd_parquet:
-                                - /data2/jklein/powheg/powheg_fd_F1_R05.parquet
-                                - /data2/jklein/powheg/powheg_fd_F05_R1.parquet
-                                - /data2/jklein/powheg/powheg_fd_F2_R1.parquet
-                                - /data2/jklein/powheg/powheg_fd_F1_R2.parquet
-                                - /data2/jklein/powheg/powheg_fd_F2_R2.parquet
-                                - /data2/jklein/powheg/powheg_fd_F05_R05.parquet
-                                - /data2/jklein/powheg/powheg_fd_Mhigh.parquet
-                                - /data2/jklein/powheg/powheg_fd_Mlow.parquet
-                                - /data2/jklein/powheg/powheg_fd_NoEvtGen.parquet
+                                - /data2/jklein/powheg/trees_powheg_fd_F1_R05.parquet
+                                - /data2/jklein/powheg/trees_powheg_fd_F05_R1.parquet
+                                - /data2/jklein/powheg/trees_powheg_fd_F2_R1.parquet
+                                - /data2/jklein/powheg/trees_powheg_fd_F1_R2.parquet
+                                - /data2/jklein/powheg/trees_powheg_fd_F2_R2.parquet
+                                - /data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet
+                                - /data2/jklein/powheg/trees_powheg_fd_Mhigh.parquet
+                                - /data2/jklein/powheg/trees_powheg_fd_Mlow.parquet
+                                - /data2/jklein/powheg/trees_powheg_fd_NoEvtGen.parquet
     prior:
         activate: no
         processor: true
