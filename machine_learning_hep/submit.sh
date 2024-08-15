@@ -10,12 +10,12 @@ CONFIG="d0jet"
 
 # Config file suffix
 # STAGE="complete"
-# STAGE="all"
-STAGE="ana"
+STAGE="all"
+# STAGE="ana"
 # STAGE="variations"
 
 # Suffix of the analysis database
-DATABASE="D0pp_jet"
+DATABASE="D0Jet_pp"
 # DATABASE="LcJet_pp"
 
 # Name of the analysis section in the analysis database
