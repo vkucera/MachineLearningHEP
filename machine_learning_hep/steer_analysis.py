@@ -250,7 +250,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         if domergeapplydata:
             checkmakedirlist(dirpklskdec_mergeddata)
 
-    # Always create result directories.
+    # Always create result directories. (produces "double free or corruption (!prev)")
     checkmakedirlist(dirresultsmc)
     checkmakedir(dirresultsmctot)
     checkmakedirlist(dirresultsdata)

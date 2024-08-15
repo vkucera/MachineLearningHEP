@@ -25,6 +25,8 @@ import yaml
 # pylint: disable=import-error, no-name-in-module
 from ROOT import TH1F, TCanvas, TFile, TGraphAsymmErrors, TLatex, TLegend, gStyle  # , TLine
 
+from machine_learning_hep.utils.hist import get_axis
+
 from machine_learning_hep.do_variations import (
     format_varlabel,
     format_varname,
@@ -112,14 +114,14 @@ class AnalyzerJetSystematics:
 
         path_database_variations = datap["analysis"][self.typean]["variations_db"]
         if not path_database_variations:
-            self.logger.fatal(make_message_notfound("the variation database"))
+            self.logger.critical(make_message_notfound("the variation database"))
         if "/" not in path_database_variations:
             path_database_variations = f"{os.path.dirname(path_database_analysis)}/{path_database_variations}"
         with open(path_database_variations, "r", encoding="utf-8") as file_sys:
             db_variations = yaml.safe_load(file_sys)
 
         if not healthy_structure(db_variations):
-            self.logger.fatal("Bad structure of the variation database.")
+            self.logger.critical("Bad structure of the variation database.")
         db_variations = db_variations["categories"]
         self.systematic_catnames = [catname for catname, val in db_variations.items() if val["activate"]]
         self.n_sys_cat = len(self.systematic_catnames)
@@ -191,10 +193,11 @@ class AnalyzerJetSystematics:
 
         # input files
 
-        file_eff_name = datap["files_names"]["efffilename"]
-        self.file_efficiency = os.path.join(self.d_resultsallpmc, file_eff_name)
         file_result_name = datap["files_names"]["resultfilename"]
         self.file_unfold = os.path.join(self.d_resultsallpdata, file_result_name)
+        file_eff_name = datap["files_names"]["efffilename"]
+        self.file_efficiency = os.path.join(self.d_resultsallpmc, file_eff_name)
+        self.file_efficiency = self.file_unfold
 
         # official figures
         self.shape = typean[len("jet_") :]
@@ -227,7 +230,7 @@ class AnalyzerJetSystematics:
     def jetsystematics(self):
         string_default = "default/default"
         if string_default not in self.d_resultsallpdata:
-            self.logger.fatal("Not a default database! Cannot run systematics.")
+            self.logger.critical("Not a default database! Cannot run systematics.")
 
         debug = True
         if debug:
@@ -254,20 +257,26 @@ class AnalyzerJetSystematics:
         eff_file_default = TFile.Open(path_eff)
         file_sys_out = TFile.Open("%s/systematics_results.root" % self.d_resultsallpdata, "recreate")
         if not input_file_default:
-            self.logger.fatal(make_message_notfound(path_def))
+            self.logger.critical(make_message_notfound(path_def))
 
         # get the default (central value) result histograms
 
+        var = "zpar"
+        method = "sidesub"
         input_histograms_default = []
-        eff_default = []
+        # eff_default = []
         for ibin2 in range(self.p_nbin2_gen):
-            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-            name_his = "unfolded_z_sel_%s" % suffix
-            name_eff = "eff_mult%d" % ibin2
+            name_hist_unfold_2d = f'h_ptjet-{var}_{method}_unfolded_data_0'
+            if not (hist_unfold := input_file_default.Get(name_hist_unfold_2d)):
+                self.logger.critical(make_message_notfound(name_hist_unfold_2d, eff_file_default))
+            axis_jetpt = get_axis(hist_unfold, 0)
+            jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
+            name_his = f'h_{var}_{method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
             input_histograms_default.append(input_file_default.Get(name_his))
-            eff_default.append(eff_file_default.Get(name_eff))
             if not input_histograms_default[ibin2]:
-                self.logger.fatal(make_message_notfound(name_his, path_def))
+                self.logger.critical(make_message_notfound(name_his, path_def))
+            # name_eff = "eff_mult%d" % ibin2
+            # eff_default.append(eff_file_default.Get(name_eff))
 
         # get the files containing result variations
 
@@ -281,11 +290,10 @@ class AnalyzerJetSystematics:
                 input_files_sysvar.append(TFile.Open(path))
                 eff_file = path_eff.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
                 input_files_sysvar_eff.append(TFile.Open(eff_file))
-
                 if not input_files_sysvar[sys_var]:
-                    self.logger.fatal(make_message_notfound(path))
+                    self.logger.critical(make_message_notfound(path))
                 if not input_files_sysvar_eff[sys_var]:
-                    self.logger.fatal(make_message_notfound(eff_file))
+                    self.logger.critical(make_message_notfound(eff_file))
             input_files_sys.append(input_files_sysvar)
             input_files_eff.append(input_files_sysvar_eff)
 
@@ -305,6 +313,10 @@ class AnalyzerJetSystematics:
                         "Variation: %s, %s"
                         % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var])
                     )
+                    name_hist_unfold_2d = f'h_ptjet-{var}_{method}_unfolded_data_0'
+                    if not (hist_unfold := input_files_sys[sys_cat][sys_var].Get(name_hist_unfold_2d)):
+                        self.logger.critical(make_message_notfound(name_hist_unfold_2d, eff_file))
+                    axis_jetpt = get_axis(hist_unfold, 0)
                     # signif_check = True
                     string_catvar = self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var]
                     if string_catvar.startswith("binning/pt_jet"):
@@ -325,13 +337,10 @@ class AnalyzerJetSystematics:
                             self.lvar2_binmax_gen_sys[sys_var][ibin2],
                         )
                     else:
-                        name_his = "unfolded_z_sel_%s_%.2f_%.2f" % (
-                            self.v_var2_binning,
-                            self.lvar2_binmin_gen[ibin2],
-                            self.lvar2_binmax_gen[ibin2],
-                        )
+                        jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
+                        name_his = f'h_{var}_{method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
                     sys_var_histo = input_files_sys[sys_cat][sys_var].Get(name_his)
-                    sys_var_histo_eff = input_files_eff[sys_cat][sys_var].Get(name_eff)
+                    # sys_var_histo_eff = input_files_eff[sys_cat][sys_var].Get(name_eff)
                     path_file = path_def.replace(string_default, string_catvar)
                     path_eff_file = path_eff.replace(string_default, string_catvar)
                     # if not signif_check:
@@ -340,11 +349,11 @@ class AnalyzerJetSystematics:
                     #         sys_var_histo.SetBinContent(idr+1, 0)
                     #         sys_var_histo_eff.SetBinContent(idr+1, 0)
                     input_histograms_syscatvar.append(sys_var_histo)
-                    input_histograms_eff.append(sys_var_histo_eff)
+                    # input_histograms_eff.append(sys_var_histo_eff)
                     if not input_histograms_syscatvar[sys_var]:
-                        self.logger.fatal(make_message_notfound(name_his, path_file))
-                    if not input_histograms_eff[sys_var]:
-                        self.logger.fatal(make_message_notfound(name_eff, path_eff_file))
+                        self.logger.critical(make_message_notfound(name_his, path_file))
+                    # if not input_histograms_eff[sys_var]:
+                    #     self.logger.critical(make_message_notfound(name_eff, path_eff_file))
                     if debug:
                         print(
                             "Variation: %s, %s: got histogram %s from file %s"
@@ -355,20 +364,20 @@ class AnalyzerJetSystematics:
                                 path_file,
                             )
                         )
-                        print(
-                            "Variation: %s, %s: got efficiency histogram %s from file %s"
-                            % (
-                                self.systematic_catnames[sys_cat],
-                                self.systematic_varnames[sys_cat][sys_var],
-                                name_eff,
-                                path_eff_file,
-                            )
-                        )
+                        # print(
+                        #     "Variation: %s, %s: got efficiency histogram %s from file %s"
+                        #     % (
+                        #         self.systematic_catnames[sys_cat],
+                        #         self.systematic_varnames[sys_cat][sys_var],
+                        #         name_eff,
+                        #         path_eff_file,
+                        #     )
+                        # )
                     # input_histograms_syscatvar[sys_var].Scale(1.0, "width") #remove these later and put normalisation directly in systematics
                 input_histograms_syscat.append(input_histograms_syscatvar)
-                input_histograms_syscat_eff.append(input_histograms_eff)
+                # input_histograms_syscat_eff.append(input_histograms_eff)
             input_histograms_sys.append(input_histograms_syscat)
-            input_histograms_sys_eff.append(input_histograms_syscat_eff)
+            # input_histograms_sys_eff.append(input_histograms_syscat_eff)
 
         return
 
