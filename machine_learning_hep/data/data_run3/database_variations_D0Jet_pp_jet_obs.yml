@@ -13,7 +13,7 @@ categories:
                 label: ["default"]
                 diffs: {}
     fitting:
-        activate: no
+        activate: yes
         processor: false
         label: "fitting"
         correlation: "corr"
@@ -58,7 +58,7 @@ categories:
                         jet_obs:
                                 corr_refl: [false]
     sideband:
-        activate: no
+        activate: yes
         processor: false
         label: "sideband sub."
         correlation: "corr"
@@ -84,7 +84,7 @@ categories:
                                         signal: [-1.7, 1.7]
                                         right: [3., 5.5]
             ranges: # TODO
-                activate: [no, no]
+                activate: [yes, yes]
                 label:
                     - "#it{sb} = [-6,-3]#cup[3,6]"
                     - "#it{sb} = [-5,-3]#cup[3,5]"
@@ -108,7 +108,7 @@ categories:
                         jet_obs:
                             sidebandleftonly: [true]
     feeddown:
-        activate: no
+        activate: yes
         processor: false
         label: "feed-down"
         correlation: "corr"
@@ -169,7 +169,7 @@ categories:
                             doprior: [true]
                             niterunfoldingchosen: [4]
     regularisation:
-        activate: no
+        activate: yes
         processor: false
         label: "regularisation"
         correlation: "corr"
