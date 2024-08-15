@@ -80,7 +80,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.h_eff_ptjet_pthf = {}
         self.h_effnew_ptjet_pthf = {'pr': None, 'np': None}
         self.h_effnew_pthf = {'pr': None, 'np': None}
-        self.hfeeddown_det = { 'mc': {}, 'data': {}}
+        self.hfeeddown_det = {'mc': {}, 'data': {}}
         self.n_events = {}
         self.n_colls = {}
 
@@ -384,15 +384,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             self.roo_ws_ptjet[level] = [[None] * self.nbins] * 10
             rfilename = self.n_filemass_mc if "mc" in level else self.n_filemass
             fitcfg = None
-            self.logger.debug(f"Opening file {rfilename}.")
+            self.logger.debug("Opening file %s.", rfilename)
             with TFile(rfilename) as rfile:
                 if not rfile:
-                    self.logger.critical(f"File {rfilename} not found.")
+                    self.logger.critical("File %s not found.", rfilename)
                 name_histo = "h_mass-ptjet-pthf"
-                self.logger.debug(f"Opening histogram {name_histo}.")
-                h = rfile.Get(name_histo)
-                if not h:
-                    self.logger.critical(f"Histogram {name_histo} not found.")
+                self.logger.debug("Opening histogram %s.", name_histo)
+                if not (h := rfile.Get(name_histo)):
+                    self.logger.critical("Histogram %s not found.", name_histo)
                 for iptjet, ipt in itertools.product(itertools.chain((None,), range(0, get_nbins(h, 1))),
                                                      range(get_nbins(h, 2))):
                     self.logger.debug('fitting %s - %i', level, ipt)
@@ -440,7 +439,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             continue
                         # TODO: link datasel to fit stage
                         if datasel := fitcfg.get('datasel'):
-                            hsel = rfile.Get(f'h_mass-ptjet-pthf_{datasel}')
+                            hist_name = f'h_mass-ptjet-pthf_{datasel}'
+                            if not (hsel := rfile.Get(hist_name)):
+                                self.logger.critical("Failed to get histogram %s", hist_name)
                             h_invmass = project_hist(hsel, [0], cuts_proj)
                         for par in fitcfg.get('fix_params', []):
                             if var := roows.var(par):
