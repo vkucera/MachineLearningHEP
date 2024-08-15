@@ -4,14 +4,14 @@ download:
     activate: false
 conversion: # pkl
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: false
@@ -59,20 +59,20 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: true # processer: process_histomass
+    histomass: false # processer: process_histomass
   mc:
-    histomass: true # processer: process_histomass
-    efficiency: true # processer: process_efficiency
+    histomass: false # processer: process_histomass
+    efficiency: false # processer: process_efficiency
   steps: # list steps (name of method in analyzer) to run
     fit:
-    # efficiency:
-    # makenormyields:
-    init:
-    qa:
-    calculate_efficiencies:
-    estimate_feeddown:
-    subtract_sidebands:
-    extract_signals:
+    #efficiency:
+    #makenormyields:
+    #init:
+    #qa:
+    #calculate_efficiencies:
+    #estimate_feeddown:
+    #subtract_sidebands:
+    #extract_signals:
 
 systematics:
   cutvar:
