@@ -290,7 +290,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     h = project_hist(eff, [1], {0: (iptjet+1, iptjet+1)})
                     h.SetName(h.GetName() + f'_ptjet{iptjet}')
                     h.Draw('same')
-                    h.SetLineColor(iptjet + 1)
+                    h.SetLineColor(iptjet)
                     amax = max(amax, h.GetMaximum())
                 hc_eff.GetYaxis().SetRangeUser(0., 1.1 * amax)
                 self._save_canvas(c, f'eff/h_ptjet-pthf_effnew_{cat}_ptjet.png')
@@ -423,7 +423,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 h = rfile.Get(name_histo)
                 if not h:
                     self.logger.critical(f"Histogram {name_histo} not found.")
-                for iptjet, ipt in itertools.product(itertools.chain((None,), range(1, get_nbins(h, 1) - 1)),
+                for iptjet, ipt in itertools.product(itertools.chain((None,), range(0, get_nbins(h, 1))),
                                                      range(get_nbins(h, 2))):
                     self.logger.debug('fitting %s - %i', level, ipt)
                     roows = self.roows.get(ipt)
@@ -708,25 +708,25 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             fh_subtracted.GetYaxis().SetRangeUser(
                 0., max(fh_subtracted.GetMaximum(), fh['signal'].GetMaximum(), fh_sideband.GetMaximum()))
             self._save_canvas(c, f'sideband/h_ptjet{label}_overview_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
-        else:
+        # else:
             # Make plot
-            leg_pos = [0.7, 0.8, 0.9, 0.9]
-            y_margin_up = 0.25
-            y_margin_down = 0.05
-            list_obj = [fh['signal'], fh_sideband, fh_subtracted]
-            list_obj = [project_hist(h, [1], {0: (1, 1)}) for h in list_obj]
-            labels_obj = ["total", "background", "signal"]
-            colours = [get_colour(i) for i in range(len(list_obj))]
-            markers = [get_marker(i) for i in range(len(list_obj))]
-            can, _ = make_plot(f'h_ptjet{label}_overview_{ptrange[0]}-{ptrange[1]}_{mcordata}',
-                                list_obj=list_obj,
-                                labels_obj=labels_obj,
-                                range_x=[0.3, 1],
-                                title=f";{self.latex_labels_obs[var]};yield",
-                                offsets_xy=self.offsets_axes, colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=self.margins_can)
-            # Draw LaTeX
-            l_latex = draw_latex_lines([self.text_jets, self.text_range_pt_cand], x=self.x_latex, y=self.y_latex_top, y_step=self.y_step, font_size=self.font_size)
-            can.SaveAs(f'fig/{self.case}/{self.typean}/sideband/{can.GetName()}.pdf')
+            # leg_pos = [0.7, 0.8, 0.9, 0.9]
+            # y_margin_up = 0.25
+            # y_margin_down = 0.05
+            # list_obj = [fh['signal'], fh_sideband, fh_subtracted]
+            # list_obj = [project_hist(h, [1], {0: (1, 1)}) for h in list_obj]
+            # labels_obj = ["total", "background", "signal"]
+            # colours = [get_colour(i) for i in range(len(list_obj))]
+            # markers = [get_marker(i) for i in range(len(list_obj))]
+            # can, _ = make_plot(f'h_ptjet{label}_overview_{ptrange[0]}-{ptrange[1]}_{mcordata}',
+            #                     list_obj=list_obj,
+            #                     labels_obj=labels_obj,
+            #                     range_x=[0.3, 1],
+            #                     title=f";{self.latex_labels_obs[var]};yield",
+            #                     offsets_xy=self.offsets_axes, colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=self.margins_can)
+            # # Draw LaTeX
+            # l_latex = draw_latex_lines([self.text_jets, self.text_range_pt_cand], x=self.x_latex, y=self.y_latex_top, y_step=self.y_step, font_size=self.font_size)
+            # can.SaveAs(f'fig/{self.case}/{self.typean}/sideband/{can.GetName()}.pdf')
 
         return fh_subtracted
 
@@ -849,20 +849,20 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                 # Normalise
                                 hproj.Scale(1. / hproj.Integral(), "width")
                                 # Make plot
-                                leg_pos=[0.7, 0.8, 0.9, 0.9]
-                                colours = [get_colour(0)]
-                                markers = [get_marker(0)]
-                                y_margin_up = 0.25
-                                y_margin_down = 0.05
-                                can, _ = make_plot(f"h_{var}_{method}_unfolded_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}",
-                                                   list_obj=[hproj],
-                                                   labels_obj=[f"{mcordata}"],
-                                                   range_x=[0.3, 1],
-                                                   title=f";{self.latex_labels_obs[var]};{self.latex_labels_y[var]}",
-                                                   offsets_xy=self.offsets_axes, colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=self.margins_can)
-                                # Draw LaTeX
-                                l_latex = draw_latex_lines([self.text_jets, text_range_pt_jet, self.text_range_pt_cand], x=self.x_latex, y=self.y_latex_top, y_step=self.y_step, font_size=self.font_size)
-                                can.SaveAs(f'fig/{self.case}/{self.typean}/{can.GetName()}.pdf')
+                                # leg_pos=[0.7, 0.8, 0.9, 0.9]
+                                # colours = [get_colour(0)]
+                                # markers = [get_marker(0)]
+                                # y_margin_up = 0.25
+                                # y_margin_down = 0.05
+                                # can, _ = make_plot(f"h_{var}_{method}_unfolded_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}",
+                                #                    list_obj=[hproj],
+                                #                    labels_obj=[f"{mcordata}"],
+                                #                    range_x=[0.3, 1],
+                                #                    title=f";{self.latex_labels_obs[var]};{self.latex_labels_y[var]}",
+                                #                    offsets_xy=self.offsets_axes, colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=self.margins_can)
+                                # # Draw LaTeX
+                                # l_latex = draw_latex_lines([self.text_jets, text_range_pt_jet, self.text_range_pt_cand], x=self.x_latex, y=self.y_latex_top, y_step=self.y_step, font_size=self.font_size)
+                                # can.SaveAs(f'fig/{self.case}/{self.typean}/{can.GetName()}.pdf')
                             self._save_canvas(c,
                                               f'uf/h_{var}_{method}_convergence_{mcordata}_' +
                                               f'jetpt-{jetptrange[0]}-{jetptrange[1]}.png')
