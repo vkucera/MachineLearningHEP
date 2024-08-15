@@ -192,11 +192,16 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         logger.info('existing directories must be deleted')
         for d in exdirs:
             print(f'rm -rf {d}')
+        delete = False
         if args.delete:
             ok = input('Do you want to delete these directories now (y/n)? ')
-            if ok.lower() == 'y':
-                while len(exdirs) > 0:
-                    shutil.rmtree(exdirs.pop())
+            delete = ok.lower() == 'y'
+        if args.delete_force:
+            delete = True
+        if delete:
+            logger.warning("Deleting output directories")
+            while len(exdirs) > 0:
+                shutil.rmtree(exdirs.pop())
         if len(exdirs) > 0:
             sys.exit()
 
@@ -245,13 +250,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         if domergeapplydata:
             checkmakedirlist(dirpklskdec_mergeddata)
 
-    if dohistomassmc:
-        checkmakedirlist(dirresultsmc)
-        checkmakedir(dirresultsmctot)
-
-    if dohistomassdata:
-        checkmakedirlist(dirresultsdata)
-        checkmakedir(dirresultsdatatot)
+    # Always create result directories.
+    checkmakedirlist(dirresultsmc)
+    checkmakedir(dirresultsmctot)
+    checkmakedirlist(dirresultsdata)
+    checkmakedir(dirresultsdatatot)
 
     def mlhepmod(name):
         return importlib.import_module(f"..{name}", __name__)
@@ -472,6 +475,8 @@ def main(args=None):
                         help="delete per-period results at the end")
     parser.add_argument("--delete", action="store_true",
                         help="delete existing directories")
+    parser.add_argument("--delete-force", action="store_true",
+                        help="delete existing directories without asking")
     parser.add_argument("--batch", "-b", action="store_true", help="enable ROOT batch mode")
 
     args = parser.parse_args(args)
