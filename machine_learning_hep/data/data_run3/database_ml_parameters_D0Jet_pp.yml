@@ -370,28 +370,28 @@ D0jet_pp:
           bins_fix: [6, -.1, .5] # split rec and gen? # systematics?
           label: '#it{z}_{g}'
           label_y: "(1/#it{N}_{jet ch})d#it{N}/d#it{z}_{g}"
-        # nsd:
-        #   bins_fix: [10, -.5, 9.5]
-        #   label: '#it{n}_{SD}'
-        # rg:
-        #   bins_fix: [11, -.1, 1.]
-        #   label: '#it{R}_{g}'
-        # zpar:
-        #   bins_fix: [10, 0., 1.]
-        #   label: '#it{z}_{#parallel}'
-        # dr:
-        #   bins_fix: [10, 0., 1.]
-        #   label: '#Delta#it{r}'
-        # lntheta:
-        #   bins_fix: [10, 0., 5.]
-        #   label: '#minusln(#it{#theta})'
-        #   arraycols: [3]
-        # lnkt:
-        #   bins_fix: [10, -8., 2.]
-        #   label: 'ln(#it{k}_{T}/(GeV/#it{c}))'
-        #   arraycols: [3]
-        # lntheta-lnkt:
-        #   arraycols: [3, 4]
+        nsd:
+          bins_fix: [10, -.5, 9.5]
+          label: '#it{n}_{SD}'
+        rg:
+          bins_fix: [11, -.1, 1.]
+          label: '#it{R}_{g}'
+        zpar:
+          bins_fix: [10, 0., 1.]
+          label: '#it{z}_{#parallel}'
+        dr:
+          bins_fix: [10, 0., 1.]
+          label: '#Delta#it{r}'
+        lntheta:
+          bins_fix: [10, 0., 5.]
+          label: '#minusln(#it{#theta})'
+          arraycols: [3]
+        lnkt:
+          bins_fix: [10, -8., 2.]
+          label: 'ln(#it{k}_{T}/(GeV/#it{c}))'
+          arraycols: [3]
+        lntheta-lnkt:
+          arraycols: [3, 4]
 
       data_selections:
         mcsig:
@@ -675,16 +675,16 @@ D0jet_pp:
       # unmatched_gen: true
       latexnamehadron: "D^{0}"
       # latexnamedecay: "K^{#minus} #pi^{#plus}"
-      # var_binning2: pt_jet
+      var_binning2: pt_jet
       # var_binning2_gen: pt_gen_jet
-      # latexbin2var: "#it{p}_{T}^{jet ch}"
-      # sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      # sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
-      # sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
-      # sel_binmax2_gen:      [15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
+      latexbin2var: "#it{p}_{T}^{jet ch}"
+      sel_binmin2_reco: [5, 7, 15, 30] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmin2_gen: [5, 7, 15, 30] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_gen:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
       # var_binningshape: zg_jet
       # var_binningshape_gen: zg_gen_jet
-      # var_shape_latex: "#it{z}_{g}"
+      var_shape_latex: "shape"
       # sel_binminshape_reco: [-0.1,0.1,0.2,0.3,0.4]
       # sel_binmaxshape_reco:      [0.1,0.2,0.3,0.4,0.5]
       # sel_binminshape_gen:  [-0.1,0.1,0.2,0.3,0.4]
@@ -765,7 +765,7 @@ D0jet_pp:
       # pythia8_prompt_variations: ["default", "charm_lo"] #["default","colour0soft"]
       # pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_zg.yml
+      variations_db: ./data/data_run3/database_variations_D0Jet_pp_jet_obs.yml
 
       # Additional cuts applied before mass histogram is filled
       # use_cuts: False
