@@ -180,6 +180,9 @@ class ProcesserJets(Processer):
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
 
+            # TODO: Custom cuts
+
+
             h = create_hist(
                 'h_mass-ptjet-pthf',
                 ';M (GeV/#it{c}^{2});p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
@@ -285,6 +288,10 @@ class ProcesserJets(Processer):
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
                                    for bin in self.active_bins_skim)
+
+            # TODO: Custom cuts
+            # self.apply_cuts_ptbin(df, ipt)
+
             df = self._calculate_variables(dfgen_orig)
             df = df.rename(lambda name: name + '_gen', axis=1)
             dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
@@ -296,6 +303,10 @@ class ProcesserJets(Processer):
                 cols.append(idx)
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index], columns=cols)
                            for bin in self.active_bins_skim)
+
+            # TODO: Custom cuts
+            # self.apply_cuts_ptbin(df, ipt)
+
             dfquery(df, self.cfg('efficiency.filter_det'), inplace=True)
             if idx := self.cfg('efficiency.index_match'):
                 df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
