@@ -772,16 +772,20 @@ D0jet_pp:
       variations_db: database_variations_D0Jet_pp_jet_obs.yml
 
       # Additional cuts applied before mass histogram is filled
-      # use_cuts: False
-      # cuts: # (sel_an_binmin bins)
-      # - Null
-      # - Null
-      # - Null
-      # - Null
-      # - Null
-      # - Null
-      # - Null
-      # - Null
+      use_cuts: False
+      cuts: # (sel_an_binmin bins)
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
 
     # Rest is obsolete
 
