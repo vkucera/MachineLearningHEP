@@ -1,6 +1,6 @@
 categories:
     default:
-        activate: yes
+        activate: no
         processor: false
         label: "default"
         correlation: "corr"
@@ -43,13 +43,6 @@ categories:
                     analysis:
                         jet_obs:
                             massmin: [1.75]
-            rebin:
-                activate: [yes]
-                label: ["rebin"]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            bin_width: [0.01]
             reflections:
                 activate: [yes]
                 label: ["reflections ignored"]
@@ -67,27 +60,47 @@ categories:
         rms_both_sides: true
         variations:
             sigma:  # TODO
-                activate: [no, no]
+                activate: [yes, yes]
                 label:
-                    - "#it{signal} = 1.6 #sigma"
-                    - "#it{signal} = 1.7 #sigma"
+                    - "S 1.6 #sigma"
+                    - "S 1.7 #sigma"
                 diffs:
                     analysis:
                         jet_obs:
                             sidesub:
-                                - - regions:
+                                - - level: mc
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 3.]
+                                  - ptrange: [16., 100.]
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 5.]
+                                  - regions:
                                         left: [-5.5, -3.]
                                         signal: [-1.6, 1.6]
                                         right: [3., 5.5]
-                                - - regions:
+                                - - level: mc
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 3.]
+                                  - ptrange: [16., 100.]
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 5.]
+                                  - regions:
                                         left: [-5.5, -3.]
                                         signal: [-1.7, 1.7]
                                         right: [3., 5.5]
             ranges: # TODO
                 activate: [yes, yes]
                 label:
-                    - "#it{sb} = [-6,-3]#cup[3,6]"
-                    - "#it{sb} = [-5,-3]#cup[3,5]"
+                    - "SB [-6,-3]#cup[3,6]"
+                    - "SB [-5,-3]#cup[3,5]"
                 diffs:
                     analysis:
                         jet_obs:
@@ -215,11 +228,11 @@ categories:
         variations:
             crosssection:
                 activate: [yes, yes]
-                label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
+                label: ["#it{#sigma}_{MB} down", "#it{#sigma}_{MB} up"]
                 diffs:
                     analysis:
                         jet_obs:
-                            xsection_inel: [54.91, 60.69] # TODO
+                            xsection_inel: [54.91, 60.69] # TODO: update values
     tracking: # TODO
         activate: no
         processor: true
@@ -262,7 +275,7 @@ categories:
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskdecmerged,
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskdecmerged]] #list of periods
     binning:
-        activate: no
+        activate: yes
         processor: true
         label: "binning"
         correlation: "corr"
@@ -270,8 +283,15 @@ categories:
         symmetrise: true
         rms_both_sides: true
         variations:
-            pt_jet:
+            rebin:
                 activate: [yes]
+                label: ["rebin"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            bin_width: [0.01]
+            pt_jet:
+                activate: [no]
                 label:
                     - "#it{p}_{T}^{jet} 5#rightarrow4"
                 diffs:
@@ -279,7 +299,7 @@ categories:
                         jet_obs:
                             bins_ptjet: [[4, 7, 15, 30, 50]]
     cutvar:
-        activate: yes
+        activate: no # TODO
         processor: true
         label: "BDT cut"
         correlation: "corr"
@@ -288,9 +308,14 @@ categories:
         rms_both_sides: true
         variations:
             cutvar:
-                activate: [yes]
+                activate: [yes, yes]
                 label:
                     - "cut 0.5"
+                    - "cut 0.25"
                 diffs:
-                    sel_reco_skim:
-                            - ["mlBkgScore < 0.01", "mlBkgScore < 0.02", "mlBkgScore < 0.03", "mlBkgScore < .04", "mlBkgScore < 0.07", "mlBkgScore < 0.13", "mlBkgScore < 0.23", "mlBkgScore < 0.26"]
+                    analysis:
+                        jet_obs:
+                            use_cuts: [True, True]
+                            cuts:
+                                    - ["mlBkgScore < 0.01", "mlBkgScore < 0.02", "mlBkgScore < 0.03", "mlBkgScore < .04", "mlBkgScore < 0.07", "mlBkgScore < 0.13", "mlBkgScore < 0.23", "mlBkgScore < 0.26"]
+                                    - ["mlBkgScore < 0.005", "mlBkgScore < 0.01", "mlBkgScore < 0.015", "mlBkgScore < .02", "mlBkgScore < 0.035", "mlBkgScore < 0.065", "mlBkgScore < 0.125", "mlBkgScore < 0.13"]
