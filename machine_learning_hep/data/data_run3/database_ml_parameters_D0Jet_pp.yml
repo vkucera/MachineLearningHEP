@@ -655,7 +655,7 @@ D0jet_pp:
         correction_method: run3
 
       unfolding_iterations: 8 # used, maximum iteration
-      unfolding_iterations_sel: 8 # not used, selected iteration # systematics
+      unfolding_iterations_sel: 4 # not used, selected iteration # systematics
       closure:
         pure_signal: true
         exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
