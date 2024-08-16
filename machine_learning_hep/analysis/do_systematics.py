@@ -149,7 +149,7 @@ class AnalyzerJetSystematics:
             self.systematic_varnames[c] = []
             self.systematic_varlabels[c] = []
             for varname, val in db_variations[catname]["variations"].items():
-                if catname == "binning" and varname == "pt_jet":
+                if catname == "binning" and varname == "pt_jet" and any(val["activate"]):
                     self.lvar2_binmin_gen_sys = val["diffs"]["analysis"][self.typean]["sel_binmin2_gen"]
                     self.lvar2_binmax_gen_sys = val["diffs"]["analysis"][self.typean]["sel_binmax2_gen"]
                     for i_var, list_pt in enumerate(self.lvar2_binmin_gen_sys):
@@ -504,6 +504,8 @@ class AnalyzerJetSystematics:
                 leg_sysvar_each.Draw("same")
                 csysvar_each.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}.eps")
                 csysvar_each.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}.pdf")
+
+                # plot ratios to the default
 
                 nsys = 0
                 csysvar_ratio = TCanvas(
