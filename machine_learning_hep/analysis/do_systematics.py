@@ -219,13 +219,13 @@ class AnalyzerJetSystematics:
         self.title_full = ";%s;%s" % (self.title_x, self.title_y)
         self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
         # text
-        # self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV"
+        # self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"
         self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"
         self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.p_latexnhadron
         self.text_jets_ratio = "#Lambda_{c}^{+}, D^{0} -tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet ch}| < 0.5"
         self.text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| < 0.8"
-        self.text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
+        self.text_sd = "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
         self.text_acc_h = "|#it{y}| < 0.8"
         self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
 
@@ -453,8 +453,6 @@ class AnalyzerJetSystematics:
             # leg_sysvar.Draw("same")
             csysvar.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_all.eps")
 
-            continue
-
             # plot the variations for each category separately
 
             for sys_cat in range(self.n_sys_cat):
@@ -480,9 +478,9 @@ class AnalyzerJetSystematics:
                         input_histograms_default[ibin2].GetYaxis().SetRangeUser(
                             *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                         )
-                        input_histograms_default[ibin2].GetXaxis().SetRangeUser(
-                            round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2)
-                        )
+                        # input_histograms_default[ibin2].GetXaxis().SetRangeUser(
+                        #     round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2)
+                        # )
                         input_histograms_default[ibin2].SetTitle("")
                         input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
                         input_histograms_default[ibin2].SetYTitle(self.v_ylabel_latex)
@@ -504,7 +502,8 @@ class AnalyzerJetSystematics:
                 )
                 draw_latex(latex)
                 leg_sysvar_each.Draw("same")
-                csysvar_each.SaveAs("%s/sys_var_%s_%s.eps" % (self.d_resultsallpdata, suffix2, suffix))
+                csysvar_each.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}.eps")
+                csysvar_each.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}.pdf")
 
                 nsys = 0
                 csysvar_ratio = TCanvas(
@@ -555,7 +554,10 @@ class AnalyzerJetSystematics:
                 # line.SetLineColor(1)
                 # line.Draw()
                 leg_sysvar_ratio.Draw("same")
-                csysvar_ratio.SaveAs("%s/sys_var_ratio_%s_%s.eps" % (self.d_resultsallpdata, suffix2, suffix))
+                csysvar_ratio.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.eps")
+                csysvar_ratio.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.pdf")
+
+                continue
 
                 csysvar_eff = TCanvas("csysvar_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix)
                 setup_canvas(csysvar_eff)
@@ -609,7 +611,8 @@ class AnalyzerJetSystematics:
                 )
                 draw_latex(latex)
                 leg_sysvar_eff.Draw("same")
-                csysvar_eff.SaveAs("%s/sys_var_eff_%s_%s.eps" % (self.d_resultsallpdata, suffix2, suffix))
+                csysvar_eff.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_eff.eps")
+                csysvar_eff.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_eff.pdf")
 
                 csysvar_bin = TCanvas(
                     "csysvar_bin_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
@@ -697,10 +700,10 @@ class AnalyzerJetSystematics:
                 )
                 draw_latex(latex)
                 leg_sysvar_eff_ratio.Draw("same")
-                csysvar_eff_ratio.SaveAs("%s/sys_var_eff_ratio_%s_%s.eps" % (self.d_resultsallpdata, suffix2, suffix))
+                csysvar_eff_ratio.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.eps")
+                csysvar_eff_ratio.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.pdf")
 
         return
-
 
         # calculate the systematic uncertainties
 
