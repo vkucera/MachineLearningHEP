@@ -23,7 +23,7 @@ from math import sqrt
 import yaml
 
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TH1F, TCanvas, TFile, TGraphAsymmErrors, TLatex, TLegend, gStyle  # , TLine
+from ROOT import gROOT, TH1F, TCanvas, TFile, TGraphAsymmErrors, TLatex, TLegend, gStyle  # , TLine
 
 from machine_learning_hep.utils.hist import get_axis, print_histogram
 
@@ -1225,6 +1225,7 @@ def main(args=None):
     parser.add_argument("--analysis", "-a", dest="type_ana", help="choose type of analysis", required=True)
     args = parser.parse_args(args)
 
+    gROOT.SetBatch(True)
     list_vars = ["zg", "nsd", "rg", "zpar"]
     for var in list_vars:
         analyser = AnalyzerJetSystematics(args.database_analysis, args.type_ana, var)
