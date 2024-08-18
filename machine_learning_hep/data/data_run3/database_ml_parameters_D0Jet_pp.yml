@@ -20,9 +20,9 @@ D0jet_pp:
   sel_gen_unp: "fPt > 1. and fPt < 10."
   sel_cen_unp: null
   sel_good_evt_unp: null
-  sel_reco_skim: ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"] # systematics
-  # sel_reco_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
-  sel_gen_skim: [null,null,null,null,null,null,null,null] # sel_skim_binmin bins
+  sel_reco_skim: ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"] # (sel_skim_binmin bins) systematics
+  # sel_reco_skim: [null,null,null,null,null,null,null] # (sel_skim_binmin bins)
+  sel_gen_skim: [null,null,null,null,null,null,null,null] # (sel_skim_binmin bins)
   sel_skim_binmin: [1,3,4,5,6,8,12,16] # skimming pt bins (sel_skim_binmin bins)
   sel_skim_binmax:   [3,4,5,6,8,12,16,48] # skimming pt bins (sel_skim_binmin bins)
   var_binning: fPt
@@ -649,7 +649,7 @@ D0jet_pp:
       mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]; used in processer for binarray_mass  (not used for fit range!)
       bin_width: 0.005 # bin width of the invariant mass histogram # systematics?
       efficiency:
-        extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar']
+        extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar', 'mlBkgScore']
         filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'
         index_match: fIndexArrayD0CMCPJETOS_hf
         correction_method: run3
@@ -773,11 +773,7 @@ D0jet_pp:
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: False
-      cuts: # (sel_an_binmin bins)
-      - Null
-      - Null
-      - Null
-      - Null
+      cuts: # (sel_skim_binmin bins)
       - Null
       - Null
       - Null

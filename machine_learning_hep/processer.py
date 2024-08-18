@@ -568,35 +568,34 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def load_cuts(self):
         """Load cuts from database
         """
-
-        # Assume that there is a list with self.p
         raw_cuts = self.datap["analysis"][self.typean].get("cuts", None)
         if not raw_cuts:
             print("No custom cuts given, hence not cutting...")
-            self.analysis_cuts = [None] * self.p_nptfinbins
+            self.analysis_cuts = [None] * self.p_nptbins
             return
-
-        if len(raw_cuts) != self.p_nptfinbins:
-            print(f"You have {self.p_nptfinbins} but you passed {len(raw_cuts)} cuts. Exit...")
+        if len(raw_cuts) != self.p_nptbins:
+            print(f"You have {self.p_nptbins} but you passed {len(raw_cuts)} cuts. Exit...")
             sys.exit(1)
-
         self.analysis_cuts = deepcopy(raw_cuts)
 
 
     def apply_cuts_ptbin(self, df_, ipt):
-        """Helper function to cut dataframe with cuts for given pT bin
-
-        Args:
-            df: dataframe
-            ipt: int
-                i'th pT bin
-        Returns:
-            dataframe
-        """
+        """Cut dataframe with cuts for a given skimming pT bin"""
         if not self.analysis_cuts[ipt]:
             return df_
-
         return df_.query(self.analysis_cuts[ipt])
+
+
+    def apply_cuts_all_ptbins(self, df):
+        """Apply cuts for all skimming pT bins."""
+        if not self.do_custom_analysis_cuts or not any(self.analysis_cuts):
+            return df
+
+        def apply_cut_for_ipt(df, ipt: int):
+            df_ipt = seldf_singlevar(df, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
+            return df_ipt.query(self.analysis_cuts[ipt]) if self.analysis_cuts[ipt] else df_ipt
+
+        return pd.concat(apply_cut_for_ipt(df, ipt) for ipt in range(self.p_nptbins))
 
 
     def process_histomass(self):
