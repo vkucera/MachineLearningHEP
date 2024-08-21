@@ -98,14 +98,14 @@ class AnalyzerJetSystematics:
 
         # observable (z, shape,...)
         # reconstruction level
-        binning_obs_rec = datap["analysis"][self.typean]["observables"][self.var]["bins_fix"]  # FIXME: separate rec and gen
+        binning_obs_rec = datap["analysis"][self.typean]["observables"][self.var]["bins_det_fix"]  # FIXME: separate rec and gen
         self.n_bins_obs_rec = binning_obs_rec[0]
         self.obs_rec_min = float(binning_obs_rec[1])
         self.obs_rec_max = float(binning_obs_rec[2])
         step = (self.obs_rec_max - self.obs_rec_min) / self.n_bins_obs_rec
         self.edges_obs_rec = [round(self.obs_rec_min + i * step, 2) for i in range(self.n_bins_obs_rec + 1)]
         # generator level
-        binning_obs_gen = datap["analysis"][self.typean]["observables"][self.var]["bins_fix"]  # FIXME: separate rec and gen
+        binning_obs_gen = datap["analysis"][self.typean]["observables"][self.var]["bins_gen_fix"]  # FIXME: separate rec and gen
         self.n_bins_obs_gen = binning_obs_gen[0]
         self.obs_gen_min = float(binning_obs_gen[1])
         self.obs_gen_max = float(binning_obs_gen[2])
