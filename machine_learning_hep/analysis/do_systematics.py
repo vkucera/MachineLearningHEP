@@ -20,6 +20,7 @@ import os
 from array import array
 from math import sqrt
 import logging
+from pathlib import Path
 
 import yaml
 
@@ -257,13 +258,19 @@ class AnalyzerJetSystematics:
             print("Jet pT rec variations: ", self.edges_ptjet_rec_sys)
             print("Jet pT gen variations: ", self.edges_ptjet_gen_sys)
 
+        # output file for histograms
+        file_sys_out = TFile.Open(f"{self.dir_result_data}/systematics_results.root", "recreate")
+        # output directory for figures
+        dir_out_figs = Path(f"{os.path.expandvars(self.dir_result_data)}/fig/sys")
+        dir_out_figs.mkdir(parents=True, exist_ok=True)
+
+        # Open input files for default results.
         path_def = self.file_unfold
-        input_file_default = TFile.Open(path_def)
-        if not input_file_default:
+        if not (input_file_default := TFile.Open(path_def)):
             self.logger.critical(make_message_notfound(path_def))
         path_eff = self.file_efficiency
-        eff_file_default = TFile.Open(path_eff)
-        file_sys_out = TFile.Open("%s/systematics_results.root" % self.dir_result_data, "recreate")
+        if not (eff_file_default := TFile.Open(path_eff)):
+            self.logger.critical(make_message_notfound(path_eff))
 
         # get the default (central value) result histograms
 
@@ -456,7 +463,7 @@ class AnalyzerJetSystematics:
             )
             draw_latex(latex)
             # leg_sysvar.Draw("same")
-            csysvar.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_all.png")
+            csysvar.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_all.png")
 
             # plot the variations for each category separately
 
@@ -507,8 +514,8 @@ class AnalyzerJetSystematics:
                 )
                 draw_latex(latex)
                 leg_sysvar_each.Draw("same")
-                csysvar_each.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}.png")
-                csysvar_each.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}.pdf")
+                csysvar_each.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}.png")
+                csysvar_each.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}.pdf")
 
                 # plot ratios to the default
 
@@ -561,8 +568,8 @@ class AnalyzerJetSystematics:
                 # line.SetLineColor(1)
                 # line.Draw()
                 leg_sysvar_ratio.Draw("same")
-                csysvar_ratio.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.png")
-                csysvar_ratio.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.pdf")
+                csysvar_ratio.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.png")
+                csysvar_ratio.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.pdf")
 
                 # Plot efficiency variations
 
@@ -618,8 +625,8 @@ class AnalyzerJetSystematics:
                 )
                 draw_latex(latex)
                 leg_sysvar_eff.Draw("same")
-                csysvar_eff.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_eff.png")
-                csysvar_eff.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_eff.pdf")
+                csysvar_eff.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_eff.png")
+                csysvar_eff.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_eff.pdf")
 
                 # What is this?
                 # csysvar_bin = TCanvas(
@@ -711,8 +718,8 @@ class AnalyzerJetSystematics:
                 )
                 draw_latex(latex)
                 leg_sysvar_eff_ratio.Draw("same")
-                csysvar_eff_ratio.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.png")
-                csysvar_eff_ratio.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.pdf")
+                csysvar_eff_ratio.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.png")
+                csysvar_eff_ratio.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.pdf")
 
         # calculate the systematic uncertainties
 
@@ -1032,7 +1039,7 @@ class AnalyzerJetSystematics:
             leg_finalwsys.Draw("same")
             latex_SD = TLatex(0.15, 0.62, "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
             draw_latex(latex_SD)
-            cfinalwsys.SaveAs("%s/%s_final_wsys_%s.pdf" % (self.dir_result_data, self.shape, suffix))
+            cfinalwsys.SaveAs(f"{dir_out_figs}/{self.shape}_final_wsys_{suffix}.pdf")
 
             # plot the relative systematic uncertainties for all categories together
 
@@ -1124,9 +1131,9 @@ class AnalyzerJetSystematics:
                 draw_latex(latex, textsize=self.fontsize)
                 y_latex -= self.y_step
             leg_relativesys.Draw("same")
-            crelativesys.SaveAs("%s/sys_unc_%s.png" % (self.dir_result_data, suffix))
+            crelativesys.SaveAs(f"{dir_out_figs}/sys_unc_{suffix}.png")
             if ibin2 == 1:
-                crelativesys.SaveAs("%s/%s_sys_unc_%s.pdf" % (self.dir_result_data, self.shape, suffix))
+                crelativesys.SaveAs(f"{dir_out_figs}/{self.shape}_sys_unc_{suffix}.pdf")
             gStyle.SetErrorX(0.5)
 
             # plot the relative systematic uncertainties for all categories together
@@ -1216,9 +1223,9 @@ class AnalyzerJetSystematics:
                 draw_latex(latex, textsize=self.fontsize)
                 y_latex -= self.y_step
             leg_relativesys_gr.Draw("same")
-            crelativesys_gr.SaveAs("%s/sys_unc_gr_%s.png" % (self.dir_result_data, suffix))
+            crelativesys_gr.SaveAs(f"{dir_out_figs}/sys_unc_gr_{suffix}.png")
             if ibin2 == 1:
-                crelativesys_gr.SaveAs("%s/%s_sys_unc_gr_%s.pdf" % (self.dir_result_data, self.shape, suffix))
+                crelativesys_gr.SaveAs(f"{dir_out_figs}/{self.shape}_sys_unc_gr_{suffix}.pdf")
             gStyle.SetErrorX(0.5)
 
 
