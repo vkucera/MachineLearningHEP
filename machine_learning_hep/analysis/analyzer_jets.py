@@ -268,6 +268,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     h.SetName(h.GetName() + f'_ptjet{iptjet}')
                     h.Draw('same')
                     h.SetLineColor(iptjet)
+                    self._save_hist(h, f'h_ptjet-pthf_effnew_{cat}_ptjet_{iptjet}')
                     amax = max(amax, h.GetMaximum())
                 hc_eff.GetYaxis().SetRangeUser(0., 1.1 * amax)
                 self._save_canvas(c, f'eff/h_ptjet-pthf_effnew_{cat}_ptjet.png')
