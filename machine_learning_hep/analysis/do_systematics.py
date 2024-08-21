@@ -19,6 +19,7 @@ import argparse
 import os
 from array import array
 from math import sqrt
+import logging
 
 import yaml
 
@@ -65,6 +66,9 @@ class AnalyzerJetSystematics:
         self.typean = typean
         self.var = var
         self.method = "sidesub"
+        self.logger.setLevel(logging.INFO)
+
+        # self.logger.info("Processing observable %s", self.var)
 
         with open(path_database_analysis, "r", encoding="utf-8") as file_in:
             db_analysis = yaml.safe_load(file_in)
@@ -93,13 +97,22 @@ class AnalyzerJetSystematics:
         self.p_nbin2_gen = len(self.lvar2_binmin_gen)  # number of gen bins
 
         # observable (z, shape,...)
-        # self.lvarshape_binmin_reco = \
-        #     datap["analysis"][self.typean]["sel_binminshape_reco"]
-        # self.lvarshape_binmax_reco = \
-        #     datap["analysis"][self.typean]["sel_binmaxshape_reco"]
-        # self.lvarshape_binmin_gen = datap["analysis"][self.typean]["sel_binminshape_gen"]
-        # self.lvarshape_binmax_gen = datap["analysis"][self.typean]["sel_binmaxshape_gen"]
-        # self.p_nbinshape_gen = len(self.lvarshape_binmin_gen)  # number of gen bins
+        # reconstruction level
+        binning_obs_rec = datap["analysis"][self.typean]["observables"][self.var]["bins_fix"]  # FIXME: separate rec and gen
+        self.n_bins_obs_rec = binning_obs_rec[0]
+        self.obs_rec_min = float(binning_obs_rec[1])
+        self.obs_rec_max = float(binning_obs_rec[2])
+        step = (self.obs_rec_max - self.obs_rec_min) / self.n_bins_obs_rec
+        self.edges_obs_rec = [round(self.obs_rec_min + i * step, 2) for i in range(self.n_bins_obs_rec + 1)]
+        # generator level
+        binning_obs_gen = datap["analysis"][self.typean]["observables"][self.var]["bins_fix"]  # FIXME: separate rec and gen
+        self.n_bins_obs_gen = binning_obs_gen[0]
+        self.obs_gen_min = float(binning_obs_gen[1])
+        self.obs_gen_max = float(binning_obs_gen[2])
+        step = (self.obs_gen_max - self.obs_gen_min) / self.n_bins_obs_gen
+        self.edges_obs_gen = [round(self.obs_gen_min + i * step, 2) for i in range(self.n_bins_obs_gen + 1)]
+
+        print("Rec edges: ", self.edges_obs_rec, "Gen edges: ", self.edges_obs_gen)
 
         # systematics variations
 
@@ -352,7 +365,7 @@ class AnalyzerJetSystematics:
                     path_eff_file = path_eff.replace(string_default, string_catvar)
                     # if not signif_check:
                     #     print("BAD FIT in Variation: %s, %s" % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var]))
-                    #     for idr in range(len(self.lvarshape_binmin_gen)):
+                    #     for idr in range(self.n_bins_obs_gen):
                     #         sys_var_histo.SetBinContent(idr+1, 0)
                     #         sys_var_histo_eff.SetBinContent(idr+1, 0)
                     input_histograms_syscatvar.append(sys_var_histo)
@@ -415,7 +428,7 @@ class AnalyzerJetSystematics:
                 *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
             )
             # input_histograms_default[ibin2].GetXaxis().SetRangeUser(
-            #     round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2)
+            #     round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
             # )
             input_histograms_default[ibin2].SetTitle("")
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
@@ -479,7 +492,7 @@ class AnalyzerJetSystematics:
                             *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                         )
                         # input_histograms_default[ibin2].GetXaxis().SetRangeUser(
-                        #     round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2)
+                        #     round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
                         # )
                         input_histograms_default[ibin2].SetTitle("")
                         input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
@@ -552,7 +565,7 @@ class AnalyzerJetSystematics:
                     % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]),
                 )
                 draw_latex(latex)
-                # line = TLine(self.lvarshape_binmin_reco[0], 1, self.lvarshape_binmax_reco[-1], 1)
+                # line = TLine(self.obs_rec_min, 1, self.obs_rec_max, 1)
                 # line.SetLineColor(1)
                 # line.Draw()
                 leg_sysvar_ratio.Draw("same")
@@ -625,7 +638,7 @@ class AnalyzerJetSystematics:
                 labels = []
                 sys_array = []
                 def_array = []
-                for r_val in enumerate(self.lvarshape_binmin_gen):
+                for r_val in range(self.n_bins_obs_gen):
                     var_histo = TH1F(
                         "varhisto_%s_%s" % (suffix2, suffix),
                         "varhisto",
@@ -643,8 +656,8 @@ class AnalyzerJetSystematics:
                         var_histo.SetBinContent(sys_var + 1, sys_bin)
                     label_varhisto = "%s = %s #minus %s" % (
                         self.v_varshape_latex,
-                        self.lvarshape_binmin_gen[r_val],
-                        self.lvarshape_binmax_gen[r_val],
+                        self.edges_obs_gen[r_val],
+                        self.edges_obs_gen[r_val + 1],
                     )
                     labels.append(label_varhisto)
                     var_histos.append(var_histo)
@@ -691,7 +704,7 @@ class AnalyzerJetSystematics:
                         histo_ratio[sys_var].Reset()
                         setup_histogram(histo_ratio[sys_var], 0, get_marker(nsys + 1))
                     nsys = nsys + 1
-                # line = TLine(self.lvarshape_binmin_reco[0], 1, self.lvarshape_binmax_reco[-1], 1)
+                # line = TLine(self.obs_rec_min, 1, self.obs_rec_max, 1)
                 # line.SetLineColor(1)
                 # line.Draw()
                 latex = TLatex(
@@ -705,8 +718,6 @@ class AnalyzerJetSystematics:
                 csysvar_eff_ratio.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.eps")
                 csysvar_eff_ratio.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.pdf")
 
-        return
-
         # calculate the systematic uncertainties
 
         sys_up = []  # list of absolute upward uncertainties for all categories, shape bins, pt_jet bins
@@ -718,7 +729,7 @@ class AnalyzerJetSystematics:
             sys_down_jetpt = []  # list of absolute downward uncertainties for all categories and shape bins in a given pt_jet bin
             sys_up_z_full = []  # list of combined absolute upward uncertainties for all shape bins in a given pt_jet bin
             sys_down_z_full = []  # list of combined absolute upward uncertainties for all shape bins in a given pt_jet bin
-            for ibinshape in range(self.p_nbinshape_gen):
+            for ibinshape in range(self.n_bins_obs_gen):
                 sys_up_z = []  # list of absolute upward uncertainties for all categories in a given (pt_jet, shape) bin
                 sys_down_z = []  # list of absolute downward uncertainties for all categories in a given (pt_jet, shape) bin
                 error_full_up = 0  # combined absolute upward uncertainty in a given (pt_jet, shape) bin
@@ -799,6 +810,8 @@ class AnalyzerJetSystematics:
             sys_up.append(sys_up_jetpt)
             sys_down.append(sys_down_jetpt)
 
+        return
+
         # create graphs to plot the uncertainties
 
         tgsys = []  # list of graphs with combined absolute uncertainties for all pt_jet bins
@@ -818,7 +831,7 @@ class AnalyzerJetSystematics:
             rel_unc_down = []
             unc_rel_min = 100.0
             unc_rel_max = 0.0
-            for ibinshape in range(self.p_nbinshape_gen):
+            for ibinshape in range(self.n_bins_obs_gen):
                 shapebins_centres.append(input_histograms_default[ibin2].GetBinCenter(ibinshape + 1))
                 val = input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
                 shapebins_contents.append(val)
@@ -841,9 +854,9 @@ class AnalyzerJetSystematics:
                         " ",
                         self.lvar2_binmax_gen[ibin2],
                         " ",
-                        self.lvarshape_binmin_gen[ibinshape],
+                        self.edges_obs_gen[ibinshape],
                         " ",
-                        self.lvarshape_binmax_gen[ibinshape],
+                        self.edges_obs_gen[ibinshape + 1],
                         " ",
                         unc_rel_up,
                         " ",
@@ -861,7 +874,7 @@ class AnalyzerJetSystematics:
             shapebins_error_down_array = array("d", shapebins_error_down)
             tgsys.append(
                 TGraphAsymmErrors(
-                    self.p_nbinshape_gen,
+                    self.n_bins_obs_gen,
                     shapebins_centres_array,
                     shapebins_contents_array,
                     shapebins_widths_down_array,
@@ -879,7 +892,7 @@ class AnalyzerJetSystematics:
                 shapebins_contents_cat = []
                 shapebins_error_up_cat = []
                 shapebins_error_down_cat = []
-                for ibinshape in range(self.p_nbinshape_gen):
+                for ibinshape in range(self.n_bins_obs_gen):
                     shapebins_contents_cat.append(0)
                     if input_histograms_default[ibin2].GetBinContent(ibinshape + 1) == 0:
                         print("WARNING!!! Input histogram at bin", ibin2, " equal 0, skip", suffix)
@@ -896,7 +909,7 @@ class AnalyzerJetSystematics:
                 shapebins_error_down_cat_array = array("d", shapebins_error_down_cat)
                 tgsys_cat_z.append(
                     TGraphAsymmErrors(
-                        self.p_nbinshape_gen,
+                        self.n_bins_obs_gen,
                         shapebins_centres_array,
                         shapebins_contents_cat_array,
                         shapebins_widths_down_array,
@@ -929,18 +942,18 @@ class AnalyzerJetSystematics:
             unc_hist_up = TH1F(
                 "unc_hist_up_%s" % suffix,
                 "",
-                self.p_nbinshape_gen,
-                self.lvarshape_binmin_gen[0],
-                self.lvarshape_binmax_gen[-1],
+                self.n_bins_obs_gen,
+                self.obs_gen_min,
+                self.obs_gen_max,
             )
             unc_hist_down = TH1F(
                 "unc_hist_down_%s" % suffix,
                 "",
-                self.p_nbinshape_gen,
-                self.lvarshape_binmin_gen[0],
-                self.lvarshape_binmax_gen[-1],
+                self.n_bins_obs_gen,
+                self.obs_gen_min,
+                self.obs_gen_max,
             )
-            for ibinshape in range(self.p_nbinshape_gen):
+            for ibinshape in range(self.n_bins_obs_gen):
                 unc_hist_up.SetBinContent(ibinshape + 1, full_unc_up[ibin2][ibinshape])
                 unc_hist_down.SetBinContent(ibinshape + 1, full_unc_down[ibin2][ibinshape])
             unc_hist_up.Write()
@@ -984,7 +997,7 @@ class AnalyzerJetSystematics:
                 *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
             )
             input_histograms_default[ibin2].GetXaxis().SetRangeUser(
-                round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2)
+                round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
             )
             input_histograms_default[ibin2].SetTitle("")
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
@@ -1061,8 +1074,8 @@ class AnalyzerJetSystematics:
                     *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                 )
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(
-                    round(self.lvarshape_binmin_gen[0 if self.shape == "nsd" else 1], 2),
-                    round(self.lvarshape_binmax_gen[-1], 2),
+                    round(self.edges_obs_gen[0 if self.shape == "nsd" else 1], 2),
+                    round(self.obs_gen_max, 2),
                 )
                 if self.shape == "nsd":
                     tgsys_cat[ibin2][sys_cat].GetXaxis().SetNdivisions(5)
@@ -1078,7 +1091,7 @@ class AnalyzerJetSystematics:
                     tgsys_cat[ibin2][sys_cat].Draw("2")
                 unc_rel_min = 100.0
                 unc_rel_max = 0.0
-                for ibinshape in range(self.p_nbinshape_gen):
+                for ibinshape in range(self.n_bins_obs_gen):
                     print(
                         "rel. syst. unc. ",
                         self.systematic_catlabels[sys_cat],
@@ -1155,8 +1168,8 @@ class AnalyzerJetSystematics:
                     *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                 )
                 tgsys_gr[ibin2][sys_gr].GetXaxis().SetLimits(
-                    round(self.lvarshape_binmin_gen[0 if self.shape == "nsd" else 1], 2),
-                    round(self.lvarshape_binmax_gen[-1], 2),
+                    round(self.edges_obs_gen[0 if self.shape == "nsd" else 1], 2),
+                    round(self.obs_gen_max, 2),
                 )
                 if self.shape == "nsd":
                     tgsys_gr[ibin2][sys_gr].GetXaxis().SetNdivisions(5)
@@ -1172,7 +1185,7 @@ class AnalyzerJetSystematics:
                     tgsys_gr[ibin2][sys_gr].Draw("2")
                 unc_rel_min = 100.0
                 unc_rel_max = 0.0
-                for ibinshape in range(self.p_nbinshape_gen):
+                for ibinshape in range(self.n_bins_obs_gen):
                     print(
                         "rel. syst. unc. ",
                         gr,
@@ -1224,6 +1237,7 @@ def main(args=None):
     gROOT.SetBatch(True)
     list_vars = ["zg", "nsd", "rg", "zpar"]
     for var in list_vars:
+        print(f"Processing observable {var}")
         analyser = AnalyzerJetSystematics(args.database_analysis, args.type_ana, var)
         analyser.jetsystematics()
 
