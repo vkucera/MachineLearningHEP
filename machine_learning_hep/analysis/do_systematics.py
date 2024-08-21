@@ -77,42 +77,51 @@ class AnalyzerJetSystematics:
 
         # plotting
         # LaTeX string
-        self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
-        self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
-        self.v_varshape_latex = datap["analysis"][self.typean]["observables"][self.var]["label"]
-        self.v_ylabel_latex = datap["analysis"][self.typean]["observables"][self.var]["label_y"]
+        self.latex_hadron = datap["analysis"][self.typean]["latexnamehadron"]
+        self.latex_ptjet = "#it{p}_{T}^{jet ch}"
+        self.latex_obs = datap["analysis"][self.typean]["observables"][self.var]["label"]
+        self.latex_y = datap["analysis"][self.typean]["observables"][self.var]["label_y"]
 
-        # first variable (hadron pt)
-        self.v_var_binning = datap["var_binning"]  # name
-        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
-        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
-        self.p_nptfinbins = len(self.lpt_finbinmin)  # number of bins
+        # binning of hadron pt
+        self.edges_pthf_min = datap["analysis"][self.typean]["sel_an_binmin"]
+        self.edges_pthf_max = datap["analysis"][self.typean]["sel_an_binmax"]
+        # self.n_bins_pthf = len(self.edges_pthf_min)
 
-        # second variable (jet pt)
-        self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]  # name
-        self.lvar2_binmin_reco = datap["analysis"][self.typean]["sel_binmin2_reco"]
-        self.lvar2_binmax_reco = datap["analysis"][self.typean]["sel_binmax2_reco"]
-        self.lvar2_binmin_gen = datap["analysis"][self.typean]["sel_binmin2_gen"]
-        self.lvar2_binmax_gen = datap["analysis"][self.typean]["sel_binmax2_gen"]
-        self.p_nbin2_gen = len(self.lvar2_binmin_gen)  # number of gen bins
-
-        # observable (z, shape,...)
+        # binning of jet pt
+        self.ptjet_name = "pt_jet"  # name
         # reconstruction level
-        binning_obs_rec = datap["analysis"][self.typean]["observables"][self.var]["bins_det_fix"]  # FIXME: separate rec and gen
+        self.edges_ptjet_rec = datap["analysis"][self.typean]["bins_ptjet"]
+        self.n_bins_ptjet_rec = len(self.edges_ptjet_rec) - 1
+        self.ptjet_rec_min = self.edges_ptjet_rec[0]
+        self.ptjet_rec_max = self.edges_ptjet_rec[-1]
+        self.edges_ptjet_rec_min = self.edges_ptjet_rec[:-1]
+        self.edges_ptjet_rec_max = self.edges_ptjet_rec[1:]
+        # generator level
+        self.edges_ptjet_gen = datap["analysis"][self.typean]["bins_ptjet"]
+        self.n_bins_ptjet_gen = len(self.edges_ptjet_gen) - 1
+        self.ptjet_gen_min = self.edges_ptjet_gen[0]
+        self.ptjet_gen_max = self.edges_ptjet_gen[-1]
+        self.edges_ptjet_gen_min = self.edges_ptjet_gen[:-1]
+        self.edges_ptjet_gen_max = self.edges_ptjet_gen[1:]
+
+        # binning of observable (z, shape,...)
+        # reconstruction level
+        binning_obs_rec = datap["analysis"][self.typean]["observables"][self.var]["bins_det_fix"]
         self.n_bins_obs_rec = binning_obs_rec[0]
         self.obs_rec_min = float(binning_obs_rec[1])
         self.obs_rec_max = float(binning_obs_rec[2])
         step = (self.obs_rec_max - self.obs_rec_min) / self.n_bins_obs_rec
         self.edges_obs_rec = [round(self.obs_rec_min + i * step, 2) for i in range(self.n_bins_obs_rec + 1)]
         # generator level
-        binning_obs_gen = datap["analysis"][self.typean]["observables"][self.var]["bins_gen_fix"]  # FIXME: separate rec and gen
+        binning_obs_gen = datap["analysis"][self.typean]["observables"][self.var]["bins_gen_fix"]
         self.n_bins_obs_gen = binning_obs_gen[0]
         self.obs_gen_min = float(binning_obs_gen[1])
         self.obs_gen_max = float(binning_obs_gen[2])
         step = (self.obs_gen_max - self.obs_gen_min) / self.n_bins_obs_gen
         self.edges_obs_gen = [round(self.obs_gen_min + i * step, 2) for i in range(self.n_bins_obs_gen + 1)]
 
-        print("Rec edges: ", self.edges_obs_rec, "Gen edges: ", self.edges_obs_gen)
+        print("Rec obs edges:", self.edges_obs_rec, "Gen obs edges:", self.edges_obs_gen)
+        print("Rec ptjet edges:", self.edges_ptjet_rec, "Gen ptjet edges:", self.edges_ptjet_gen)
 
         # systematics variations
 
@@ -152,10 +161,8 @@ class AnalyzerJetSystematics:
         self.systematic_rms_both_sides = [False] * self.n_sys_cat
         self.powheg_nonprompt_varnames = []
         self.powheg_nonprompt_varlabels = []
-        self.lvar2_binmin_gen_sys = None
-        self.lvar2_binmax_gen_sys = None
-        self.lvar2_binmin_reco_sys = None
-        self.lvar2_binmax_reco_sys = None
+        self.edges_ptjet_gen_sys = None
+        self.edges_ptjet_rec_sys = None
         for c, catname in enumerate(self.systematic_catnames):
             self.systematic_catlabels[c] = db_variations[catname]["label"]
             self.systematic_catgroups[c] = db_variations[catname].get("group", self.systematic_catlabels[c])
@@ -163,22 +170,8 @@ class AnalyzerJetSystematics:
             self.systematic_varlabels[c] = []
             for varname, val in db_variations[catname]["variations"].items():
                 if catname == "binning" and varname == "pt_jet" and any(val["activate"]):
-                    self.lvar2_binmin_gen_sys = val["diffs"]["analysis"][self.typean]["sel_binmin2_gen"]
-                    self.lvar2_binmax_gen_sys = val["diffs"]["analysis"][self.typean]["sel_binmax2_gen"]
-                    for i_var, list_pt in enumerate(self.lvar2_binmin_gen_sys):
-                        if list_pt == "#":
-                            self.lvar2_binmin_gen_sys[i_var] = self.lvar2_binmin_gen
-                    for i_var, list_pt in enumerate(self.lvar2_binmax_gen_sys):
-                        if list_pt == "#":
-                            self.lvar2_binmax_gen_sys[i_var] = self.lvar2_binmax_gen
-                    self.lvar2_binmin_reco_sys = val["diffs"]["analysis"][self.typean]["sel_binmin2_reco"]
-                    self.lvar2_binmax_reco_sys = val["diffs"]["analysis"][self.typean]["sel_binmax2_reco"]
-                    for i_var, list_pt in enumerate(self.lvar2_binmin_reco_sys):
-                        if list_pt == "#":
-                            self.lvar2_binmin_reco_sys[i_var] = self.lvar2_binmin_reco
-                    for i_var, list_pt in enumerate(self.lvar2_binmax_reco_sys):
-                        if list_pt == "#":
-                            self.lvar2_binmax_reco_sys[i_var] = self.lvar2_binmax_reco
+                    self.edges_ptjet_gen_sys = val["diffs"]["analysis"][self.typean]["bins_ptjet"]
+                    self.edges_ptjet_rec_sys = val["diffs"]["analysis"][self.typean]["bins_ptjet"]
                 n_var = len(val["activate"])
                 for a, act in enumerate(val["activate"]):
                     if act:
@@ -204,15 +197,14 @@ class AnalyzerJetSystematics:
         # print("Check if significance >", self.signif_threshold, "for systematic fits:", self.do_check_signif)
 
         # output directories
-        self.d_resultsallpmc = datap["analysis"][typean]["mc"]["resultsallp"]
-        self.d_resultsallpdata = datap["analysis"][typean]["data"]["resultsallp"]
+        self.dir_result_mc = datap["analysis"][typean]["mc"]["resultsallp"]
+        self.dir_result_data = datap["analysis"][typean]["data"]["resultsallp"]
 
         # input files
-
         file_result_name = datap["files_names"]["resultfilename"]
-        self.file_unfold = os.path.join(self.d_resultsallpdata, file_result_name)
-        file_eff_name = datap["files_names"]["efffilename"]
-        self.file_efficiency = os.path.join(self.d_resultsallpmc, file_eff_name)
+        self.file_unfold = os.path.join(self.dir_result_data, file_result_name)
+        # file_eff_name = datap["files_names"]["efffilename"]
+        # self.file_efficiency = os.path.join(self.dir_result_mc, file_eff_name)
         self.file_efficiency = self.file_unfold
 
         # official figures
@@ -227,14 +219,14 @@ class AnalyzerJetSystematics:
         self.y_latex_top = 0.88
         self.y_step = 0.05
         # axes titles
-        self.title_x = self.v_varshape_latex
-        self.title_y = self.v_ylabel_latex
+        self.title_x = self.latex_obs
+        self.title_y = self.latex_y
         self.title_full = ";%s;%s" % (self.title_x, self.title_y)
         self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
         # text
         # self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"
         self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"
-        self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.p_latexnhadron
+        self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron
         self.text_jets_ratio = "#Lambda_{c}^{+}, D^{0} -tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet ch}| < 0.5"
         self.text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| < 0.8"
@@ -245,7 +237,7 @@ class AnalyzerJetSystematics:
 
     def jetsystematics(self):
         string_default = "default/default"
-        if string_default not in self.d_resultsallpdata:
+        if string_default not in self.dir_result_data:
             self.logger.critical("Not a default database! Cannot run systematics.")
 
         debug = True
@@ -262,10 +254,8 @@ class AnalyzerJetSystematics:
             print("Symmetrisation: ", self.systematic_symmetrise)
             print("RMS both sides: ", self.systematic_rms_both_sides)
             print("Feed-down variations: ", self.powheg_nonprompt_varnames)
-            print("Jet pT rec min variations: ", self.lvar2_binmin_reco_sys)
-            print("Jet pT rec max variations: ", self.lvar2_binmax_reco_sys)
-            print("Jet pT gen min variations: ", self.lvar2_binmin_gen_sys)
-            print("Jet pT gen max variations: ", self.lvar2_binmax_gen_sys)
+            print("Jet pT rec variations: ", self.edges_ptjet_rec_sys)
+            print("Jet pT gen variations: ", self.edges_ptjet_gen_sys)
 
         path_def = self.file_unfold
         input_file_default = TFile.Open(path_def)
@@ -273,13 +263,13 @@ class AnalyzerJetSystematics:
             self.logger.critical(make_message_notfound(path_def))
         path_eff = self.file_efficiency
         eff_file_default = TFile.Open(path_eff)
-        file_sys_out = TFile.Open("%s/systematics_results.root" % self.d_resultsallpdata, "recreate")
+        file_sys_out = TFile.Open("%s/systematics_results.root" % self.dir_result_data, "recreate")
 
         # get the default (central value) result histograms
 
         input_histograms_default = []
-        # eff_default = []
-        for ibin2 in range(self.p_nbin2_gen):
+        eff_default = []
+        for ibin2 in range(self.n_bins_ptjet_gen):
             name_hist_unfold_2d = f'h_ptjet-{self.var}_{self.method}_unfolded_data_0'
             if not (hist_unfold := input_file_default.Get(name_hist_unfold_2d)):
                 self.logger.critical(make_message_notfound(name_hist_unfold_2d, eff_file_default))
@@ -291,8 +281,12 @@ class AnalyzerJetSystematics:
                 self.logger.critical(make_message_notfound(name_his, path_def))
             print(f"Default histogram ({jetptrange[0]} to {jetptrange[1]})")
             print_histogram(input_histograms_default[ibin2])
-            # name_eff = "eff_mult%d" % ibin2
-            # eff_default.append(eff_file_default.Get(name_eff))
+            name_eff = f'h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}'  # efficiency jetpt binning has offset
+            eff_default.append(eff_file_default.Get(name_eff))
+            if not eff_default[ibin2]:
+                self.logger.critical(make_message_notfound(name_eff, path_eff))
+            print(f"Default efficiency ({jetptrange[0]} to {jetptrange[1]})")
+            print_histogram(eff_default[ibin2])
 
         # get the files containing result variations
 
@@ -321,8 +315,8 @@ class AnalyzerJetSystematics:
 
         input_histograms_sys = []
         input_histograms_sys_eff = []
-        for ibin2 in range(self.p_nbin2_gen):  # pylint: disable=:too-many-nested-blocks
-            name_eff = "eff_mult%d" % ibin2
+        for ibin2 in range(self.n_bins_ptjet_gen):  # pylint: disable=:too-many-nested-blocks
+            name_eff = f'h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}'  # efficiency jetpt binning has offset
             input_histograms_syscat = []
             input_histograms_syscat_eff = []
             for sys_cat in range(self.n_sys_cat):
@@ -341,40 +335,38 @@ class AnalyzerJetSystematics:
                     string_catvar = self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var]
                     if string_catvar.startswith("binning/pt_jet"):
                         suffix_jetpt = "%g_%g" % (
-                            self.lvar2_binmin_reco_sys[sys_var][ibin2],
-                            self.lvar2_binmax_reco_sys[sys_var][ibin2],
+                            self.edges_ptjet_rec_sys[sys_var][ibin2],
+                            self.edges_ptjet_rec_sys[sys_var][ibin2 + 1],
                         )
                     else:
-                        suffix_jetpt = "%g_%g" % (self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+                        suffix_jetpt = "%g_%g" % (self.edges_ptjet_rec[ibin2], self.edges_ptjet_rec[ibin2 + 1])
                     # if self.do_check_signif:  # TODO: signifcance check
                     #     for ipt in range(self.p_nptfinbins):
                     #         pass
                     # FIXME exception for different jet pt binning, pylint: disable=fixme
                     if string_catvar.startswith("binning/pt_jet"):
-                        name_his = "unfolded_z_sel_%s_%.2f_%.2f" % (
-                            self.v_var2_binning,
-                            self.lvar2_binmin_gen_sys[sys_var][ibin2],
-                            self.lvar2_binmax_gen_sys[sys_var][ibin2],
-                        )
+                        jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
+                        name_his = f'h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
                     else:
                         jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
                         name_his = f'h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
                     sys_var_histo = input_files_sys[sys_cat][sys_var].Get(name_his)
-                    # sys_var_histo_eff = input_files_eff[sys_cat][sys_var].Get(name_eff)
                     path_file = path_def.replace(string_default, string_catvar)
+                    if not sys_var_histo:
+                        self.logger.critical(make_message_notfound(name_his, path_file))
+                    sys_var_histo_eff = input_files_eff[sys_cat][sys_var].Get(name_eff)
                     path_eff_file = path_eff.replace(string_default, string_catvar)
+                    if not sys_var_histo_eff:
+                        self.logger.critical(make_message_notfound(name_eff, path_eff_file))
                     # if not signif_check:
                     #     print("BAD FIT in Variation: %s, %s" % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var]))
                     #     for idr in range(self.n_bins_obs_gen):
                     #         sys_var_histo.SetBinContent(idr+1, 0)
                     #         sys_var_histo_eff.SetBinContent(idr+1, 0)
                     input_histograms_syscatvar.append(sys_var_histo)
-                    # input_histograms_eff.append(sys_var_histo_eff)
-                    if not input_histograms_syscatvar[sys_var]:
-                        self.logger.critical(make_message_notfound(name_his, path_file))
+                    input_histograms_eff.append(sys_var_histo_eff)
+                    print_histogram(sys_var_histo_eff)
                     print_histogram(sys_var_histo)
-                    # if not input_histograms_eff[sys_var]:
-                    #     self.logger.critical(make_message_notfound(name_eff, path_eff_file))
                     if debug:
                         print(
                             "Variation: %s, %s: got histogram %s from file %s"
@@ -385,29 +377,29 @@ class AnalyzerJetSystematics:
                                 path_file,
                             )
                         )
-                        # print(
-                        #     "Variation: %s, %s: got efficiency histogram %s from file %s"
-                        #     % (
-                        #         self.systematic_catnames[sys_cat],
-                        #         self.systematic_varnames[sys_cat][sys_var],
-                        #         name_eff,
-                        #         path_eff_file,
-                        #     )
-                        # )
+                        print(
+                            "Variation: %s, %s: got efficiency histogram %s from file %s"
+                            % (
+                                self.systematic_catnames[sys_cat],
+                                self.systematic_varnames[sys_cat][sys_var],
+                                name_eff,
+                                path_eff_file,
+                            )
+                        )
                     # input_histograms_syscatvar[sys_var].Scale(1.0, "width") #remove these later and put normalisation directly in systematics
                 input_histograms_syscat.append(input_histograms_syscatvar)
-                # input_histograms_syscat_eff.append(input_histograms_eff)
+                input_histograms_syscat_eff.append(input_histograms_eff)
             input_histograms_sys.append(input_histograms_syscat)
-            # input_histograms_sys_eff.append(input_histograms_syscat_eff)
+            input_histograms_sys_eff.append(input_histograms_syscat_eff)
 
         # plot the variations
 
         print("Categories: %d", self.n_sys_cat)
         # self.logger.info("Categories: %d", self.n_sys_cat)
 
-        for ibin2 in range(self.p_nbin2_gen):
+        for ibin2 in range(self.n_bins_ptjet_gen):
             # plot all the variations together
-            suffix = "%s_%g_%g" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            suffix = "%s_%g_%g" % (self.ptjet_name, self.edges_ptjet_gen_min[ibin2], self.edges_ptjet_gen_max[ibin2])
             nsys = 0
             csysvar = TCanvas("csysvar_%s" % suffix, "systematic variations" + suffix)
             setup_canvas(csysvar)
@@ -431,8 +423,8 @@ class AnalyzerJetSystematics:
             #     round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
             # )
             input_histograms_default[ibin2].SetTitle("")
-            input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
-            input_histograms_default[ibin2].SetYTitle(self.v_ylabel_latex)
+            input_histograms_default[ibin2].SetXTitle(self.latex_obs)
+            input_histograms_default[ibin2].SetYTitle(self.latex_y)
             input_histograms_default[ibin2].Draw()
             print_histogram(input_histograms_default[ibin2])
 
@@ -460,11 +452,11 @@ class AnalyzerJetSystematics:
                 0.15,
                 0.82,
                 "%g #leq %s < %g GeV/#it{c}"
-                % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]),
+                % (self.edges_ptjet_gen_min[ibin2], self.latex_ptjet, self.edges_ptjet_gen_max[ibin2]),
             )
             draw_latex(latex)
             # leg_sysvar.Draw("same")
-            csysvar.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_all.eps")
+            csysvar.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_all.eps")
 
             # plot the variations for each category separately
 
@@ -495,8 +487,8 @@ class AnalyzerJetSystematics:
                         #     round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
                         # )
                         input_histograms_default[ibin2].SetTitle("")
-                        input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
-                        input_histograms_default[ibin2].SetYTitle(self.v_ylabel_latex)
+                        input_histograms_default[ibin2].SetXTitle(self.latex_obs)
+                        input_histograms_default[ibin2].SetYTitle(self.latex_y)
                         input_histograms_default[ibin2].Draw()
                     leg_sysvar_each.AddEntry(
                         input_histograms_sys[ibin2][sys_cat][sys_var], self.systematic_varlabels[sys_cat][sys_var], "P"
@@ -511,12 +503,12 @@ class AnalyzerJetSystematics:
                     0.15,
                     0.82,
                     "%g #leq %s < %g GeV/#it{c}"
-                    % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]),
+                    % (self.edges_ptjet_gen_min[ibin2], self.latex_ptjet, self.edges_ptjet_gen_max[ibin2]),
                 )
                 draw_latex(latex)
                 leg_sysvar_each.Draw("same")
-                csysvar_each.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}.eps")
-                csysvar_each.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}.pdf")
+                csysvar_each.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}.eps")
+                csysvar_each.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}.pdf")
 
                 # plot ratios to the default
 
@@ -548,7 +540,7 @@ class AnalyzerJetSystematics:
                             *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                         )
                         histo_ratio[sys_var].SetTitle("")
-                        histo_ratio[sys_var].SetXTitle(self.v_varshape_latex)
+                        histo_ratio[sys_var].SetXTitle(self.latex_obs)
                         histo_ratio[sys_var].SetYTitle("variation/default")
                         histo_ratio[sys_var].Draw()
                     if histo_ratio[sys_var].GetBinContent(1) > 0:
@@ -562,19 +554,19 @@ class AnalyzerJetSystematics:
                     0.15,
                     0.82,
                     "%g #leq %s < %g GeV/#it{c}"
-                    % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]),
+                    % (self.edges_ptjet_gen_min[ibin2], self.latex_ptjet, self.edges_ptjet_gen_max[ibin2]),
                 )
                 draw_latex(latex)
                 # line = TLine(self.obs_rec_min, 1, self.obs_rec_max, 1)
                 # line.SetLineColor(1)
                 # line.Draw()
                 leg_sysvar_ratio.Draw("same")
-                csysvar_ratio.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.eps")
-                csysvar_ratio.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.pdf")
+                csysvar_ratio.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.eps")
+                csysvar_ratio.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.pdf")
 
-                continue
+                # Plot efficiency variations
 
-                csysvar_eff = TCanvas("csysvar_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix)
+                csysvar_eff = TCanvas("csysvar_eff_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix)
                 setup_canvas(csysvar_eff)
                 csysvar_eff.SetRightMargin(0.25)
                 leg_sysvar_eff = TLegend(
@@ -584,8 +576,8 @@ class AnalyzerJetSystematics:
                     0.85,
                     self.systematic_catlabels[sys_cat],
                 )  # Rg
-                setup_legend(leg_sysvar_each)
-                leg_sysvar_each.AddEntry(eff_default[ibin2], "default", "P")
+                setup_legend(leg_sysvar_eff)
+                leg_sysvar_eff.AddEntry(eff_default[ibin2], "default", "P")
                 setup_histogram(eff_default[ibin2])
                 l_his_all = []
                 for his_var in input_histograms_sys_eff[ibin2][sys_cat]:
@@ -602,8 +594,8 @@ class AnalyzerJetSystematics:
                             *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                         )
                         eff_default[ibin2].SetTitle("")
-                        eff_default[ibin2].SetXTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnhadron)
-                        eff_default[ibin2].SetYTitle("prompt %s-jet efficiency" % self.p_latexnhadron)
+                        eff_default[ibin2].SetXTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.latex_hadron)
+                        eff_default[ibin2].SetYTitle("prompt %s-jet efficiency" % self.latex_hadron)
                         eff_default[ibin2].Draw()
                     if input_histograms_sys_eff[ibin2][sys_cat][sys_var].GetBinContent(1) > 0:
                         leg_sysvar_eff.AddEntry(
@@ -622,49 +614,53 @@ class AnalyzerJetSystematics:
                     0.15,
                     0.82,
                     "%g #leq %s < %g GeV/#it{c}"
-                    % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]),
+                    % (self.edges_ptjet_gen_min[ibin2], self.latex_ptjet, self.edges_ptjet_gen_max[ibin2]),
                 )
                 draw_latex(latex)
                 leg_sysvar_eff.Draw("same")
-                csysvar_eff.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_eff.eps")
-                csysvar_eff.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_eff.pdf")
+                csysvar_eff.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_eff.eps")
+                csysvar_eff.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_eff.pdf")
 
-                csysvar_bin = TCanvas(
-                    "csysvar_bin_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
-                )
-                setup_canvas(csysvar_bin)
-                csysvar_bin.SetRightMargin(0.25)
-                var_histos = []
-                labels = []
-                sys_array = []
-                def_array = []
-                for r_val in range(self.n_bins_obs_gen):
-                    var_histo = TH1F(
-                        "varhisto_%s_%s" % (suffix2, suffix),
-                        "varhisto",
-                        self.systematic_variations[sys_cat],
-                        0,
-                        self.systematic_variations[sys_cat],
-                    )
-                    def_bin = input_histograms_default[ibin2].GetBinContent(r_val + 1)
-                    def_array.append(def_bin)
-                    for sys_var in range(self.systematic_variations[sys_cat]):
-                        sys_bin = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(r_val + 1)
-                        if sys_bin != 0:
-                            sys_bin = sys_bin / def_bin
-                        sys_array.append(sys_bin)
-                        var_histo.SetBinContent(sys_var + 1, sys_bin)
-                    label_varhisto = "%s = %s #minus %s" % (
-                        self.v_varshape_latex,
-                        self.edges_obs_gen[r_val],
-                        self.edges_obs_gen[r_val + 1],
-                    )
-                    labels.append(label_varhisto)
-                    var_histos.append(var_histo)
-                leg_varhisto = TLegend(0.77, 0.2, 0.95, 0.85)  # Rg
-                setup_legend(leg_varhisto)
+                # What is this?
+                # csysvar_bin = TCanvas(
+                #     "csysvar_bin_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
+                # )
+                # setup_canvas(csysvar_bin)
+                # csysvar_bin.SetRightMargin(0.25)
+                # var_histos = []
+                # labels = []
+                # sys_array = []
+                # def_array = []
+                # for r_val in range(self.n_bins_obs_gen):
+                #     var_histo = TH1F(
+                #         "varhisto_%s_%s" % (suffix2, suffix),
+                #         "varhisto",
+                #         self.systematic_variations[sys_cat],
+                #         0,
+                #         self.systematic_variations[sys_cat],
+                #     )
+                #     def_bin = input_histograms_default[ibin2].GetBinContent(r_val + 1)
+                #     def_array.append(def_bin)
+                #     for sys_var in range(self.systematic_variations[sys_cat]):
+                #         sys_bin = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(r_val + 1)
+                #         if sys_bin != 0:
+                #             sys_bin = sys_bin / def_bin
+                #         sys_array.append(sys_bin)
+                #         var_histo.SetBinContent(sys_var + 1, sys_bin)
+                #     label_varhisto = "%s = %s #minus %s" % (
+                #         self.latex_obs,
+                #         self.edges_obs_gen[r_val],
+                #         self.edges_obs_gen[r_val + 1],
+                #     )
+                #     labels.append(label_varhisto)
+                #     var_histos.append(var_histo)
+                # leg_varhisto = TLegend(0.77, 0.2, 0.95, 0.85)  # Rg
+                # setup_legend(leg_varhisto)
 
                 nsys = 0
+
+                # Plot ratios of efficiency variations to the default efficiency
+
                 csysvar_eff_ratio = TCanvas(
                     "csysvar_eff_ratio_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
                 )
@@ -711,12 +707,12 @@ class AnalyzerJetSystematics:
                     0.15,
                     0.82,
                     "%g #leq %s < %g GeV/#it{c}"
-                    % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]),
+                    % (self.edges_ptjet_gen_min[ibin2], self.latex_ptjet, self.edges_ptjet_gen_max[ibin2]),
                 )
                 draw_latex(latex)
                 leg_sysvar_eff_ratio.Draw("same")
-                csysvar_eff_ratio.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.eps")
-                csysvar_eff_ratio.SaveAs(f"{self.d_resultsallpdata}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.pdf")
+                csysvar_eff_ratio.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.eps")
+                csysvar_eff_ratio.SaveAs(f"{self.dir_result_data}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.pdf")
 
         # calculate the systematic uncertainties
 
@@ -724,7 +720,7 @@ class AnalyzerJetSystematics:
         sys_down = []  # list of absolute downward uncertainties for all categories, shape bins, pt_jet bins
         sys_up_full = []  # list of combined absolute upward uncertainties for all shape bins, pt_jet bins
         sys_down_full = []  # list of combined absolute downward uncertainties for all shape bins, pt_jet bins
-        for ibin2 in range(self.p_nbin2_gen):  # pylint: disable=too-many-nested-blocks
+        for ibin2 in range(self.n_bins_ptjet_gen):  # pylint: disable=too-many-nested-blocks
             sys_up_jetpt = []  # list of absolute upward uncertainties for all categories and shape bins in a given pt_jet bin
             sys_down_jetpt = []  # list of absolute downward uncertainties for all categories and shape bins in a given pt_jet bin
             sys_up_z_full = []  # list of combined absolute upward uncertainties for all shape bins in a given pt_jet bin
@@ -818,7 +814,7 @@ class AnalyzerJetSystematics:
         tgsys_cat = []  # list of graphs with relative uncertainties for all categories, pt_jet bins
         full_unc_up = []  # list of relative uncertainties for all categories, pt_jet bins
         full_unc_down = []  # list of relative uncertainties for all categories, pt_jet bins
-        for ibin2 in range(self.p_nbin2_gen):
+        for ibin2 in range(self.n_bins_ptjet_gen):
             # combined uncertainties
 
             shapebins_centres = []
@@ -850,9 +846,9 @@ class AnalyzerJetSystematics:
                     rel_unc_down.append(unc_rel_down)
                     print(
                         "total rel. syst. unc.: ",
-                        self.lvar2_binmin_gen[ibin2],
+                        self.edges_ptjet_gen_min[ibin2],
                         " ",
-                        self.lvar2_binmax_gen[ibin2],
+                        self.edges_ptjet_gen_max[ibin2],
                         " ",
                         self.edges_obs_gen[ibinshape],
                         " ",
@@ -923,7 +919,7 @@ class AnalyzerJetSystematics:
         # combine uncertainties from categories into groups
 
         tgsys_gr = []  # list of graphs with relative uncertainties for all groups, pt_jet bins
-        for ibin2 in range(self.p_nbin2_gen):
+        for ibin2 in range(self.n_bins_ptjet_gen):
             tgsys_gr_z = []  # list of graphs with relative uncertainties for all groups in a given pt_jet bin
             for gr in self.systematic_catgroups_list:
                 tgsys_gr_z_cat = []  # lists of graphs with relative uncertainties for categories in a given group in a given pt_jet bin
@@ -935,8 +931,8 @@ class AnalyzerJetSystematics:
             tgsys_gr.append(tgsys_gr_z)
 
         # write the combined systematic uncertainties in a file
-        for ibin2 in range(self.p_nbin2_gen):
-            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+        for ibin2 in range(self.n_bins_ptjet_gen):
+            suffix = "%s_%.2f_%.2f" % (self.ptjet_name, self.edges_ptjet_gen_min[ibin2], self.edges_ptjet_gen_max[ibin2])
             file_sys_out.cd()
             tgsys[ibin2].Write("tgsys_%s" % suffix)
             unc_hist_up = TH1F(
@@ -961,8 +957,8 @@ class AnalyzerJetSystematics:
 
         # relative statistical uncertainty of the central values
         h_default_stat_err = []
-        for ibin2 in range(self.p_nbin2_gen):
-            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+        for ibin2 in range(self.n_bins_ptjet_gen):
+            suffix = "%s_%.2f_%.2f" % (self.ptjet_name, self.edges_ptjet_gen_min[ibin2], self.edges_ptjet_gen_max[ibin2])
             h_default_stat_err.append(input_histograms_default[ibin2].Clone("h_default_stat_err" + suffix))
             for i in range(h_default_stat_err[ibin2].GetNbinsX()):
                 if input_histograms_default[ibin2].GetBinContent(ibinshape + 1) == 0:
@@ -977,10 +973,10 @@ class AnalyzerJetSystematics:
                         / input_histograms_default[ibin2].GetBinContent(i + 1),
                     )
 
-        for ibin2 in range(self.p_nbin2_gen):
+        for ibin2 in range(self.n_bins_ptjet_gen):
             # plot the results with systematic uncertainties
 
-            suffix = "%s_%g_%g" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            suffix = "%s_%g_%g" % (self.ptjet_name, self.edges_ptjet_gen_min[ibin2], self.edges_ptjet_gen_max[ibin2])
             cfinalwsys = TCanvas("cfinalwsys " + suffix, "final result with systematic uncertainties" + suffix)
             setup_canvas(cfinalwsys)
             leg_finalwsys = TLegend(0.7, 0.78, 0.85, 0.88)
@@ -1000,8 +996,8 @@ class AnalyzerJetSystematics:
                 round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
             )
             input_histograms_default[ibin2].SetTitle("")
-            input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
-            input_histograms_default[ibin2].SetYTitle(self.v_ylabel_latex)
+            input_histograms_default[ibin2].SetXTitle(self.latex_obs)
+            input_histograms_default[ibin2].SetYTitle(self.latex_y)
             input_histograms_default[ibin2].Draw("AXIS")
             # input_histograms_default[ibin2].Draw("")
             setup_tgraph(tgsys[ibin2], get_colour(7, 0))
@@ -1012,13 +1008,13 @@ class AnalyzerJetSystematics:
             # PREL latex = TLatex(0.15, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
             latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex)
-            latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.p_latexnhadron)
+            latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron)
             draw_latex(latex1)
             latex2 = TLatex(
                 0.15,
                 0.72,
                 "%g #leq %s < %g GeV/#it{c}, #left|#it{#eta}_{jet}#right| #leq 0.5"
-                % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]),
+                % (self.edges_ptjet_rec[ibin2], self.latex_ptjet, self.edges_ptjet_rec[ibin2 + 1]),
             )
             draw_latex(latex2)
             latex3 = TLatex(
@@ -1026,17 +1022,17 @@ class AnalyzerJetSystematics:
                 0.67,
                 "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, #left|#it{y}_{%s}#right| #leq 0.8"
                 % (
-                    self.lpt_finbinmin[0],
-                    self.p_latexnhadron,
-                    min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]),
-                    self.p_latexnhadron,
+                    self.edges_pthf_min[0],
+                    self.latex_hadron,
+                    min(self.edges_pthf_max[-1], self.edges_ptjet_rec[ibin2 + 1]),
+                    self.latex_hadron,
                 ),
             )
             draw_latex(latex3)
             leg_finalwsys.Draw("same")
             latex_SD = TLatex(0.15, 0.62, "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
             draw_latex(latex_SD)
-            cfinalwsys.SaveAs("%s/%s_final_wsys_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
+            cfinalwsys.SaveAs("%s/%s_final_wsys_%s.pdf" % (self.dir_result_data, self.shape, suffix))
 
             # plot the relative systematic uncertainties for all categories together
 
@@ -1080,7 +1076,7 @@ class AnalyzerJetSystematics:
                 if self.shape == "nsd":
                     tgsys_cat[ibin2][sys_cat].GetXaxis().SetNdivisions(5)
                     shrink_err_x(tgsys_cat[ibin2][sys_cat], 0.2)
-                tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitle(self.v_varshape_latex)
+                tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitle(self.latex_obs)
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitle("relative systematic uncertainty")
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitleOffset(self.offsets_axes[0])
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitleOffset(self.offsets_axes[1])
@@ -1096,9 +1092,9 @@ class AnalyzerJetSystematics:
                         "rel. syst. unc. ",
                         self.systematic_catlabels[sys_cat],
                         " ",
-                        self.lvar2_binmin_gen[ibin2],
+                        self.edges_ptjet_gen_min[ibin2],
                         " ",
-                        self.lvar2_binmax_gen[ibin2],
+                        self.edges_ptjet_gen_max[ibin2],
                         " ",
                         tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape),
                         " ",
@@ -1128,9 +1124,9 @@ class AnalyzerJetSystematics:
                 draw_latex(latex, textsize=self.fontsize)
                 y_latex -= self.y_step
             leg_relativesys.Draw("same")
-            crelativesys.SaveAs("%s/sys_unc_%s.eps" % (self.d_resultsallpdata, suffix))
+            crelativesys.SaveAs("%s/sys_unc_%s.eps" % (self.dir_result_data, suffix))
             if ibin2 == 1:
-                crelativesys.SaveAs("%s/%s_sys_unc_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
+                crelativesys.SaveAs("%s/%s_sys_unc_%s.pdf" % (self.dir_result_data, self.shape, suffix))
             gStyle.SetErrorX(0.5)
 
             # plot the relative systematic uncertainties for all categories together
@@ -1174,7 +1170,7 @@ class AnalyzerJetSystematics:
                 if self.shape == "nsd":
                     tgsys_gr[ibin2][sys_gr].GetXaxis().SetNdivisions(5)
                     shrink_err_x(tgsys_gr[ibin2][sys_gr], 0.2)
-                tgsys_gr[ibin2][sys_gr].GetXaxis().SetTitle(self.v_varshape_latex)
+                tgsys_gr[ibin2][sys_gr].GetXaxis().SetTitle(self.latex_obs)
                 tgsys_gr[ibin2][sys_gr].GetYaxis().SetTitle("relative systematic uncertainty")
                 tgsys_gr[ibin2][sys_gr].GetXaxis().SetTitleOffset(self.offsets_axes[0])
                 tgsys_gr[ibin2][sys_gr].GetYaxis().SetTitleOffset(self.offsets_axes[1])
@@ -1190,9 +1186,9 @@ class AnalyzerJetSystematics:
                         "rel. syst. unc. ",
                         gr,
                         " ",
-                        self.lvar2_binmin_gen[ibin2],
+                        self.edges_ptjet_gen_min[ibin2],
                         " ",
-                        self.lvar2_binmax_gen[ibin2],
+                        self.edges_ptjet_gen_max[ibin2],
                         " ",
                         tgsys_gr[ibin2][sys_gr].GetErrorYhigh(ibinshape),
                         " ",
@@ -1220,9 +1216,9 @@ class AnalyzerJetSystematics:
                 draw_latex(latex, textsize=self.fontsize)
                 y_latex -= self.y_step
             leg_relativesys_gr.Draw("same")
-            crelativesys_gr.SaveAs("%s/sys_unc_gr_%s.eps" % (self.d_resultsallpdata, suffix))
+            crelativesys_gr.SaveAs("%s/sys_unc_gr_%s.eps" % (self.dir_result_data, suffix))
             if ibin2 == 1:
-                crelativesys_gr.SaveAs("%s/%s_sys_unc_gr_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
+                crelativesys_gr.SaveAs("%s/%s_sys_unc_gr_%s.pdf" % (self.dir_result_data, self.shape, suffix))
             gStyle.SetErrorX(0.5)
 
 
