@@ -83,6 +83,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.h_effnew_ptjet_pthf = {'pr': None, 'np': None}
         self.h_effnew_pthf = {'pr': None, 'np': None}
         self.hfeeddown_det = {'mc': {}, 'data': {}}
+        self.h_reflcorr = create_hist('h_reflcorr', ';p_{T}^{HF} (GeV/#it{c})', self.bins_candpt)
         self.n_events = {}
         self.n_colls = {}
 
@@ -104,7 +105,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         canvas.SaveAs(f'{self.path_fig}/{filename}')
 
 
-    def _save_hist(self, hist, filename, option=''):
+    def _save_hist(self, hist, filename, option = '', logy = False):
         if not hist:
             self.logger.error('no histogram for <%s>', filename)
             # TODO: remove file if it exists?
@@ -113,6 +114,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         if isinstance(hist, ROOT.TH1) and get_dim(hist) == 2 and len(option) == 0:
             option += 'texte'
         hist.Draw(option)
+        c.SetLogy(logy)
         self._save_canvas(c, filename)
         rfilename = filename.split('/')[-1]
         rfilename = rfilename.removesuffix('.png')
@@ -142,6 +144,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 self._save_hist(project_hist(h, [0], {}), f'qa/h_mass_{mcordata}.png')
                 self._save_hist(project_hist(h, [1], {}), f'qa/h_ptjet_{mcordata}.png')
                 self._save_hist(project_hist(h, [2], {}), f'qa/h_ptcand_{mcordata}.png')
+
+                if h := rfile.Get('h_ncand'):
+                    self._save_hist(h, f'qa/h_ncand_{mcordata}.png', logy = True)
 
                 for var in self.observables['qa']:
                     if h := rfile.Get(f'h_mass-ptjet-pthf-{var}'):
@@ -222,11 +227,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 h_effkine_gen = self._build_effkine(
                     rfile.Get(f'h_effkine_{cat}_gen_nocuts_fPt'),
                     rfile.Get(f'h_effkine_{cat}_gen_cut_fPt'))
-                self._save_hist(h_effkine_gen, f'eff/h_effkine-ptjet-pthf_{cat}_gen.png', 'texte')
+                self._save_hist(h_effkine_gen, f'eff/h_effkine-ptjet-pthf_{cat}_gen.png', 'text')
                 h_effkine_det = self._build_effkine(
                     rfile.Get(f'h_effkine_{cat}_det_nocuts_fPt'),
                     rfile.Get(f'h_effkine_{cat}_det_cut_fPt'))
-                self._save_hist(h_effkine_det, f'eff/h_effkine-ptjet-pthf_{cat}_det.png', 'texte')
+                self._save_hist(h_effkine_det, f'eff/h_effkine-ptjet-pthf_{cat}_det.png', 'text')
 
                 h_in = h_gen[cat].Clone()
                 self._save_hist(project_hist(h_in, [1], {}), f'eff/h_pthf_{cat}_gen.png')
@@ -658,6 +663,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             scale_bkg = area_bkg_sig / area_bkg_side if mcordata == 'data' else 1.
             corr = area_sig_sig / (area_sig_sig + area_refl_sig - area_refl_side * scale_bkg)
             self.logger.info('Correcting %s-%i for reflections with factor %g', mcordata, ipt, corr)
+            self.logger.info('areas: %g, %g, %g, %g; bkgscale: %g',
+                             area_sig_sig, area_refl_sig, area_refl_sidel, area_refl_sider, scale_bkg)
+            self.h_reflcorr.SetBinContent(ipt + 1, corr)
             fh_subtracted.Scale(corr)
 
         pdf_sig = self.roows[ipt].pdf('sig')
@@ -687,6 +695,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                         axes_proj = list(range(get_dim(fh)))
                         axes_proj.remove(2)
                         fh_sub = []
+                        self.h_reflcorr.Reset()
                         for ipt in range(self.nbins):
                             h_in = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
                             ensure_sumw2(h_in)
@@ -716,6 +725,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                 self._correct_efficiency(h, ipt)
                             fh_sub.append(h)
                         fh_sum = sum_hists(fh_sub)
+                        self._save_hist(self.h_reflcorr, f'h_reflcorr-pthf{label}_reflcorr_{mcordata}.png')
                         self._save_hist(fh_sum, f'h_ptjet{label}_{method}_effscaled_{mcordata}.png')
 
                         if get_dim(fh_sum) > 1:
@@ -873,7 +883,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
         for var in self.observables['all']:
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
-            bins_obs = {var: bin_array(*self.cfg(f'observables.{var}.bins_fix')) for var in self.observables['all']}
+            # TODO: generalize or derive from histogram?
+            bins_obs = {var: bin_array(*self.cfg(f'observables.{var}.bins_gen_fix')) for var in self.observables['all']}
 
             colname = col_mapping.get(var, f'{var}_jet')
             if f'{colname}' not in df:
@@ -908,7 +919,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 h_effkine_gen = self._build_effkine(
                     rfile.Get(f'h_effkine_np_gen_nocuts_{var}'),
                     rfile.Get(f'h_effkine_np_gen_cut_{var}'))
-                self._save_hist(h_effkine_gen, f'fd/h_effkine-ptjet-{var}_np_gen.png', 'texte')
+                self._save_hist(h_effkine_gen, f'fd/h_effkine-ptjet-{var}_np_gen.png', 'text')
 
                 # ROOT complains about different bin limits because fN is 0 for the histogram from file, ROOT bug?
                 ensure_sumw2(h_fd_gen)
@@ -928,7 +939,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 h_effkine_det = self._build_effkine(
                     rfile.Get(f'h_effkine_np_det_nocuts_{var}'),
                     rfile.Get(f'h_effkine_np_det_cut_{var}'))
-                self._save_hist(h_effkine_det, f'fd/h_effkine-ptjet-{var}_np_det.png','texte')
+                self._save_hist(h_effkine_det, f'fd/h_effkine-ptjet-{var}_np_det.png','text')
                 hfeeddown_det.Divide(h_effkine_det)
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_kineeffscaled.png')
 
@@ -940,7 +951,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 hfeeddown_det_mc.Scale(self.n_colls['mc'] / self.cfg('xsection_inel_mc'))
 
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final.png')
-                self._save_hist(hfeeddown_det_mc, f'fd/h_ptjet-{var}_feeddown_det_final_mc.png')
+                self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final_mc.png')
                 self.hfeeddown_det['data'][var] = hfeeddown_det
                 self.hfeeddown_det['mc'][var] = hfeeddown_det_mc
 
@@ -1003,7 +1014,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             h_effkine_det = self._build_effkine(
                 rfile.Get(f'h_effkine_pr_det_nocuts_{var}{suffix}'),
                 rfile.Get(f'h_effkine_pr_det_cut_{var}{suffix}'))
-            self._save_hist(h_effkine_det, f'uf/h_effkine-ptjet-{var}_pr_det_{mcordata}.png', 'texte')
+            self._save_hist(h_effkine_det, f'uf/h_effkine-ptjet-{var}_pr_det_{mcordata}.png', 'text')
 
             fh_unfolding_input = hist.Clone('fh_unfolding_input')
             if get_dim(fh_unfolding_input) != get_dim(h_effkine_det):
@@ -1015,7 +1026,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             h_effkine_gen = self._build_effkine(
                 rfile.Get(f'h_effkine_pr_gen_nocuts_{var}{suffix}'),
                 rfile.Get(f'h_effkine_pr_gen_cut_{var}{suffix}'))
-            self._save_hist(h_effkine_gen, f'uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png', 'texte')
+            self._save_hist(h_effkine_gen, f'uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png', 'text')
 
             # TODO: move, has nothing to do with unfolding
             if mcordata == 'mc':
