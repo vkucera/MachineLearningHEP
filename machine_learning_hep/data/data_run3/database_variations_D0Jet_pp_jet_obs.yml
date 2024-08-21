@@ -477,7 +477,7 @@ categories:
                         jet_obs:
                                 corr_refl: [false]
     sideband:
-        activate: no
+        activate: yes
         processor: false
         label: "sideband sub."
         correlation: "corr"
@@ -486,7 +486,7 @@ categories:
         rms_both_sides: true
         variations:
             sigma:  # TODO
-                activate: [yes, yes, yes, yes]
+                activate: [no, yes, yes, yes]
                 label:
                     - "S 1.6 #sigma"
                     - "S 1.7 #sigma"
@@ -504,7 +504,7 @@ categories:
                                   - ptrange: [16., 100.]
                                     regions:
                                         left: [-2., -2.]
-                                        signal: [-1.6., 1.6]  # variation
+                                        signal: [-1.6, 1.6]  # variation
                                         right: [3., 5.]
                                   - regions:
                                         left: [-5.5, -3.]
@@ -747,13 +747,30 @@ categories:
                         jet_obs:
                             bin_width: [0.01]
             pt_jet:  # TODO
-                activate: [no]
+                activate: [yes]
                 label:
                     - "#it{p}_{T}^{jet} 5#rightarrow4"
                 diffs:
                     analysis:
                         jet_obs:
                             bins_ptjet: [[4, 7, 15, 30, 50]]
+                            bins_ptjet_eff: [[2, 4, 7, 15, 30, 50, 70]]
+            observable:  # TODO
+                activate: [yes]
+                label:
+                    - "obs. 1"
+                diffs:
+                    analysis:
+                        jet_obs:
+                            observables:
+                              zg:
+                                bins_det_fix: [[12, -.1, .5]]
+                              nsd:
+                                bins_det_fix: [[11, -.5, 10.5]]
+                              rg:
+                                bins_det_fix: [[22, -.1, 1.]]
+                              zpar:
+                                bins_det_fix: [[20, 0., 1.]]
     cutvar:
         activate: yes  # TODO
         processor: true
@@ -764,9 +781,9 @@ categories:
         rms_both_sides: true
         variations:
             cutvar:
-                activate: [yes, yes, yes, no, no]
+                activate: [yes, yes, yes, yes, yes]
                 label:
-                    - "default"  # working point (for tests, should be same as default result)
+                    - "default"  # working point (for tests, should be same as the default result)
                     - "null"  # no cuts (for tests, whatever was applied on Hyperloop)
                     - "loose"  # same cuts as Hyperloop (for tests, should be same as null)
                     - "cut 0.5"
