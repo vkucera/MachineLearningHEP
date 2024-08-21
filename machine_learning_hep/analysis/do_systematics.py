@@ -1214,10 +1214,6 @@ class AnalyzerJetSystematics:
 
 
 def main(args=None):
-    """
-    This is used as the entry point for ml-analysis.
-    Read optional command line arguments and launch the analysis.
-    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--database-analysis", "-d", dest="database_analysis", help="analysis database to be used", required=True
