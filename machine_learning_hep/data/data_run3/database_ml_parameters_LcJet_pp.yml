@@ -493,13 +493,13 @@ LcJet_pp:
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME
-        results: ['/home/${USER}/mlhep/data/test/lcjet/jet_obs/default/default/resultsMBjetvspt'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/data/test/lcjet/jet_obs/default/default/resultsMBjetvspt_all'
+        results: ['/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results_all'
       mc: &mc_out_default
         runselection: [null,null] #FIXME
-        results: ['/home/${USER}/mlhep/data/mctest/lcjet/jet_obs/prod_LHC24d3a/default/default/resultsMBjetvspt',
-                  '/home/${USER}/mlhep/data/mctest/lcjet/jet_obs/prod_LHC24d3b/default/default/resultsMBjetvspt'] #list of periods
-        resultsallp: '/home/${USER}/mlhep/data/mctest/lcjet/jet_obs/default/default/resultsMBjetvspt_all'
+        results: ['/home/${USER}/mlhep/lcjet/jet_obs/prod_LHC24d3a/default/default/data/results',
+                  '/home/${USER}/mlhep/lcjet/jet_obs/prod_LHC24d3b/default/default/data/results'] #list of periods
+        resultsallp: '/home/${USER}/mlhep/lcjet/jet_obs/default/default/data/results_all'
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
