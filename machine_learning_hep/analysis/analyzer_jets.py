@@ -99,6 +99,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.roows = {}
 
         self.n_iter_unfold_sel = datap["analysis"][typean]["unfolding_iterations_sel"]
+        self.n_rebin = datap["analysis"][typean]["n_rebin"]
 
     #region helpers
     def _save_canvas(self, canvas, filename):
@@ -412,6 +413,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     else:
                         jetptlabel = ''
                     h_invmass = project_hist(h, [0], cuts_proj)
+                    # Rebin
+                    if self.n_rebin != 1:
+                        h_invmass.Rebin(self.n_rebin)
                     ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
                     if self.cfg('mass_fit'):
                         if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
