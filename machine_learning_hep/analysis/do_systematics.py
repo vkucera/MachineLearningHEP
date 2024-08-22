@@ -209,7 +209,6 @@ class AnalyzerJetSystematics:
         self.file_efficiency = self.file_unfold
 
         # official figures
-        self.shape = typean[len("jet_") :]
         self.size_can = [800, 800]
         self.offsets_axes = [0.8, 1.1]
         self.margins_can = [0.1, 0.13, 0.05, 0.03]
@@ -464,6 +463,7 @@ class AnalyzerJetSystematics:
             draw_latex(latex)
             # leg_sysvar.Draw("same")
             csysvar.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_all.png")
+            csysvar.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_all.pdf")
 
             # plot the variations for each category separately
 
@@ -813,8 +813,6 @@ class AnalyzerJetSystematics:
             sys_up.append(sys_up_jetpt)
             sys_down.append(sys_down_jetpt)
 
-        return
-
         # create graphs to plot the uncertainties
 
         tgsys = []  # list of graphs with combined absolute uncertainties for all pt_jet bins
@@ -897,7 +895,7 @@ class AnalyzerJetSystematics:
                 shapebins_error_down_cat = []
                 for ibinshape in range(self.n_bins_obs_gen):
                     shapebins_contents_cat.append(0)
-                    if input_histograms_default[ibin2].GetBinContent(ibinshape + 1) == 0:
+                    if abs(input_histograms_default[ibin2].GetBinContent(ibinshape + 1)) < 1.e-7:
                         print("WARNING!!! Input histogram at bin", ibin2, " equal 0, skip", suffix)
                         continue
                     shapebins_error_up_cat.append(
@@ -968,7 +966,7 @@ class AnalyzerJetSystematics:
             suffix = "%s_%.2f_%.2f" % (self.ptjet_name, self.edges_ptjet_gen_min[ibin2], self.edges_ptjet_gen_max[ibin2])
             h_default_stat_err.append(input_histograms_default[ibin2].Clone("h_default_stat_err" + suffix))
             for i in range(h_default_stat_err[ibin2].GetNbinsX()):
-                if input_histograms_default[ibin2].GetBinContent(ibinshape + 1) == 0:
+                if abs(input_histograms_default[ibin2].GetBinContent(i + 1)) < 1.e-7:
                     print("WARNING!!! Input histogram at bin", ibin2, " equal 0, skip", suffix)
                     h_default_stat_err[ibin2].SetBinContent(i + 1, 0)
                     h_default_stat_err[ibin2].SetBinError(i + 1, 0)
@@ -1037,14 +1035,15 @@ class AnalyzerJetSystematics:
             )
             draw_latex(latex3)
             leg_finalwsys.Draw("same")
-            latex_SD = TLatex(0.15, 0.62, "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
+            latex_SD = TLatex(0.15, 0.62, "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
             draw_latex(latex_SD)
-            cfinalwsys.SaveAs(f"{dir_out_figs}/{self.shape}_final_wsys_{suffix}.pdf")
+            cfinalwsys.SaveAs(f"{dir_out_figs}/final_wsys_{self.var}_{suffix}.png")
+            cfinalwsys.SaveAs(f"{dir_out_figs}/final_wsys_{self.var}_{suffix}.pdf")
 
             # plot the relative systematic uncertainties for all categories together
 
             # preliminary figure
-            i_shape = 0 if self.shape == "zg" else 1 if self.shape == "rg" else 2
+            i_shape = 0 if self.var == "zg" else 1 if self.var == "rg" else 2
 
             crelativesys = TCanvas("crelativesys " + suffix, "relative systematic uncertainties" + suffix)
             gStyle.SetErrorX(0)
@@ -1077,10 +1076,10 @@ class AnalyzerJetSystematics:
                     *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                 )
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(
-                    round(self.edges_obs_gen[0 if self.shape == "nsd" else 1], 2),
+                    round(self.edges_obs_gen[0 if self.var == "nsd" else 1], 2),
                     round(self.obs_gen_max, 2),
                 )
-                if self.shape == "nsd":
+                if self.var == "nsd":
                     tgsys_cat[ibin2][sys_cat].GetXaxis().SetNdivisions(5)
                     shrink_err_x(tgsys_cat[ibin2][sys_cat], 0.2)
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitle(self.latex_obs)
@@ -1125,15 +1124,16 @@ class AnalyzerJetSystematics:
             # Draw LaTeX
             y_latex = self.y_latex_top
             list_latex = []
+            text_ptjet_full = self.text_ptjet % (self.edges_ptjet_gen[ibin2], self.ptjet_name, self.edges_ptjet_gen[ibin2 + 1])
+            text_pth_full = self.text_pth % (self.edges_pthf_min[0], self.latex_hadron, min(self.edges_pthf_max[-1], self.edges_ptjet_gen[ibin2 + 1]), self.latex_hadron)
             for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
                 latex = TLatex(self.x_latex, y_latex, text_latex)
                 list_latex.append(latex)
                 draw_latex(latex, textsize=self.fontsize)
                 y_latex -= self.y_step
             leg_relativesys.Draw("same")
-            crelativesys.SaveAs(f"{dir_out_figs}/sys_unc_{suffix}.png")
-            if ibin2 == 1:
-                crelativesys.SaveAs(f"{dir_out_figs}/{self.shape}_sys_unc_{suffix}.pdf")
+            crelativesys.SaveAs(f"{dir_out_figs}/sys_unc_{self.var}_{suffix}.png")
+            crelativesys.SaveAs(f"{dir_out_figs}/sys_unc_{self.var}_{suffix}.pdf")
             gStyle.SetErrorX(0.5)
 
             # plot the relative systematic uncertainties for all categories together
@@ -1171,10 +1171,10 @@ class AnalyzerJetSystematics:
                     *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                 )
                 tgsys_gr[ibin2][sys_gr].GetXaxis().SetLimits(
-                    round(self.edges_obs_gen[0 if self.shape == "nsd" else 1], 2),
+                    round(self.edges_obs_gen[0 if self.var == "nsd" else 1], 2),
                     round(self.obs_gen_max, 2),
                 )
-                if self.shape == "nsd":
+                if self.var == "nsd":
                     tgsys_gr[ibin2][sys_gr].GetXaxis().SetNdivisions(5)
                     shrink_err_x(tgsys_gr[ibin2][sys_gr], 0.2)
                 tgsys_gr[ibin2][sys_gr].GetXaxis().SetTitle(self.latex_obs)
@@ -1223,9 +1223,8 @@ class AnalyzerJetSystematics:
                 draw_latex(latex, textsize=self.fontsize)
                 y_latex -= self.y_step
             leg_relativesys_gr.Draw("same")
-            crelativesys_gr.SaveAs(f"{dir_out_figs}/sys_unc_gr_{suffix}.png")
-            if ibin2 == 1:
-                crelativesys_gr.SaveAs(f"{dir_out_figs}/{self.shape}_sys_unc_gr_{suffix}.pdf")
+            crelativesys_gr.SaveAs(f"{dir_out_figs}/sys_unc_gr_{self.var}_{suffix}.png")
+            crelativesys_gr.SaveAs(f"{dir_out_figs}/sys_unc_gr_{self.var}_{suffix}.pdf")
             gStyle.SetErrorX(0.5)
 
 
