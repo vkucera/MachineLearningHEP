@@ -89,7 +89,7 @@ class AnalyzerJetSystematics:
         # self.n_bins_pthf = len(self.edges_pthf_min)
 
         # binning of jet pt
-        self.ptjet_name = "pt_jet"  # name
+        self.ptjet_name = "ptjet"  # name
         # reconstruction level
         self.edges_ptjet_rec = datap["analysis"][self.typean]["bins_ptjet"]
         self.n_bins_ptjet_rec = len(self.edges_ptjet_rec) - 1
@@ -197,7 +197,7 @@ class AnalyzerJetSystematics:
         # self.signif_threshold = datap["analysis"][self.typean]["signif_thresh"]
         # print("Check if significance >", self.signif_threshold, "for systematic fits:", self.do_check_signif)
 
-        # output directories
+        # output directories with results
         self.dir_result_mc = datap["analysis"][typean]["mc"]["resultsallp"]
         self.dir_result_data = datap["analysis"][typean]["data"]["resultsallp"]
 
@@ -209,6 +209,7 @@ class AnalyzerJetSystematics:
         self.file_efficiency = self.file_unfold
 
         # official figures
+        self.fig_formats = ["pdf", "png"]
         self.size_can = [800, 800]
         self.offsets_axes = [0.8, 1.1]
         self.margins_can = [0.1, 0.13, 0.05, 0.03]
@@ -234,6 +235,15 @@ class AnalyzerJetSystematics:
         self.text_acc_h = "|#it{y}| < 0.8"
         self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
 
+        # output directory for figures
+        self.dir_out_figs = Path(f"{os.path.expandvars(self.dir_result_data)}/fig/sys")
+        for fmt in self.fig_formats:
+            (self.dir_out_figs / fmt).mkdir(parents=True, exist_ok=True)
+
+    def save_canvas(self, can, name: str):
+        """Save canvas"""
+        for fmt in self.fig_formats:
+            can.SaveAs(f"{self.dir_out_figs}/{fmt}/{name}.{fmt}")
 
     def jetsystematics(self):
         string_default = "default/default"
@@ -259,9 +269,6 @@ class AnalyzerJetSystematics:
 
         # output file for histograms
         file_sys_out = TFile.Open(f"{self.dir_result_data}/systematics_results.root", "recreate")
-        # output directory for figures
-        dir_out_figs = Path(f"{os.path.expandvars(self.dir_result_data)}/fig/sys")
-        dir_out_figs.mkdir(parents=True, exist_ok=True)
 
         # Open input files for default results.
         path_def = self.file_unfold
@@ -462,8 +469,7 @@ class AnalyzerJetSystematics:
             )
             draw_latex(latex)
             # leg_sysvar.Draw("same")
-            csysvar.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_all.png")
-            csysvar.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_all.pdf")
+            self.save_canvas(csysvar, f"sys_var_{self.var}_{suffix}_all")
 
             # plot the variations for each category separately
 
@@ -514,8 +520,7 @@ class AnalyzerJetSystematics:
                 )
                 draw_latex(latex)
                 leg_sysvar_each.Draw("same")
-                csysvar_each.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}.png")
-                csysvar_each.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}.pdf")
+                self.save_canvas(csysvar_each, f"sys_var_{self.var}_{suffix}_{suffix2}")
 
                 # plot ratios to the default
 
@@ -568,8 +573,7 @@ class AnalyzerJetSystematics:
                 # line.SetLineColor(1)
                 # line.Draw()
                 leg_sysvar_ratio.Draw("same")
-                csysvar_ratio.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.png")
-                csysvar_ratio.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_ratio.pdf")
+                self.save_canvas(csysvar_ratio, f"sys_var_{self.var}_{suffix}_{suffix2}_ratio")
 
                 # Plot efficiency variations
 
@@ -625,8 +629,7 @@ class AnalyzerJetSystematics:
                 )
                 draw_latex(latex)
                 leg_sysvar_eff.Draw("same")
-                csysvar_eff.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_eff.png")
-                csysvar_eff.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_eff.pdf")
+                self.save_canvas(csysvar_eff, f"sys_var_{self.var}_{suffix}_{suffix2}_eff")
 
                 # What is this?
                 # csysvar_bin = TCanvas(
@@ -718,8 +721,7 @@ class AnalyzerJetSystematics:
                 )
                 draw_latex(latex)
                 leg_sysvar_eff_ratio.Draw("same")
-                csysvar_eff_ratio.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.png")
-                csysvar_eff_ratio.SaveAs(f"{dir_out_figs}/sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio.pdf")
+                self.save_canvas(csysvar_eff_ratio, f"sys_var_{self.var}_{suffix}_{suffix2}_eff_ratio")
 
         # calculate the systematic uncertainties
 
@@ -1037,8 +1039,7 @@ class AnalyzerJetSystematics:
             leg_finalwsys.Draw("same")
             latex_SD = TLatex(0.15, 0.62, "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
             draw_latex(latex_SD)
-            cfinalwsys.SaveAs(f"{dir_out_figs}/final_wsys_{self.var}_{suffix}.png")
-            cfinalwsys.SaveAs(f"{dir_out_figs}/final_wsys_{self.var}_{suffix}.pdf")
+            self.save_canvas(cfinalwsys, f"final_wsys_{self.var}_{suffix}")
 
             # plot the relative systematic uncertainties for all categories together
 
@@ -1124,7 +1125,7 @@ class AnalyzerJetSystematics:
             # Draw LaTeX
             y_latex = self.y_latex_top
             list_latex = []
-            text_ptjet_full = self.text_ptjet % (self.edges_ptjet_gen[ibin2], self.ptjet_name, self.edges_ptjet_gen[ibin2 + 1])
+            text_ptjet_full = self.text_ptjet % (self.edges_ptjet_gen[ibin2], self.latex_ptjet, self.edges_ptjet_gen[ibin2 + 1])
             text_pth_full = self.text_pth % (self.edges_pthf_min[0], self.latex_hadron, min(self.edges_pthf_max[-1], self.edges_ptjet_gen[ibin2 + 1]), self.latex_hadron)
             for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
                 latex = TLatex(self.x_latex, y_latex, text_latex)
@@ -1132,8 +1133,7 @@ class AnalyzerJetSystematics:
                 draw_latex(latex, textsize=self.fontsize)
                 y_latex -= self.y_step
             leg_relativesys.Draw("same")
-            crelativesys.SaveAs(f"{dir_out_figs}/sys_unc_{self.var}_{suffix}.png")
-            crelativesys.SaveAs(f"{dir_out_figs}/sys_unc_{self.var}_{suffix}.pdf")
+            self.save_canvas(crelativesys, f"sys_unc_{self.var}_{suffix}")
             gStyle.SetErrorX(0.5)
 
             # plot the relative systematic uncertainties for all categories together
@@ -1223,8 +1223,7 @@ class AnalyzerJetSystematics:
                 draw_latex(latex, textsize=self.fontsize)
                 y_latex -= self.y_step
             leg_relativesys_gr.Draw("same")
-            crelativesys_gr.SaveAs(f"{dir_out_figs}/sys_unc_gr_{self.var}_{suffix}.png")
-            crelativesys_gr.SaveAs(f"{dir_out_figs}/sys_unc_gr_{self.var}_{suffix}.pdf")
+            self.save_canvas(crelativesys_gr, f"sys_unc_gr_{self.var}_{suffix}")
             gStyle.SetErrorX(0.5)
 
 
