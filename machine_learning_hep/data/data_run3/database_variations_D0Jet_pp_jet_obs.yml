@@ -1,6 +1,6 @@
 categories:
     default:
-        activate: yes
+        activate: no
         processor: false
         label: "default"
         correlation: "corr"
@@ -13,15 +13,16 @@ categories:
                 label: ["default"]
                 diffs: {}
     fitting:
-        activate: no
+        activate: yes
         processor: false
         label: "fitting"
+        group: "signal extraction"
         correlation: "corr"
         rms: true
         symmetrise: true
         rms_both_sides: true
         variations:
-            bkgfunc: # TODO: mass_roofit
+            bkgfunc:
                 activate: [yes]
                 label: ["bkg. func."]
                 diffs:
@@ -202,7 +203,6 @@ categories:
                                     fix_params: ['frac_refl']
                                     free_params: ['sigma_g1']
                                     fix_params_ptjet: ['mean', 'sigma_g1']
-                                    # fix_params: ['mean', 'sigma_g1', 'frac_refl']
                                     range: [1.72, 2.08]
                                     components:
                                       bkg:
@@ -241,7 +241,6 @@ categories:
                                         fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'  # variation
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
-
             sigfunc: # TODO: mass_roofit
                 activate: [no]
                 label: ["sig. func."]
@@ -249,7 +248,7 @@ categories:
                     analysis:
                         jet_obs:
                             todo: [0]
-            massmin: # TODO: mass_roofit
+            massmin:
                 activate: [yes]
                 label:
                     - "#it{m} min. 1.75"
@@ -469,29 +468,43 @@ categories:
                                         fn: 'Exponential::bkg(m, alpha[-100,0])'
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+            rebin:
+                activate: [yes, yes, yes]
+                label: ["2", "3", "4"]
+                diffs:
+                    analysis:
+                        jet_obs:
+                            n_rebin: [2, 3, 4]
             reflections:
                 activate: [yes]
                 label: ["w/o refl."]
                 diffs:
                     analysis:
                         jet_obs:
-                                corr_refl: [false]
+                            corr_refl: [false]
     sideband:
         activate: yes
         processor: false
         label: "sideband sub."
+        group: "signal extraction"
         correlation: "corr"
         rms: true
         symmetrise: true
         rms_both_sides: true
         variations:
-            sigma:  # TODO
-                activate: [no, yes, yes, yes]
+            sigma:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 label:
+                    - "S 1.5 #sigma"
                     - "S 1.6 #sigma"
                     - "S 1.7 #sigma"
                     - "S 1.8 #sigma"
                     - "S 1.9 #sigma"
+                    - "S 2.1 #sigma"
+                    - "S 2.2 #sigma"
+                    - "S 2.3 #sigma"
+                    - "S 2.4 #sigma"
+                    - "S 2.5 #sigma"
                 diffs:
                     analysis:
                         jet_obs:
@@ -504,6 +517,20 @@ categories:
                                   - ptrange: [16., 100.]
                                     regions:
                                         left: [-2., -2.]
+                                        signal: [-1.5, 1.5]  # variation
+                                        right: [3., 5.]
+                                  - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-1.5, 1.5]  # variation
+                                        right: [3., 5.5]
+                                - - level: mc
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 3.]
+                                  - ptrange: [16., 100.]
+                                    regions:
+                                        left: [-2., -2.]
                                         signal: [-1.6, 1.6]  # variation
                                         right: [3., 5.]
                                   - regions:
@@ -552,11 +579,81 @@ categories:
                                         left: [-5.5, -3.]
                                         signal: [-1.9, 1.9]  # variation
                                         right: [3., 5.5]
-            ranges: # TODO
+                                - - level: mc
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 3.]
+                                  - ptrange: [16., 100.]
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2.1, 2.1]  # variation
+                                        right: [3., 5.]
+                                  - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-2.1, 2.1]  # variation
+                                        right: [3., 5.5]
+                                - - level: mc
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 3.]
+                                  - ptrange: [16., 100.]
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2.2, 2.2]  # variation
+                                        right: [3., 5.]
+                                  - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-2.2, 2.2]  # variation
+                                        right: [3., 5.5]
+                                - - level: mc
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 3.]
+                                  - ptrange: [16., 100.]
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2.3, 2.3]  # variation
+                                        right: [3., 5.]
+                                  - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-2.3, 2.3]  # variation
+                                        right: [3., 5.5]
+                                - - level: mc
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 3.]
+                                  - ptrange: [16., 100.]
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2.4, 2.4]  # variation
+                                        right: [3., 5.]
+                                  - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-2.4, 2.4]  # variation
+                                        right: [3., 5.5]
+                                - - level: mc
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2., 2.]
+                                        right: [3., 3.]
+                                  - ptrange: [16., 100.]
+                                    regions:
+                                        left: [-2., -2.]
+                                        signal: [-2.5, 2.5]  # variation
+                                        right: [3., 5.]
+                                  - regions:
+                                        left: [-5.5, -3.]
+                                        signal: [-2.5, 2.5]  # variation
+                                        right: [3., 5.5]
+            ranges:
                 activate: [yes, yes]
                 label:
-                    - "SB [#minus6, #minus3]#cup[3, 6]"
-                    - "SB [#minus5, #minus3]#cup[3, 5]"
+                    - "SB [3, 6]"
+                    - "SB [3, 5]"
                 diffs:
                     analysis:
                         jet_obs:
@@ -570,7 +667,7 @@ categories:
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
-                                        right: [3., 6.]  # variation
+                                        right: [3., 5.5]  # variation
                                   - regions:
                                         left: [-6., -3.]  # variation
                                         signal: [-2., 2.]
@@ -584,7 +681,7 @@ categories:
                                     regions:
                                         left: [-2., -2.]
                                         signal: [-2., 2.]
-                                        right: [3., 5.]  # variation
+                                        right: [3., 4.5]  # variation
                                   - regions:
                                         left: [-5., -3.]  # variation
                                         signal: [-2., 2.]
@@ -597,7 +694,7 @@ categories:
                         jet_obs:
                             sidebandleftonly: [true]
     feeddown:
-        activate: no
+        activate: yes
         processor: false
         label: "feed-down"
         correlation: "corr"
@@ -640,16 +737,17 @@ categories:
                                 - /data2/jklein/powheg/trees_powheg_fd_Mhigh.parquet
                                 - /data2/jklein/powheg/trees_powheg_fd_Mlow.parquet
                                 - /data2/jklein/powheg/trees_powheg_fd_NoEvtGen.parquet
-    prior:
+    prior:  # TODO
         activate: no
         processor: true
         label: "prior"
+        group: "unfolding"
         correlation: "corr"
         rms: true
         symmetrise: true
         rms_both_sides: true
         variations:
-            flat: # TODO
+            flat:
                 activate: [no]
                 label: ["flat"]
                 diffs:
@@ -657,16 +755,34 @@ categories:
                         jet_obs:
                             doprior: [true]
                             unfolding_iterations_sel: [4]
-    regularisation:
+    modeldep:  # TODO
         activate: no
-        processor: false
-        label: "regularisation"
+        processor: true
+        label: "model dep."
+        group: "unfolding"
         correlation: "corr"
         rms: true
         symmetrise: true
         rms_both_sides: true
         variations:
-            iter: # TODO
+            inclusive:
+                activate: [yes]
+                label: ["inclusive"]
+                diffs:
+                    analysis:
+                        jet_nsd:
+                            domodeldep: [true]
+    regularisation:
+        activate: yes
+        processor: false
+        label: "regularisation"
+        group: "unfolding"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            iter:
                 activate: [yes, yes]
                 label: ["down (3)", "up (7)"]
                 diffs:
@@ -674,7 +790,7 @@ categories:
                         jet_obs:
                             unfolding_iterations_sel: [3, 7]
     normalisation:
-        activate: no
+        activate: yes
         processor: false
         label: "#it{#sigma}_{MB}"
         correlation: "corr"
@@ -689,10 +805,10 @@ categories:
                     analysis:
                         jet_obs:
                             xsection_inel: [54.91, 60.69]  # TODO: update values for Run 3
-    tracking: # TODO
+    tracking:  # TODO
         activate: no
         processor: true
-        label: "tracking eff."
+        label: "JES"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -731,22 +847,17 @@ categories:
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskdecmerged,
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskdecmerged]] #list of periods
     binning:
-        activate: no
+        activate: yes
         processor: true
         label: "binning"
+        group: "unfolding"
         correlation: "corr"
         rms: true
         symmetrise: true
         rms_both_sides: true
         variations:
-            rebin:
-                activate: [yes]
-                label: ["rebin"]
-                diffs:
-                    analysis:
-                        jet_obs:
-                            bin_width: [0.01]
-            pt_jet:  # TODO
+            # pt_cand:  # TODO
+            pt_jet:
                 activate: [yes]
                 label:
                     - "#it{p}_{T}^{jet} 5#rightarrow4"
@@ -755,7 +866,7 @@ categories:
                         jet_obs:
                             bins_ptjet: [[4, 7, 15, 30, 50]]
                             bins_ptjet_eff: [[2, 4, 7, 15, 30, 50, 70]]
-            observable:  # TODO
+            observable:
                 activate: [yes]
                 label:
                     - "obs. 1"
@@ -772,7 +883,7 @@ categories:
                               zpar:
                                 bins_det_fix: [[20, 0., 1.]]
     cutvar:
-        activate: yes  # TODO
+        activate: yes
         processor: true
         label: "BDT cut"
         correlation: "corr"
@@ -781,20 +892,24 @@ categories:
         rms_both_sides: true
         variations:
             cutvar:
-                activate: [yes, yes, yes, yes, yes]
+                activate: [yes, yes, yes, yes, yes, no, yes]
                 label:
                     - "default"  # working point (for tests, should be same as the default result)
                     - "null"  # no cuts (for tests, whatever was applied on Hyperloop)
-                    - "loose"  # same cuts as Hyperloop (for tests, should be same as null)
+                    - "loosest"  # same cuts as Hyperloop (for tests, should be same as null)
+                    - "loose"  # to increase efficiency by 20 %
                     - "cut 0.5"
                     - "cut 0.25"
+                    - "tight"  # to decrease efficiency by 20 %
                 diffs:
                     analysis:
                         jet_obs:
-                            use_cuts: [True, True, True, True, True]
+                            use_cuts: [True, True, True, True, True, True, True]
                             cuts:
-                                    - ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"]
+                                    - ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"]  # default
                                     - [null,null,null,null,null,null,null,null]
-                                    - ["mlBkgScore < 0.12", "mlBkgScore < 0.16", "mlBkgScore < 0.2", "mlBkgScore < .25", "mlBkgScore < 0.4", "mlBkgScore < 0.6", "mlBkgScore < 0.8", "mlBkgScore < 0.8"]
-                                    - ["mlBkgScore < 0.01", "mlBkgScore < 0.02", "mlBkgScore < 0.03", "mlBkgScore < .04", "mlBkgScore < 0.07", "mlBkgScore < 0.13", "mlBkgScore < 0.23", "mlBkgScore < 0.26"]
-                                    - ["mlBkgScore < 0.005", "mlBkgScore < 0.01", "mlBkgScore < 0.015", "mlBkgScore < .02", "mlBkgScore < 0.035", "mlBkgScore < 0.065", "mlBkgScore < 0.125", "mlBkgScore < 0.13"]
+                                    - ["mlBkgScore < 0.12", "mlBkgScore < 0.16", "mlBkgScore < 0.2", "mlBkgScore < .25", "mlBkgScore < 0.4", "mlBkgScore < 0.6", "mlBkgScore < 0.8", "mlBkgScore < 0.8"] # loosest
+                                    - ["mlBkgScore < 0.06", "mlBkgScore < 0.08", "mlBkgScore < 0.1", "mlBkgScore < .20", "mlBkgScore < 0.3", "mlBkgScore < 0.6", "mlBkgScore < 0.8", "mlBkgScore < 0.8"] # loose
+                                    - ["mlBkgScore < 0.01", "mlBkgScore < 0.02", "mlBkgScore < 0.03", "mlBkgScore < .04", "mlBkgScore < 0.07", "mlBkgScore < 0.13", "mlBkgScore < 0.23", "mlBkgScore < 0.26"] # 0.5
+                                    - ["mlBkgScore < 0.005", "mlBkgScore < 0.01", "mlBkgScore < 0.015", "mlBkgScore < .02", "mlBkgScore < 0.035", "mlBkgScore < 0.065", "mlBkgScore < 0.125", "mlBkgScore < 0.13"] # 0.25
+                                    - ["mlBkgScore < 0.015", "mlBkgScore < 0.03", "mlBkgScore < 0.045", "mlBkgScore < .06", "mlBkgScore < 0.105", "mlBkgScore < 0.13", "mlBkgScore < 0.23", "mlBkgScore < 0.26"] # tight
