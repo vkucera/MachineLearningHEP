@@ -1023,6 +1023,23 @@ def scale_graph(graph, number):
         graph.SetPointEYlow(i, graph.GetErrorYhigh(i) * number)
 
 
+def reset_hist_outside_range(hist, x_min, x_max, val_reset=0):
+    """Reset bins of histogram hist outside [x_min, x_max] to val_reset."""
+    for i_bin in range(1, hist.GetNbinsX() + 1):
+        if hist.GetBinLowEdge(i_bin + 1) <= x_min or hist.GetBinLowEdge(i_bin) >= x_max:
+            hist.SetBinContent(i_bin, val_reset)
+            hist.SetBinError(i_bin, 0.)
+
+
+def reset_graph_outside_range(graph, x_min, x_max, val_reset=0):
+    """Reset points of graph outside [x_min, x_max] to val_reset."""
+    for i_point in range(graph.GetN()):
+        if graph.GetPointX(i_point) + graph.GetErrorXhigh(i_point) <= x_min or graph.GetPointX(i_point) - graph.GetErrorXlow(i_point) >= x_max:
+            graph.SetPointY(i_point, val_reset)
+            graph.SetPointEYlow(i_point, 0.)
+            graph.SetPointEYhigh(i_point, 0.)
+
+
 def sqrt_sum_sq(numbers):
     """Return sqrt(n1 * n1 + n2 * n2 + ...)"""
     return math.sqrt(sum(n * n for n in numbers))

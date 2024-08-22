@@ -51,6 +51,8 @@ from machine_learning_hep.utilities import (
     setup_histogram,
     setup_legend,
     setup_tgraph,
+    reset_hist_outside_range,
+    reset_graph_outside_range,
 )
 
 
@@ -58,6 +60,14 @@ def shrink_err_x(graph, width=0.1):
     for i in range(graph.GetN()):
         graph.SetPointEXlow(i, width)
         graph.SetPointEXhigh(i, width)
+
+
+# final ranges
+x_range = {"zg": [0.1, 0.5],
+           "rg": [0., 0.4],
+           "nsd": [-0.5, 5.5],
+           "zpar": [0.3, 1.0],
+           }
 
 
 # pylint: disable=too-many-instance-attributes, too-many-statements
@@ -245,6 +255,13 @@ class AnalyzerJetSystematics:
         for fmt in self.fig_formats:
             can.SaveAs(f"{self.dir_out_figs}/{fmt}/{name}.{fmt}")
 
+    def crop_histogram(self, hist):
+        """Constrain x range of histogram and reset outside bins."""
+        if self.var in x_range:
+            hist.GetXaxis().SetRangeUser(*x_range[self.var])
+            hist.GetXaxis().SetLimits(*x_range[self.var])
+            reset_hist_outside_range(hist, *x_range[self.var])
+
     def jetsystematics(self):
         string_default = "default/default"
         if string_default not in self.dir_result_data:
@@ -292,6 +309,7 @@ class AnalyzerJetSystematics:
             input_histograms_default.append(input_file_default.Get(name_his))
             if not input_histograms_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_his, path_def))
+            # self.crop_histogram(input_histograms_default[ibin2])
             print(f"Default histogram ({jetptrange[0]} to {jetptrange[1]})")
             print_histogram(input_histograms_default[ibin2])
             name_eff = f'h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}'  # efficiency jetpt binning has offset
@@ -371,6 +389,8 @@ class AnalyzerJetSystematics:
                     path_eff_file = path_eff.replace(string_default, string_catvar)
                     if not sys_var_histo_eff:
                         self.logger.critical(make_message_notfound(name_eff, path_eff_file))
+                    # self.crop_histogram(sys_var_histo)
+
                     # if not signif_check:
                     #     print("BAD FIT in Variation: %s, %s" % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var]))
                     #     for idr in range(self.n_bins_obs_gen):
@@ -432,9 +452,6 @@ class AnalyzerJetSystematics:
             input_histograms_default[ibin2].GetYaxis().SetRangeUser(
                 *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
             )
-            # input_histograms_default[ibin2].GetXaxis().SetRangeUser(
-            #     round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
-            # )
             input_histograms_default[ibin2].SetTitle("")
             input_histograms_default[ibin2].SetXTitle(self.latex_obs)
             input_histograms_default[ibin2].SetYTitle(self.latex_y)
@@ -496,9 +513,6 @@ class AnalyzerJetSystematics:
                         input_histograms_default[ibin2].GetYaxis().SetRangeUser(
                             *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                         )
-                        # input_histograms_default[ibin2].GetXaxis().SetRangeUser(
-                        #     round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
-                        # )
                         input_histograms_default[ibin2].SetTitle("")
                         input_histograms_default[ibin2].SetXTitle(self.latex_obs)
                         input_histograms_default[ibin2].SetYTitle(self.latex_y)
@@ -506,11 +520,10 @@ class AnalyzerJetSystematics:
                     leg_sysvar_each.AddEntry(
                         input_histograms_sys[ibin2][sys_cat][sys_var], self.systematic_varlabels[sys_cat][sys_var], "P"
                     )
-                    if input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(1) != 0:
-                        setup_histogram(
-                            input_histograms_sys[ibin2][sys_cat][sys_var], get_colour(nsys + 1), get_marker(nsys + 1)
-                        )
-                        input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
+                    setup_histogram(
+                        input_histograms_sys[ibin2][sys_cat][sys_var], get_colour(nsys + 1), get_marker(nsys + 1)
+                    )
+                    input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
                 latex = TLatex(
                     0.15,
@@ -555,12 +568,11 @@ class AnalyzerJetSystematics:
                         histo_ratio[sys_var].SetXTitle(self.latex_obs)
                         histo_ratio[sys_var].SetYTitle("variation/default")
                         histo_ratio[sys_var].Draw()
-                    if histo_ratio[sys_var].GetBinContent(1) > 0:
-                        leg_sysvar_ratio.AddEntry(
-                            histo_ratio[sys_var], self.systematic_varlabels[sys_cat][sys_var], "P"
-                        )
-                        setup_histogram(histo_ratio[sys_var], get_colour(nsys + 1), get_marker(nsys + 1))
-                        histo_ratio[sys_var].Draw("same")
+                    leg_sysvar_ratio.AddEntry(
+                        histo_ratio[sys_var], self.systematic_varlabels[sys_cat][sys_var], "P"
+                    )
+                    setup_histogram(histo_ratio[sys_var], get_colour(nsys + 1), get_marker(nsys + 1))
+                    histo_ratio[sys_var].Draw("same")
                     nsys = nsys + 1
                 latex = TLatex(
                     0.15,
@@ -608,18 +620,17 @@ class AnalyzerJetSystematics:
                         eff_default[ibin2].SetXTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.latex_hadron)
                         eff_default[ibin2].SetYTitle("prompt %s-jet efficiency" % self.latex_hadron)
                         eff_default[ibin2].Draw()
-                    if input_histograms_sys_eff[ibin2][sys_cat][sys_var].GetBinContent(1) > 0:
-                        leg_sysvar_eff.AddEntry(
-                            input_histograms_sys_eff[ibin2][sys_cat][sys_var],
-                            self.systematic_varlabels[sys_cat][sys_var],
-                            "P",
-                        )
-                        setup_histogram(
-                            input_histograms_sys_eff[ibin2][sys_cat][sys_var],
-                            get_colour(nsys + 1),
-                            get_marker(nsys + 1),
-                        )
-                        input_histograms_sys_eff[ibin2][sys_cat][sys_var].Draw("same")
+                    leg_sysvar_eff.AddEntry(
+                        input_histograms_sys_eff[ibin2][sys_cat][sys_var],
+                        self.systematic_varlabels[sys_cat][sys_var],
+                        "P",
+                    )
+                    setup_histogram(
+                        input_histograms_sys_eff[ibin2][sys_cat][sys_var],
+                        get_colour(nsys + 1),
+                        get_marker(nsys + 1),
+                    )
+                    input_histograms_sys_eff[ibin2][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
                 latex = TLatex(
                     0.15,
@@ -700,15 +711,11 @@ class AnalyzerJetSystematics:
                         histo_ratio[sys_var].SetXTitle("#it{p}_{T}")
                         histo_ratio[sys_var].SetYTitle("efficiency (variation/default)")
                         histo_ratio[sys_var].Draw()
-                    if histo_ratio[sys_var].GetBinContent(1) > 0:
-                        leg_sysvar_eff_ratio.AddEntry(
-                            histo_ratio[sys_var], self.systematic_varlabels[sys_cat][sys_var], "P"
-                        )
-                        setup_histogram(histo_ratio[sys_var], get_colour(nsys + 1), get_marker(nsys + 1))
-                        histo_ratio[sys_var].Draw("same")
-                    else:
-                        histo_ratio[sys_var].Reset()
-                        setup_histogram(histo_ratio[sys_var], 0, get_marker(nsys + 1))
+                    leg_sysvar_eff_ratio.AddEntry(
+                        histo_ratio[sys_var], self.systematic_varlabels[sys_cat][sys_var], "P"
+                    )
+                    setup_histogram(histo_ratio[sys_var], get_colour(nsys + 1), get_marker(nsys + 1))
+                    histo_ratio[sys_var].Draw("same")
                     nsys = nsys + 1
                 # line = TLine(self.obs_rec_min, 1, self.obs_rec_max, 1)
                 # line.SetLineColor(1)
@@ -988,7 +995,7 @@ class AnalyzerJetSystematics:
             setup_canvas(cfinalwsys)
             leg_finalwsys = TLegend(0.7, 0.78, 0.85, 0.88)
             setup_legend(leg_finalwsys)
-            leg_finalwsys.AddEntry(input_histograms_default[ibin2], "data, pp, #sqrt{#it{s}} = 13 TeV", "P")
+            leg_finalwsys.AddEntry(input_histograms_default[ibin2], "data", "P")
             setup_histogram(input_histograms_default[ibin2], get_colour(0, 0))
             y_min_g, y_max_g = get_y_window_gr([tgsys[ibin2]])
             y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2]])
