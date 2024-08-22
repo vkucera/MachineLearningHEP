@@ -23,7 +23,7 @@ categories:
         rms_both_sides: true
         variations:
             bkgfunc:
-                activate: [yes]
+                activate: [no]
                 label: ["bkg. func."]
                 diffs:
                     analysis:
@@ -249,7 +249,7 @@ categories:
                         jet_obs:
                             todo: [0]
             massmin:
-                activate: [yes]
+                activate: [no]
                 label:
                     - "#it{m} min. 1.75"
                 diffs:
@@ -469,8 +469,8 @@ categories:
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
             rebin:
-                activate: [yes, yes, yes]
-                label: ["2", "3", "4"]
+                activate: [yes, no, yes]
+                label: ["rebin 2", "rebin 3", "rebin 4"]
                 diffs:
                     analysis:
                         jet_obs:
@@ -892,7 +892,7 @@ categories:
         rms_both_sides: true
         variations:
             cutvar:
-                activate: [yes, yes, yes, yes, yes, no, yes]
+                activate: [no, no, no, yes, no, no, yes]
                 label:
                     - "default"  # working point (for tests, should be same as the default result)
                     - "null"  # no cuts (for tests, whatever was applied on Hyperloop)
