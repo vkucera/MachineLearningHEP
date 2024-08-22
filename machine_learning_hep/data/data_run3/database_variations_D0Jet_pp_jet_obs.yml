@@ -882,7 +882,7 @@ categories:
                                 bins_det_fix: [[22, -.1, 1.]]
                               zpar:
                                 bins_det_fix: [[20, 0., 1.]]
-    cutvar:
+    cand_sel:
         activate: yes
         processor: true
         label: "BDT cut"
@@ -891,7 +891,7 @@ categories:
         symmetrise: true
         rms_both_sides: true
         variations:
-            cutvar:
+            ml:
                 activate: [no, no, no, yes, no, no, yes]
                 label:
                     - "default"  # working point (for tests, should be same as the default result)
