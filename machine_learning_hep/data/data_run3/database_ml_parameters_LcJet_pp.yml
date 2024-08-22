@@ -19,7 +19,8 @@ LcJet_pp:
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null # "fIsEventReject == 0"
-  sel_reco_skim: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]
+  # sel_reco_skim: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]  # (sel_skim_binmin bins)
+  sel_reco_skim: [null,null,null,null,null,null,null]  # (sel_skim_binmin bins)
   sel_gen_skim: [null,null,null,null,null,null,null]  # (sel_skim_binmin bins)
   sel_skim_binmin: [1,2,4,6,8,12,24] # skimming pt bins (sel_skim_binmin bins)
   sel_skim_binmax:   [2,4,6,8,12,24,48] # skimming pt bins (sel_skim_binmin bins)
@@ -560,15 +561,8 @@ LcJet_pp:
       variations_db: database_variations_LcJet_pp_jet_obs.yml
 
       # Additional cuts applied before mass histogram is filled
-      use_cuts: False
-      cuts: # (sel_skim_binmin bins)
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
+      use_cuts: True
+      cuts: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]
 
     # jet_qa:
     #   <<: *jet_default
