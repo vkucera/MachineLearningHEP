@@ -365,7 +365,6 @@ D0jet_pp:
 
       # sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
 
-      # TODO: add separate binnings for MC and data
       observables:
         zg:
           bins_gen_fix: [6, -.1, .5]
