@@ -121,7 +121,7 @@ categories:
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
             rebin:
-                activate: [yes, yes, yes]
+                activate: [no, no, no]
                 label: ["rebin 2", "rebin 3", "rebin 4"]
                 diffs:
                     analysis:
