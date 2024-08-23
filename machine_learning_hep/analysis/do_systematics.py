@@ -227,8 +227,8 @@ class AnalyzerJetSystematics:
         self.title_full = ";%s;%s" % (self.title_x, self.title_y)
         self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
         # text
-        # self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"
-        self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"
+        self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"
+        # self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"
         self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron
         self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet ch}| < 0.5"
         self.text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| < 0.8"
@@ -309,7 +309,7 @@ class AnalyzerJetSystematics:
             input_histograms_default.append(input_file_default.Get(name_his))
             if not input_histograms_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_his, path_def))
-            # self.crop_histogram(input_histograms_default[ibin2])
+            self.crop_histogram(input_histograms_default[ibin2])
             print(f"Default histogram ({jetptrange[0]} to {jetptrange[1]})")
             print_histogram(input_histograms_default[ibin2])
             name_eff = f'h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}'  # efficiency jetpt binning has offset
@@ -377,7 +377,7 @@ class AnalyzerJetSystematics:
                     path_eff_file = path_eff.replace(string_default, string_catvar)
                     if not sys_var_histo_eff:
                         self.logger.critical(make_message_notfound(name_eff, path_eff_file))
-                    # self.crop_histogram(sys_var_histo)
+                    self.crop_histogram(sys_var_histo)
 
                     # if not signif_check:
                     #     print("BAD FIT in Variation: %s, %s" % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var]))
@@ -434,7 +434,7 @@ class AnalyzerJetSystematics:
                     if his_var.Integral() != 0:
                         l_his_all.append(his_var)
             l_his_all.append(input_histograms_default[ibin2])
-            y_min, y_max = get_y_window_his(l_his_all)
+            y_min, y_max = get_y_window_his(l_his_all, False)
             y_margin_up = 0.15
             y_margin_down = 0.05
             input_histograms_default[ibin2].GetYaxis().SetRangeUser(
@@ -493,7 +493,7 @@ class AnalyzerJetSystematics:
                     if his_var.Integral() != 0:
                         l_his_all.append(his_var)
                 l_his_all.append(input_histograms_default[ibin2])
-                y_min, y_max = get_y_window_his(l_his_all)
+                y_min, y_max = get_y_window_his(l_his_all, False)
                 y_margin_up = 0.15
                 y_margin_down = 0.05
                 for sys_var in range(self.systematic_variations[sys_cat]):
@@ -543,7 +543,7 @@ class AnalyzerJetSystematics:
                 for his_var in histo_ratio:
                     if his_var.Integral() != 0:
                         l_his_all.append(his_var)
-                y_min, y_max = get_y_window_his(l_his_all)
+                y_min, y_max = get_y_window_his(l_his_all, False)
                 y_margin_up = 0.15
                 y_margin_down = 0.05
 
@@ -687,7 +687,7 @@ class AnalyzerJetSystematics:
                 for his_var in histo_ratio:
                     if his_var.Integral() != 0:
                         l_his_all.append(his_var)
-                y_min, y_max = get_y_window_his(l_his_all)
+                y_min, y_max = get_y_window_his(l_his_all, False)
                 y_margin_up = 0.05
                 y_margin_down = 0.05
                 for sys_var in range(self.systematic_variations[sys_cat]):
@@ -983,8 +983,8 @@ class AnalyzerJetSystematics:
             leg_finalwsys = TLegend(0.7, 0.78, 0.85, 0.88)
             setup_legend(leg_finalwsys)
             leg_finalwsys.AddEntry(input_histograms_default[ibin2], "data", "P")
-            # self.crop_histogram(input_histograms_default[ibin2])
-            # self.crop_graph(tgsys[ibin2])
+            self.crop_histogram(input_histograms_default[ibin2])
+            self.crop_graph(tgsys[ibin2])
             setup_histogram(input_histograms_default[ibin2], get_colour(0, 0))
             y_min_g, y_max_g = get_y_window_gr([tgsys[ibin2]])
             y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2]])
@@ -998,9 +998,9 @@ class AnalyzerJetSystematics:
             # input_histograms_default[ibin2].GetXaxis().SetRangeUser(
             #     round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
             # )
-            # input_histograms_default[ibin2].GetXaxis().SetRangeUser(
-            #     round(x_range[self.var][0], 2), round(x_range[self.var][1], 2)
-            # )
+            input_histograms_default[ibin2].GetXaxis().SetRangeUser(
+                round(x_range[self.var][0], 2), round(x_range[self.var][1], 2)
+            )
             input_histograms_default[ibin2].SetTitle("")
             input_histograms_default[ibin2].SetXTitle(self.latex_obs)
             input_histograms_default[ibin2].SetYTitle(self.latex_y)
@@ -1011,8 +1011,8 @@ class AnalyzerJetSystematics:
             input_histograms_default[ibin2].Draw("SAME")
             leg_finalwsys.AddEntry(tgsys[ibin2], "syst. unc.", "F")
             input_histograms_default[ibin2].Draw("AXISSAME")
-            # PREL latex = TLatex(0.15, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV")
-            latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13.6 TeV")
+            latex = TLatex(0.15, 0.82, self.text_alice)
+            # latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13.6 TeV")
             draw_latex(latex)
             latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron)
             draw_latex(latex1)
@@ -1036,8 +1036,9 @@ class AnalyzerJetSystematics:
             )
             draw_latex(latex3)
             leg_finalwsys.Draw("same")
-            latex_SD = TLatex(0.15, 0.62, "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
-            draw_latex(latex_SD)
+            if self.var != "zpar":
+                latex_SD = TLatex(0.15, 0.62, self.text_sd)
+                draw_latex(latex_SD)
             self.save_canvas(cfinalwsys, f"final_wsys_{self.var}_{suffix}")
 
             # plot the relative systematic uncertainties for all categories together
@@ -1056,6 +1057,9 @@ class AnalyzerJetSystematics:
             crelativesys.SetRightMargin(0.25)
             leg_relativesys = TLegend(0.77, 0.2, 0.95, 0.85)
             setup_legend(leg_relativesys, textsize=self.fontsize)
+            for g in tgsys_cat[ibin2]:
+                self.crop_graph(g)
+            self.crop_histogram(h_default_stat_err[ibin2])
             y_min_g, y_max_g = get_y_window_gr(tgsys_cat[ibin2])
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]])
             y_min = min(y_min_g, y_min_h)
@@ -1075,10 +1079,10 @@ class AnalyzerJetSystematics:
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(
                     *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                 )
-                tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(
-                    round(self.edges_obs_gen[0 if self.var in ("nsd", "zpar") else 1], 2),
-                    round(self.obs_gen_max, 2),
-                )
+                # tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(
+                #     round(self.edges_obs_gen[0 if self.var in ("nsd", "zpar") else 1], 2),
+                #     round(self.obs_gen_max, 2),
+                # )
                 if self.var == "nsd":
                     tgsys_cat[ibin2][sys_cat].GetXaxis().SetNdivisions(5)
                     shrink_err_x(tgsys_cat[ibin2][sys_cat], 0.2)
@@ -1150,6 +1154,9 @@ class AnalyzerJetSystematics:
             # leg_relativesys_gr = TLegend(.77, .2, 0.95, .85)
             leg_relativesys_gr = TLegend(0.77 * 9 / 10, 0.5, 0.95, 0.85)  # scale for width 900 -> 1000
             setup_legend(leg_relativesys_gr, textsize=self.fontsize)
+            for g in tgsys_gr[ibin2]:
+                self.crop_graph(g)
+            self.crop_histogram(h_default_stat_err[ibin2])
             y_min_g, y_max_g = get_y_window_gr(tgsys_gr[ibin2])
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]])
             y_min = min(y_min_g, y_min_h)
@@ -1169,10 +1176,10 @@ class AnalyzerJetSystematics:
                 tgsys_gr[ibin2][sys_gr].GetYaxis().SetRangeUser(
                     *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                 )
-                tgsys_gr[ibin2][sys_gr].GetXaxis().SetLimits(
-                    round(self.edges_obs_gen[0 if self.var in ("nsd", "zpar") else 1], 2),
-                    round(self.obs_gen_max, 2),
-                )
+                # tgsys_gr[ibin2][sys_gr].GetXaxis().SetLimits(
+                #     round(self.edges_obs_gen[0 if self.var in ("nsd", "zpar") else 1], 2),
+                #     round(self.obs_gen_max, 2),
+                # )
                 if self.var == "nsd":
                     tgsys_gr[ibin2][sys_gr].GetXaxis().SetNdivisions(5)
                     shrink_err_x(tgsys_gr[ibin2][sys_gr], 0.2)
