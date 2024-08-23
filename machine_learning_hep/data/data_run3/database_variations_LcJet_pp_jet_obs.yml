@@ -23,7 +23,7 @@ categories:
         rms_both_sides: true
         variations:
             bkgfunc:
-                activate: [yes]
+                activate: [no]
                 label: ["bkg. func."]
                 diffs:
                     analysis:
@@ -225,7 +225,7 @@ categories:
                     analysis:
                         jet_obs:
                             sidebandleftonly: [true]
-    feeddown: # TODO: parquet files
+    feeddown:
         activate: yes
         processor: false
         label: "feed-down"
@@ -399,7 +399,7 @@ categories:
                             bins_ptjet: [[4, 7, 15, 30, 50]]
                             bins_ptjet_eff: [[2, 4, 7, 15, 30, 50, 70]]
             observable:
-                activate: [yes]
+                activate: [no]
                 label:
                     - "obs. 1"
                 diffs:
@@ -424,7 +424,7 @@ categories:
         rms_both_sides: true
         variations:
             ml:
-                activate: [yes, yes, yes, yes, no, no, yes]
+                activate: [no, no, no, yes, no, no, yes]
                 label:
                     - "default"  # working point (for tests, should be same as the default result)
                     - "null"  # no cuts (for tests, whatever was applied on Hyperloop)

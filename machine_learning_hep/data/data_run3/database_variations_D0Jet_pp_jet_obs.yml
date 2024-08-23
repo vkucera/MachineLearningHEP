@@ -493,7 +493,7 @@ categories:
         rms_both_sides: true
         variations:
             sigma:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [no, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 label:
                     - "S 1.5 #it{#sigma}"
                     - "S 1.6 #it{#sigma}"
