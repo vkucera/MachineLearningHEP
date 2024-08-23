@@ -134,18 +134,10 @@ class AnalyzerJetSystematics:
         print("Rec obs edges:", self.edges_obs_rec, "Gen obs edges:", self.edges_obs_gen)
         print("Rec ptjet edges:", self.edges_ptjet_rec, "Gen ptjet edges:", self.edges_ptjet_gen)
 
-        # systematics variations
-
-        # models to compare with
-        # POWHEG + PYTHIA 6
-        # PYTHIA 8
-        # self.pythia8_prompt_variations_legend = datap["analysis"][self.typean]["pythia8_prompt_variations_legend"]
-
         # unfolding
         self.niter_unfolding = datap["analysis"][self.typean]["unfolding_iterations"]
         self.choice_iter_unfolding = datap["analysis"][self.typean]["unfolding_iterations_sel"]
 
-        # systematics
         # import parameters of variations from the variation database
 
         path_database_variations = datap["analysis"][self.typean]["variations_db"]
@@ -238,7 +230,6 @@ class AnalyzerJetSystematics:
         # self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV"
         self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13.6 TeV"
         self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron
-        self.text_jets_ratio = "#Lambda_{c}^{+}, D^{0} -tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
         self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet ch}| < 0.5"
         self.text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| < 0.8"
         self.text_sd = "Soft drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
@@ -257,10 +248,19 @@ class AnalyzerJetSystematics:
 
     def crop_histogram(self, hist):
         """Constrain x range of histogram and reset outside bins."""
-        if self.var in x_range:
-            hist.GetXaxis().SetRangeUser(*x_range[self.var])
-            hist.GetXaxis().SetLimits(*x_range[self.var])
-            reset_hist_outside_range(hist, *x_range[self.var])
+        if self.var not in x_range:
+            return
+        # hist.GetXaxis().SetRangeUser(round(x_range[self.var][0], 2), round(x_range[self.var][1], 2))
+        hist.GetXaxis().SetLimits(round(x_range[self.var][0], 2), round(x_range[self.var][1], 2))
+        reset_hist_outside_range(hist, *x_range[self.var])
+
+    def crop_graph(self, graph):
+        """Constrain x range of graph and reset outside points."""
+        if self.var not in x_range:
+            return
+        # graph.GetXaxis().SetRangeUser(round(x_range[self.var][0], 2), round(x_range[self.var][1], 2))
+        graph.GetXaxis().SetLimits(round(x_range[self.var][0], 2), round(x_range[self.var][1], 2))
+        reset_graph_outside_range(graph, *x_range[self.var])
 
     def jetsystematics(self):
         string_default = "default/default"
@@ -364,23 +364,11 @@ class AnalyzerJetSystematics:
                     axis_jetpt = get_axis(hist_unfold, 0)
                     # signif_check = True
                     string_catvar = self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var]
-                    if string_catvar.startswith("binning/pt_jet"):
-                        suffix_jetpt = "%g_%g" % (
-                            self.edges_ptjet_rec_sys[sys_var][ibin2],
-                            self.edges_ptjet_rec_sys[sys_var][ibin2 + 1],
-                        )
-                    else:
-                        suffix_jetpt = "%g_%g" % (self.edges_ptjet_rec[ibin2], self.edges_ptjet_rec[ibin2 + 1])
                     # if self.do_check_signif:  # TODO: signifcance check
                     #     for ipt in range(self.p_nptfinbins):
                     #         pass
-                    # FIXME exception for different jet pt binning, pylint: disable=fixme
-                    if string_catvar.startswith("binning/pt_jet"):
-                        jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
-                        name_his = f'h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
-                    else:
-                        jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
-                        name_his = f'h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
+                    jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
+                    name_his = f'h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
                     sys_var_histo = input_files_sys[sys_cat][sys_var].Get(name_his)
                     path_file = path_def.replace(string_default, string_catvar)
                     if not sys_var_histo:
@@ -905,15 +893,14 @@ class AnalyzerJetSystematics:
                 for ibinshape in range(self.n_bins_obs_gen):
                     shapebins_contents_cat.append(0)
                     if abs(input_histograms_default[ibin2].GetBinContent(ibinshape + 1)) < 1.e-7:
-                        print("WARNING!!! Input histogram at bin", ibin2, " equal 0, skip", suffix)
-                        continue
-                    shapebins_error_up_cat.append(
-                        sys_up[ibin2][ibinshape][sys_cat] / input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
-                    )
-                    shapebins_error_down_cat.append(
-                        sys_down[ibin2][ibinshape][sys_cat]
-                        / input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
-                    )
+                        print("WARNING!!! Input histogram at bin", ibin2, " equal 0", suffix)
+                        e_up = 0
+                        e_down = 0
+                    else:
+                        e_up = sys_up[ibin2][ibinshape][sys_cat] / input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
+                        e_down = sys_down[ibin2][ibinshape][sys_cat] / input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
+                    shapebins_error_up_cat.append(e_up)
+                    shapebins_error_down_cat.append(e_down)
                 shapebins_contents_cat_array = array("d", shapebins_contents_cat)
                 shapebins_error_up_cat_array = array("d", shapebins_error_up_cat)
                 shapebins_error_down_cat_array = array("d", shapebins_error_down_cat)
@@ -976,7 +963,7 @@ class AnalyzerJetSystematics:
             h_default_stat_err.append(input_histograms_default[ibin2].Clone("h_default_stat_err" + suffix))
             for i in range(h_default_stat_err[ibin2].GetNbinsX()):
                 if abs(input_histograms_default[ibin2].GetBinContent(i + 1)) < 1.e-7:
-                    print("WARNING!!! Input histogram at bin", ibin2, " equal 0, skip", suffix)
+                    print("WARNING!!! Input histogram at bin", ibin2, " equal 0", suffix)
                     h_default_stat_err[ibin2].SetBinContent(i + 1, 0)
                     h_default_stat_err[ibin2].SetBinError(i + 1, 0)
                 else:
@@ -996,6 +983,8 @@ class AnalyzerJetSystematics:
             leg_finalwsys = TLegend(0.7, 0.78, 0.85, 0.88)
             setup_legend(leg_finalwsys)
             leg_finalwsys.AddEntry(input_histograms_default[ibin2], "data", "P")
+            # self.crop_histogram(input_histograms_default[ibin2])
+            # self.crop_graph(tgsys[ibin2])
             setup_histogram(input_histograms_default[ibin2], get_colour(0, 0))
             y_min_g, y_max_g = get_y_window_gr([tgsys[ibin2]])
             y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2]])
@@ -1006,9 +995,12 @@ class AnalyzerJetSystematics:
             input_histograms_default[ibin2].GetYaxis().SetRangeUser(
                 *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
             )
-            input_histograms_default[ibin2].GetXaxis().SetRangeUser(
-                round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
-            )
+            # input_histograms_default[ibin2].GetXaxis().SetRangeUser(
+            #     round(self.obs_gen_min, 2), round(self.obs_gen_max, 2)
+            # )
+            # input_histograms_default[ibin2].GetXaxis().SetRangeUser(
+            #     round(x_range[self.var][0], 2), round(x_range[self.var][1], 2)
+            # )
             input_histograms_default[ibin2].SetTitle("")
             input_histograms_default[ibin2].SetXTitle(self.latex_obs)
             input_histograms_default[ibin2].SetYTitle(self.latex_y)
@@ -1019,8 +1011,8 @@ class AnalyzerJetSystematics:
             input_histograms_default[ibin2].Draw("SAME")
             leg_finalwsys.AddEntry(tgsys[ibin2], "syst. unc.", "F")
             input_histograms_default[ibin2].Draw("AXISSAME")
-            # PREL latex = TLatex(0.15, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
-            latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13 TeV")
+            # PREL latex = TLatex(0.15, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13.6 TeV")
+            latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13.6 TeV")
             draw_latex(latex)
             latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.latex_hadron)
             draw_latex(latex1)
@@ -1084,7 +1076,7 @@ class AnalyzerJetSystematics:
                     *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                 )
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(
-                    round(self.edges_obs_gen[0 if self.var == "nsd" else 1], 2),
+                    round(self.edges_obs_gen[0 if self.var in ("nsd", "zpar") else 1], 2),
                     round(self.obs_gen_max, 2),
                 )
                 if self.var == "nsd":
@@ -1178,7 +1170,7 @@ class AnalyzerJetSystematics:
                     *get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
                 )
                 tgsys_gr[ibin2][sys_gr].GetXaxis().SetLimits(
-                    round(self.edges_obs_gen[0 if self.var == "nsd" else 1], 2),
+                    round(self.edges_obs_gen[0 if self.var in ("nsd", "zpar") else 1], 2),
                     round(self.obs_gen_max, 2),
                 )
                 if self.var == "nsd":
@@ -1243,7 +1235,8 @@ def main(args=None):
     args = parser.parse_args(args)
 
     gROOT.SetBatch(True)
-    list_vars = ["zg", "nsd", "rg", "zpar"]
+    # list_vars = ["zg", "nsd", "rg", "zpar"]
+    list_vars = ["zpar"]
     for var in list_vars:
         print(f"Processing observable {var}")
         analyser = AnalyzerJetSystematics(args.database_analysis, args.type_ana, var)
