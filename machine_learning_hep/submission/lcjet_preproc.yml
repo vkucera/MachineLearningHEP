@@ -4,22 +4,22 @@ download:
     activate: false
 conversion: # pkl
   mc:
-    activate: false
+    activate: true
   data:
     activate: true
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
-    activate: false
+    activate: true
   data:
     activate: true
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
-    activate: false
+    activate: true
   data:
     activate: true
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
-    activate: false
+    activate: true
   data:
     activate: true
 
@@ -64,6 +64,13 @@ analysis:
     histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency
   steps:
+    # init:
+    # calculate_efficiencies:
+    # qa:
+    # fit:
+    # estimate_feeddown:
+    # analyze_with_sidesub:
+    # analyze_with_sigextr:
 
 systematics:
   cutvar:
