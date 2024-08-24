@@ -14,7 +14,8 @@
 Calculate and plot systematic uncertainties
 """
 
-# pylint: disable=too-many-lines, too-many-instance-attributes, too-many-statements, too-many-locals, too-many-nested-blocks, too-many-branches
+# pylint: disable=too-many-lines, too-many-instance-attributes, too-many-statements, too-many-locals
+# pylint: disable=too-many-nested-blocks, too-many-branches, consider-using-f-string
 
 import argparse
 import logging
@@ -726,25 +727,37 @@ class AnalyzerJetSystematics:
 
         # calculate the systematic uncertainties
 
-        sys_up = []  # list of absolute upward uncertainties for all categories, shape bins, pt_jet bins
-        sys_down = []  # list of absolute downward uncertainties for all categories, shape bins, pt_jet bins
-        sys_up_full = []  # list of combined absolute upward uncertainties for all shape bins, pt_jet bins
-        sys_down_full = []  # list of combined absolute downward uncertainties for all shape bins, pt_jet bins
+        # list of absolute upward uncertainties for all categories, shape bins, pt_jet bins
+        sys_up = []
+        # list of absolute downward uncertainties for all categories, shape bins, pt_jet bins
+        sys_down = []
+        # list of combined absolute upward uncertainties for all shape bins, pt_jet bins
+        sys_up_full = []
+        # list of combined absolute downward uncertainties for all shape bins, pt_jet bins
+        sys_down_full = []
         for ibin2 in range(self.n_bins_ptjet_gen):
-            sys_up_jetpt = []  # list of absolute upward uncertainties for all categories and shape bins in a given pt_jet bin
-            sys_down_jetpt = []  # list of absolute downward uncertainties for all categories and shape bins in a given pt_jet bin
-            sys_up_z_full = []  # list of combined absolute upward uncertainties for all shape bins in a given pt_jet bin
-            sys_down_z_full = []  # list of combined absolute upward uncertainties for all shape bins in a given pt_jet bin
+            # list of absolute upward uncertainties for all categories and shape bins in a given pt_jet bin
+            sys_up_jetpt = []
+            # list of absolute downward uncertainties for all categories and shape bins in a given pt_jet bin
+            sys_down_jetpt = []
+            # list of combined absolute upward uncertainties for all shape bins in a given pt_jet bin
+            sys_up_z_full = []
+            # list of combined absolute upward uncertainties for all shape bins in a given pt_jet bin
+            sys_down_z_full = []
             for ibinshape in range(self.n_bins_obs_gen):
-                sys_up_z = []  # list of absolute upward uncertainties for all categories in a given (pt_jet, shape) bin
-                sys_down_z = []  # list of absolute downward uncertainties for all categories in a given (pt_jet, shape) bin
-                error_full_up = 0  # combined absolute upward uncertainty in a given (pt_jet, shape) bin
-                error_full_down = 0  # combined absolute downward uncertainty in a given (pt_jet, shape) bin
+                # list of absolute upward uncertainties for all categories in a given (pt_jet, shape) bin
+                sys_up_z = []
+                # list of absolute downward uncertainties for all categories in a given (pt_jet, shape) bin
+                sys_down_z = []
+                # combined absolute upward uncertainty in a given (pt_jet, shape) bin
+                error_full_up = 0
+                # combined absolute downward uncertainty in a given (pt_jet, shape) bin
+                error_full_down = 0
                 for sys_cat in range(self.n_sys_cat):
-                    error_var_up = 0  # absolute upward uncertainty for a given category in a given (pt_jet, shape) bin
-                    error_var_down = (
-                        0  # absolute downward uncertainty for a given category in a given (pt_jet, shape) bin
-                    )
+                    # absolute upward uncertainty for a given category in a given (pt_jet, shape) bin
+                    error_var_up = 0
+                    # absolute downward uncertainty for a given category in a given (pt_jet, shape) bin
+                    error_var_down = 0
                     count_sys_up = 0
                     count_sys_down = 0
                     error = 0
@@ -931,7 +944,8 @@ class AnalyzerJetSystematics:
         for ibin2 in range(self.n_bins_ptjet_gen):
             tgsys_gr_z = []  # list of graphs with relative uncertainties for all groups in a given pt_jet bin
             for gr in self.systematic_catgroups_list:
-                tgsys_gr_z_cat = []  # lists of graphs with relative uncertainties for categories in a given group in a given pt_jet bin
+                # lists of graphs with relative uncertainties for categories in a given group in a given pt_jet bin
+                tgsys_gr_z_cat = []
                 for sys_cat, cat in enumerate(self.systematic_catlabels):
                     if self.systematic_catgroups[sys_cat] == gr:
                         print(f"Group {gr}: Adding category {cat}")
