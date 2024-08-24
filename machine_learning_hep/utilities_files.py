@@ -21,7 +21,7 @@ from .logger import get_logger
 
 logger = get_logger()
 
-def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disable=too-many-branches
+def list_folders(main_dir: str, filenameinput: str, maxfiles: int, select=None): # pylint: disable=too-many-branches
     """
     Return folders under main_dir which contain filenameinput
 
@@ -46,7 +46,7 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disa
 
     return  listfolders
 
-def create_folder_struc(maindir, listpath):
+def create_folder_struc(maindir: str, listpath: list[str]):
     """
     Reproduce the folder structure as input
     """
@@ -68,7 +68,7 @@ def checkdirs(dirs: list[str]) -> list[str]:
         exdirs = [d for d in dirs if Path(d).exists()]
     return exdirs
 
-def checkmakedir(mydir):
+def checkmakedir(mydir: str):
     """
     Makes directory using 'mkdir'
     """
@@ -78,7 +78,7 @@ def checkmakedir(mydir):
     logger.debug("creating folder %s", mydir)
     os.makedirs(mydir)
 
-def checkmakedirlist(dirlist):
+def checkmakedirlist(dirlist: list[str]):
     """
     Makes directories from list using 'mkdir'
     """
@@ -100,7 +100,7 @@ def delete_dir(path: str):
         return False
     return True
 
-def delete_dirlist(dirlist: str):
+def delete_dirlist(dirlist: list[str]):
     """
     Delete directories from list. Return True if success, False otherwise.
     """
@@ -109,19 +109,19 @@ def delete_dirlist(dirlist: str):
             return False
     return True
 
-def appendfiletolist(mylist, namefile):
+def appendfiletolist(mylist: list[str], namefile: str):
     """
     Append filename to list
     """
     return [os.path.join(path, namefile) for path in mylist]
 
-def appendmainfoldertolist(prefolder, mylist):
+def appendmainfoldertolist(prefolder: str, mylist: list[str]):
     """
     Append base foldername to paths in list
     """
     return [os.path.join(prefolder, path) for path in mylist]
 
-def createlist(prefolder, mylistfolder, namefile):
+def createlist(prefolder: str, mylistfolder: list[str], namefile: str):
     """
     Appends base foldername + filename in list
     """
