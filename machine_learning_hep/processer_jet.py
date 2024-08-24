@@ -233,7 +233,8 @@ class ProcesserJets(Processer):
                 h = create_hist(
                     f'h_mass-ptjet-pthf-{obs}',
                     f';M (GeV/#it{{c}}^{{2}});p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{obs}',
-                    self.binarray_mass, self.binarray_ptjet, self.binarray_pthf, *[self.binarrays_obs['det'][v] for v in var])
+                    self.binarray_mass, self.binarray_ptjet, self.binarray_pthf,
+                    *[self.binarrays_obs['det'][v] for v in var])
                 for i, v in enumerate(var):
                     get_axis(h, 3+i).SetTitle(self.cfg(f'observables.{v}.label', v))
 

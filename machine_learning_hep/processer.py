@@ -584,16 +584,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
         return df_.query(self.analysis_cuts[ipt])
 
 
-    def apply_cuts_all_ptbins(self, df):
+    def apply_cuts_all_ptbins(self, df_):
         """Apply cuts for all skimming pT bins."""
         if not self.do_custom_analysis_cuts or not any(self.analysis_cuts):
-            return df
+            return df_
 
-        def apply_cut_for_ipt(df, ipt: int):
-            df_ipt = seldf_singlevar(df, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
+        def apply_cut_for_ipt(dff_, ipt: int):
+            df_ipt = seldf_singlevar(dff_, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
             return df_ipt.query(self.analysis_cuts[ipt]) if self.analysis_cuts[ipt] else df_ipt
 
-        return pd.concat(apply_cut_for_ipt(df, ipt) for ipt in range(self.p_nptbins))
+        return pd.concat(apply_cut_for_ipt(df_, ipt) for ipt in range(self.p_nptbins))
 
 
     def process_histomass(self):
