@@ -14,20 +14,27 @@
 main script for doing final stage analysis
 """
 import argparse
+import logging
 
 # pylint: disable=too-many-lines, line-too-long
 import os
 from array import array
 from math import sqrt
-import logging
 from pathlib import Path
 
 import yaml
 
 # pylint: disable=import-error, no-name-in-module
-from ROOT import gROOT, TH1F, TCanvas, TFile, TGraphAsymmErrors, TLatex, TLegend, gStyle  # , TLine
-
-from machine_learning_hep.utils.hist import get_axis, print_histogram
+from ROOT import (
+    TH1F,
+    TCanvas,
+    TFile,
+    TGraphAsymmErrors,
+    TLatex,
+    TLegend,  # , TLine
+    gROOT,
+    gStyle,
+)
 
 from machine_learning_hep.do_variations import (
     format_varlabel,
@@ -37,7 +44,7 @@ from machine_learning_hep.do_variations import (
 from machine_learning_hep.logger import get_logger
 
 # HF specific imports
-from machine_learning_hep.utilities import (
+from machine_learning_hep.utilities import (  # make_plot,
     combine_graphs,
     draw_latex,
     get_colour,
@@ -46,14 +53,14 @@ from machine_learning_hep.utilities import (
     get_y_window_gr,
     get_y_window_his,
     make_message_notfound,
-    # make_plot,
+    reset_graph_outside_range,
+    reset_hist_outside_range,
     setup_canvas,
     setup_histogram,
     setup_legend,
     setup_tgraph,
-    reset_hist_outside_range,
-    reset_graph_outside_range,
 )
+from machine_learning_hep.utils.hist import get_axis, print_histogram
 
 
 def shrink_err_x(graph, width=0.1):
@@ -63,11 +70,12 @@ def shrink_err_x(graph, width=0.1):
 
 
 # final ranges
-x_range = {"zg": [0.1, 0.5],
-           "rg": [0., 0.4],
-           "nsd": [-0.5, 5.5],
-           "zpar": [0.3, 1.0],
-           }
+x_range = {
+    "zg": [0.1, 0.5],
+    "rg": [0.0, 0.4],
+    "nsd": [-0.5, 5.5],
+    "zpar": [0.3, 1.0],
+}
 
 
 # pylint: disable=too-many-instance-attributes, too-many-statements
@@ -300,19 +308,19 @@ class AnalyzerJetSystematics:
         input_histograms_default = []
         eff_default = []
         for ibin2 in range(self.n_bins_ptjet_gen):
-            name_hist_unfold_2d = f'h_ptjet-{self.var}_{self.method}_unfolded_data_0'
+            name_hist_unfold_2d = f"h_ptjet-{self.var}_{self.method}_unfolded_data_0"
             if not (hist_unfold := input_file_default.Get(name_hist_unfold_2d)):
                 self.logger.critical(make_message_notfound(name_hist_unfold_2d, eff_file_default))
             axis_jetpt = get_axis(hist_unfold, 0)
-            jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
-            name_his = f'h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
+            jetptrange = (axis_jetpt.GetBinLowEdge(ibin2 + 1), axis_jetpt.GetBinUpEdge(ibin2 + 1))
+            name_his = f"h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel"
             input_histograms_default.append(input_file_default.Get(name_his))
             if not input_histograms_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_his, path_def))
             self.crop_histogram(input_histograms_default[ibin2])
             print(f"Default histogram ({jetptrange[0]} to {jetptrange[1]})")
             print_histogram(input_histograms_default[ibin2])
-            name_eff = f'h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}'  # efficiency jetpt binning has offset
+            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
             eff_default.append(eff_file_default.Get(name_eff))
             if not eff_default[ibin2]:
                 self.logger.critical(make_message_notfound(name_eff, path_eff))
@@ -347,7 +355,7 @@ class AnalyzerJetSystematics:
         input_histograms_sys = []
         input_histograms_sys_eff = []
         for ibin2 in range(self.n_bins_ptjet_gen):  # pylint: disable=:too-many-nested-blocks
-            name_eff = f'h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}'  # efficiency jetpt binning has offset
+            name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
             input_histograms_syscat = []
             input_histograms_syscat_eff = []
             for sys_cat in range(self.n_sys_cat):
@@ -358,17 +366,19 @@ class AnalyzerJetSystematics:
                         "Variation: %s, %s"
                         % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var])
                     )
-                    name_hist_unfold_2d = f'h_ptjet-{self.var}_{self.method}_unfolded_data_0'
+                    name_hist_unfold_2d = f"h_ptjet-{self.var}_{self.method}_unfolded_data_0"
                     if not (hist_unfold := input_files_sys[sys_cat][sys_var].Get(name_hist_unfold_2d)):
-                        self.logger.critical(make_message_notfound(name_hist_unfold_2d, path_input_files_sys[sys_cat][sys_var]))
+                        self.logger.critical(
+                            make_message_notfound(name_hist_unfold_2d, path_input_files_sys[sys_cat][sys_var])
+                        )
                     axis_jetpt = get_axis(hist_unfold, 0)
                     # signif_check = True
                     string_catvar = self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var]
                     # if self.do_check_signif:  # TODO: signifcance check
                     #     for ipt in range(self.p_nptfinbins):
                     #         pass
-                    jetptrange = (axis_jetpt.GetBinLowEdge(ibin2+1), axis_jetpt.GetBinUpEdge(ibin2+1))
-                    name_his = f'h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel'
+                    jetptrange = (axis_jetpt.GetBinLowEdge(ibin2 + 1), axis_jetpt.GetBinUpEdge(ibin2 + 1))
+                    name_his = f"h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel"
                     sys_var_histo = input_files_sys[sys_cat][sys_var].Get(name_his)
                     path_file = path_def.replace(string_default, string_catvar)
                     if not sys_var_histo:
@@ -380,7 +390,8 @@ class AnalyzerJetSystematics:
                     self.crop_histogram(sys_var_histo)
 
                     # if not signif_check:
-                    #     print("BAD FIT in Variation: %s, %s" % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var]))
+                    # print("BAD FIT in Variation: %s, %s" % (self.systematic_catnames[sys_cat],
+                    #                                         self.systematic_varnames[sys_cat][sys_var]))
                     #     for idr in range(self.n_bins_obs_gen):
                     #         sys_var_histo.SetBinContent(idr+1, 0)
                     #         sys_var_histo_eff.SetBinContent(idr+1, 0)
@@ -407,7 +418,6 @@ class AnalyzerJetSystematics:
                                 path_eff_file,
                             )
                         )
-                    # input_histograms_syscatvar[sys_var].Scale(1.0, "width") #remove these later and put normalisation directly in systematics
                 input_histograms_syscat.append(input_histograms_syscatvar)
                 input_histograms_syscat_eff.append(input_histograms_eff)
             input_histograms_sys.append(input_histograms_syscat)
@@ -460,8 +470,14 @@ class AnalyzerJetSystematics:
                         ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])),
                         "P",
                     )
-                    self.logger.info("Adding label %s", ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])))
-                    print("Adding label %s" % ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])))
+                    self.logger.info(
+                        "Adding label %s",
+                        ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])),
+                    )
+                    print(
+                        "Adding label %s"
+                        % ("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var]))
+                    )
                     setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var], get_colour(nsys + 1))
                     input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
@@ -556,9 +572,7 @@ class AnalyzerJetSystematics:
                         histo_ratio[sys_var].SetXTitle(self.latex_obs)
                         histo_ratio[sys_var].SetYTitle("variation/default")
                         histo_ratio[sys_var].Draw()
-                    leg_sysvar_ratio.AddEntry(
-                        histo_ratio[sys_var], self.systematic_varlabels[sys_cat][sys_var], "P"
-                    )
+                    leg_sysvar_ratio.AddEntry(histo_ratio[sys_var], self.systematic_varlabels[sys_cat][sys_var], "P")
                     setup_histogram(histo_ratio[sys_var], get_colour(nsys + 1), get_marker(nsys + 1))
                     histo_ratio[sys_var].Draw("same")
                     nsys = nsys + 1
@@ -577,7 +591,9 @@ class AnalyzerJetSystematics:
 
                 # Plot efficiency variations
 
-                csysvar_eff = TCanvas("csysvar_eff_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix)
+                csysvar_eff = TCanvas(
+                    "csysvar_eff_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix
+                )
                 setup_canvas(csysvar_eff)
                 csysvar_eff.SetRightMargin(0.25)
                 leg_sysvar_eff = TLegend(
@@ -892,13 +908,17 @@ class AnalyzerJetSystematics:
                 shapebins_error_down_cat = []
                 for ibinshape in range(self.n_bins_obs_gen):
                     shapebins_contents_cat.append(0)
-                    if abs(input_histograms_default[ibin2].GetBinContent(ibinshape + 1)) < 1.e-7:
+                    if abs(input_histograms_default[ibin2].GetBinContent(ibinshape + 1)) < 1.0e-7:
                         print("WARNING!!! Input histogram at bin", ibin2, " equal 0", suffix)
                         e_up = 0
                         e_down = 0
                     else:
-                        e_up = sys_up[ibin2][ibinshape][sys_cat] / input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
-                        e_down = sys_down[ibin2][ibinshape][sys_cat] / input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
+                        e_up = sys_up[ibin2][ibinshape][sys_cat] / input_histograms_default[ibin2].GetBinContent(
+                            ibinshape + 1
+                        )
+                        e_down = sys_down[ibin2][ibinshape][sys_cat] / input_histograms_default[ibin2].GetBinContent(
+                            ibinshape + 1
+                        )
                     shapebins_error_up_cat.append(e_up)
                     shapebins_error_down_cat.append(e_down)
                 shapebins_contents_cat_array = array("d", shapebins_contents_cat)
@@ -933,7 +953,11 @@ class AnalyzerJetSystematics:
 
         # write the combined systematic uncertainties in a file
         for ibin2 in range(self.n_bins_ptjet_gen):
-            suffix = "%s_%.2f_%.2f" % (self.ptjet_name, self.edges_ptjet_gen_min[ibin2], self.edges_ptjet_gen_max[ibin2])
+            suffix = "%s_%.2f_%.2f" % (
+                self.ptjet_name,
+                self.edges_ptjet_gen_min[ibin2],
+                self.edges_ptjet_gen_max[ibin2],
+            )
             file_sys_out.cd()
             tgsys[ibin2].Write("tgsys_%s" % suffix)
             unc_hist_up = TH1F(
@@ -959,10 +983,14 @@ class AnalyzerJetSystematics:
         # relative statistical uncertainty of the central values
         h_default_stat_err = []
         for ibin2 in range(self.n_bins_ptjet_gen):
-            suffix = "%s_%.2f_%.2f" % (self.ptjet_name, self.edges_ptjet_gen_min[ibin2], self.edges_ptjet_gen_max[ibin2])
+            suffix = "%s_%.2f_%.2f" % (
+                self.ptjet_name,
+                self.edges_ptjet_gen_min[ibin2],
+                self.edges_ptjet_gen_max[ibin2],
+            )
             h_default_stat_err.append(input_histograms_default[ibin2].Clone("h_default_stat_err" + suffix))
             for i in range(h_default_stat_err[ibin2].GetNbinsX()):
-                if abs(input_histograms_default[ibin2].GetBinContent(i + 1)) < 1.e-7:
+                if abs(input_histograms_default[ibin2].GetBinContent(i + 1)) < 1.0e-7:
                     print("WARNING!!! Input histogram at bin", ibin2, " equal 0", suffix)
                     h_default_stat_err[ibin2].SetBinContent(i + 1, 0)
                     h_default_stat_err[ibin2].SetBinError(i + 1, 0)
@@ -1121,15 +1149,25 @@ class AnalyzerJetSystematics:
                         tgsys_cat[ibin2][sys_cat].GetErrorYlow(ibinshape),
                     )
                 print(
-                    f"rel. syst. unc. {self.systematic_catlabels[sys_cat]} (%): min. {(100. * unc_rel_min):.2g}, max. {(100. * unc_rel_max):.2g}"
+                    f"rel. syst. unc. {self.systematic_catlabels[sys_cat]} (%): min. {(100. * unc_rel_min):.2g}, "
+                    f"max. {(100. * unc_rel_max):.2g}"
                 )
             h_default_stat_err[ibin2].Draw("same")
             h_default_stat_err[ibin2].Draw("axissame")
             # Draw LaTeX
             y_latex = self.y_latex_top
             list_latex = []
-            text_ptjet_full = self.text_ptjet % (self.edges_ptjet_gen[ibin2], self.latex_ptjet, self.edges_ptjet_gen[ibin2 + 1])
-            text_pth_full = self.text_pth % (self.edges_pthf_min[0], self.latex_hadron, min(self.edges_pthf_max[-1], self.edges_ptjet_gen[ibin2 + 1]), self.latex_hadron)
+            text_ptjet_full = self.text_ptjet % (
+                self.edges_ptjet_gen[ibin2],
+                self.latex_ptjet,
+                self.edges_ptjet_gen[ibin2 + 1],
+            )
+            text_pth_full = self.text_pth % (
+                self.edges_pthf_min[0],
+                self.latex_hadron,
+                min(self.edges_pthf_max[-1], self.edges_ptjet_gen[ibin2 + 1]),
+                self.latex_hadron,
+            )
             for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
                 latex = TLatex(self.x_latex, y_latex, text_latex)
                 list_latex.append(latex)
