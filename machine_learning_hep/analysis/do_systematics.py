@@ -15,24 +15,14 @@ Calculate and plot systematic uncertainties
 """
 import argparse
 import logging
-
 import os
 from array import array
 from math import sqrt
 from pathlib import Path
 
 import yaml
-
-from ROOT import (
-    TH1F,
-    TCanvas,
-    TFile,
-    TGraphAsymmErrors,
-    TLatex,
-    TLegend,  # , TLine
-    gROOT,
-    gStyle,
-)
+from ROOT import TLegend  # , TLine
+from ROOT import TH1F, TCanvas, TFile, TGraphAsymmErrors, TLatex, gROOT, gStyle
 
 from machine_learning_hep.do_variations import (
     format_varlabel,
