@@ -46,11 +46,11 @@ ml_study: # mlout, mlplot
 mlapplication:
   data:
     doapply: false # pkl_skimmed_dec (pklskdec)
-    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged) NOT NEEDED
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
     doapply: false # pkl_skimmed_dec (pklskdec)
-    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged) NOT NEEDED
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
@@ -64,15 +64,13 @@ analysis:
     histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency
   steps: # list steps (name of method in analyzer) to run
-    fit:
-    #efficiency:
-    #makenormyields:
-    #init:
-    #qa:
-    #calculate_efficiencies:
-    #estimate_feeddown:
-    #subtract_sidebands:
-    #extract_signals:
+    # init:
+    # calculate_efficiencies:
+    # qa:
+    # fit:
+    # estimate_feeddown:
+    # analyze_with_sidesub:
+    # analyze_with_sigextr:
 
 systematics:
   cutvar:
