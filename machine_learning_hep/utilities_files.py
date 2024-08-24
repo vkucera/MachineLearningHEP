@@ -56,7 +56,7 @@ def create_folder_struc(maindir: str, listpath: list[str]):
             if not os.path.exists(folder):
                 os.makedirs(folder)
 
-def checkdirs(dirs: list[str]) -> list[str]:
+def checkdirs(dirs: list[str]|str) -> list[str]:
     """
     Return list of existing directories
     """
