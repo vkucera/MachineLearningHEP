@@ -301,7 +301,7 @@ class AnalyzerJetSystematics:
         for ibin2 in range(self.n_bins_ptjet_gen):
             name_hist_unfold_2d = f"h_ptjet-{self.var}_{self.method}_unfolded_data_0"
             if not (hist_unfold := input_file_default.Get(name_hist_unfold_2d)):
-                self.logger.critical(make_message_notfound(name_hist_unfold_2d, eff_file_default))
+                self.logger.critical(make_message_notfound(name_hist_unfold_2d, path_def))
             axis_jetpt = get_axis(hist_unfold, 0)
             jetptrange = (axis_jetpt.GetBinLowEdge(ibin2 + 1), axis_jetpt.GetBinUpEdge(ibin2 + 1))
             name_his = f"h_{self.var}_{self.method}_unfolded_data_jetpt-{jetptrange[0]}-{jetptrange[1]}_sel"
