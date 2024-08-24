@@ -46,7 +46,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         # use a different processor output
         if "data_proc" in datap["analysis"][typean]:
             self.d_resultsallpdata_proc = datap["analysis"][typean]["data_proc"]["results"][period] \
-                    if period is not None else datap["analysis"][typean]["data_proc"]["resultsallp"]
+                if period is not None else datap["analysis"][typean]["data_proc"]["resultsallp"]
         if "mc_proc" in datap["analysis"][typean]:
             self.d_resultsallpmc_proc = datap["analysis"][typean]["mc_proc"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["mc_proc"]["resultsallp"]
@@ -749,7 +749,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                         # Feed-down subtraction
                         if mcordata == 'data' or not self.cfg('closure.exclude_feeddown_det'):
                             self._subtract_feeddown(fh_sum_fdsub, var, mcordata)
-                        self._save_hist(fh_sum_fdsub, f'h_ptjet{label}_{method}_{mcordata}.png')  # variation OK
+                        self._save_hist(fh_sum_fdsub, f'h_ptjet{label}_{method}_{mcordata}.png')
 
                         if get_dim(fh_sum) > 1:
                             axes = list(range(get_dim(fh_sum)))
@@ -774,7 +774,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                 h_sig.GetYaxis().SetRangeUser(0., 1.1 * ymax)
                                 jetptrange = (axis_jetpt.GetBinLowEdge(iptjet+1), axis_jetpt.GetBinUpEdge(iptjet+1))
                                 filename = (f'{method}/h_{label[1:]}_{method}_fdsub' +
-                                            f'_ptjet-{jetptrange[0]}-{jetptrange[1]}.png')  # variation OK
+                                            f'_ptjet-{jetptrange[0]}-{jetptrange[1]}.png')
                                 self._save_canvas(c, filename)
 
                         if not var:
@@ -785,7 +785,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             hproj = project_hist(fh_sum_fdsub, [1], {0: [j+1, j+1]})
                             jetptrange = (axis_jetpt.GetBinLowEdge(j+1), axis_jetpt.GetBinUpEdge(j+1))
                             self._save_hist(
-                                hproj, f'uf/h_{var}_{method}_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}.png')  # variation not OK
+                                hproj, f'uf/h_{var}_{method}_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}.png')
                         # Unfolding
                         fh_unfolded = self._unfold(fh_sum_fdsub, var, mcordata)
                         for i, h in enumerate(fh_unfolded):
