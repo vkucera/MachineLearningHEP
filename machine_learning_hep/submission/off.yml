@@ -63,7 +63,12 @@ analysis:
   mc:
     histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency
-  steps: # list steps (name of method in analyzer) to run
+  steps: # analyzer methods to run (uncomment to activate)
+    ##### Inclusive hadrons
+    # fit:
+    # efficiency:
+    # makenormyields:
+    ##### Jets
     # init:
     # calculate_efficiencies:
     # qa:
