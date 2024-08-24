@@ -307,8 +307,8 @@ def main(
 ):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     """Main function"""
 
-    suffix_config_default = "_all.yml"
-    suffix_config_ana = "_ana.yml"
+    suffix_config_default = "analysis.yml"
+    suffix_config_analyser = "analyzer.yml"
     if analysis:
         if not config:
             msg_err("Analysis provided without a default config file.")
@@ -416,7 +416,7 @@ def main(
                 if analysis:
                     if do_processor and not delete_output_dirs(dic_new, analysis, varstring):
                         sys.exit(1)
-                    config_final = config if do_processor else config.replace(suffix_config_default, suffix_config_ana)
+                    config_final = config if do_processor else config.replace(suffix_config_default, suffix_config_analyser)
                     print(
                         "Starting the analysis \x1b[1;32m%s\x1b[0m for the variation "
                         "\x1b[1;32m%s: %s\x1b[0m" % (analysis, label_cat, format_varlabel(label_var, index, n_var))
