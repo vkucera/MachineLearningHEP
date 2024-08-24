@@ -51,4 +51,4 @@ else
     ${CMD_ANA} > "${LOG}" 2>&1
 fi || echo "Error"
 
-echo -e "\n$(date) Done"
+echo "$(date) Done"
