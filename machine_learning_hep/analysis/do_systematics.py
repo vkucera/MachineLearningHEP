@@ -1242,8 +1242,8 @@ def main(args=None):
     args = parser.parse_args(args)
 
     gROOT.SetBatch(True)
-    # list_vars = ["zg", "nsd", "rg", "zpar"]
-    list_vars = ["zpar"]
+    list_vars = ["zg", "nsd", "rg", "zpar"]
+    # list_vars = ["zpar"]
     for var in list_vars:
         print(f"Processing observable {var}")
         analyser = AnalyzerJetSystematics(args.database_analysis, args.type_ana, var)
