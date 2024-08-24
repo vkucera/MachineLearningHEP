@@ -51,9 +51,9 @@ def create_folder_struc(maindir: str, listpath: list[str]):
     Reproduce the folder structure as input
     """
     for path in listpath:
-        path = path.split("/")
+        path_elements = path.split("/")
         folder = maindir
-        for _, element in enumerate(path):
+        for element in path_elements:
             folder = os.path.join(folder, element)
             if not os.path.exists(folder):
                 os.makedirs(folder)
