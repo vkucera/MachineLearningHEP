@@ -230,7 +230,7 @@ LcJet_pp:
     efffilename: "effhisto.root"
     respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
-    resultfilename: "output.root"
+    resultfilename: "results.root"
 
   #region multi
   multi:

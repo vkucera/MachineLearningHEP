@@ -284,7 +284,7 @@ class AnalyzerJetSystematics:
             print("Jet pT gen variations: ", self.edges_ptjet_gen_sys)
 
         # output file for histograms
-        file_sys_out = TFile.Open(f"{self.dir_result_data}/systematics_results.root", "recreate")
+        file_sys_out = TFile.Open(f"{self.dir_result_data}/systematics.root", "recreate")
 
         # Open input files for default results.
         path_def = self.file_unfold
