@@ -696,7 +696,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     self.logger.info('Running analysis for %s using %s', var, method)
                     label = f'-{var}' if var else ''
                     self.logger.debug('looking for %s', f'h_mass-ptjet-pthf{label}')
-                    if fh := rfile.Get(f'h_mass-ptjet-pthf{label}'):
+                    if fh := rfile.Get(f'h_mass-ptjet-pthf{label}'):  # TODO: add sanity check
                         axes_proj = list(range(get_dim(fh)))
                         axes_proj.remove(2)
                         fh_sub = []
@@ -803,7 +803,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                 if i == self.n_iter_unfold_sel - 1:
                                     hproj_sel = hproj.Clone(f"{hproj.GetName()}_sel")
                                     hproj_sel.Scale(1. / hproj_sel.Integral(), "width")
-                                    print(f"Final histogram ({jetptrange[0]} to {jetptrange[1]})")
+                                    print(f"Final histogram: {var}, jet pT {jetptrange[0]:g} to {jetptrange[1]:g})")
                                     print_histogram(hproj_sel)
                                     self._save_hist(
                                         hproj_sel,
