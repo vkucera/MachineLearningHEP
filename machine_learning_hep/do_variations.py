@@ -466,34 +466,34 @@ def main(
 
 
 if __name__ == "__main__":
-    PARSER = argparse.ArgumentParser(description="Run the analysis with variations of parameters.")
-    PARSER.add_argument("input", type=str, help="database with default parameters")
-    PARSER.add_argument("diff", type=str, help="database with variations")
-    PARSER.add_argument(
+    parser = argparse.ArgumentParser(description="Run the analysis with variations of parameters.")
+    parser.add_argument("input", type=str, help="database with default parameters")
+    parser.add_argument("diff", type=str, help="database with variations")
+    parser.add_argument(
         "-a",
         dest="analysis",
         type=str,
         help="analysis type (If provided, the analysis will be started for all activated variations.)",
     )
-    PARSER.add_argument(
+    parser.add_argument(
         "-r",
         dest="config",
         type=str,
         help="default submission configuration file (for the complete analysis)",
     )
-    PARSER.add_argument(
+    parser.add_argument(
         "-s",
         dest="script",
         type=str,
         help="script name (If provided, the analysis execution lines will be written in the script file.)",
     )
-    PARSER.add_argument("-c", "--clean", action="store_true", help="Delete the created database files at the end.")
-    PARSER.add_argument(
+    parser.add_argument("-c", "--clean", action="store_true", help="Delete the created database files at the end.")
+    parser.add_argument(
         "-p",
         type=int,
         choices=[1, 0],
         dest="proc",
         help="If 1/0, process only categories that do/don't require running the processor.",
     )
-    ARGS = PARSER.parse_args()
-    main(ARGS.input, ARGS.diff, ARGS.analysis, ARGS.config, ARGS.clean, ARGS.proc, ARGS.script)
+    args = parser.parse_args()
+    main(args.input, args.diff, args.analysis, args.config, args.clean, args.proc, args.script)
