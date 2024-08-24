@@ -13,6 +13,9 @@
 """
 Calculate and plot systematic uncertainties
 """
+
+# pylint: disable=too-many-lines, too-many-instance-attributes, too-many-statements, too-many-locals, too-many-nested-blocks, too-many-branches
+
 import argparse
 import logging
 import os
@@ -764,8 +767,7 @@ class AnalyzerJetSystematics:
                                 if not out_sys:
                                     count_sys_up = count_sys_up + 1
                             else:
-                                if error > error_var_up:
-                                    error_var_up = error
+                                error_var_up = max(error_var_up, error)
                         else:
                             if self.systematic_rms[sys_cat] is True:
                                 if self.systematic_rms_both_sides[sys_cat] is True:
@@ -777,8 +779,7 @@ class AnalyzerJetSystematics:
                                     if not out_sys:
                                         count_sys_down = count_sys_down + 1
                             else:
-                                if abs(error) > error_var_down:
-                                    error_var_down = abs(error)
+                                error_var_down = max(error_var_down, abs(error))
                     if self.systematic_rms[sys_cat] is True:
                         if count_sys_up != 0:
                             error_var_up = error_var_up / count_sys_up
