@@ -375,22 +375,22 @@ D0jet_pp:
           bins_gen_fix: [6, -.1, .5]
           bins_det_fix: [6, -.1, .5]
           label: '#it{z}_{g}'
-          label_y: "(1/#it{N}_{jet ch})d#it{N}/d#it{z}_{g}"
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{g}"
         nsd:
           bins_gen_fix: [10, -.5, 9.5]
           bins_det_fix: [10, -.5, 9.5]
           label: '#it{n}_{SD}'
-          label_y: "(1/#it{N}_{jet ch})d#it{N}/d#it{n}_{SD}"
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{n}_{SD}"
         rg:
           bins_gen_fix: [11, -.1, 1.]
           bins_det_fix: [11, -.1, 1.]
           label: '#it{R}_{g}'
-          label_y: "(1/#it{N}_{jet ch})d#it{N}/d#it{R}_{g}"
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{R}_{g}"
         zpar:
           bins_gen_fix: [10, 0., 1.]
           bins_det_fix: [10, 0., 1.]
           label: '#it{z}_{#parallel}'
-          label_y: "(1/#it{N}_{jet ch})d#it{N}/d#it{z}_{#parallel}"
+          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
         dr:
           bins_gen_fix: [10, 0., 1.]
           bins_det_fix: [10, 0., 1.]
