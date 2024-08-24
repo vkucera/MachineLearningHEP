@@ -302,9 +302,7 @@ def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statem
     return True
 
 
-def main(
-    yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str
-):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     """Main function"""
 
     suffix_config_default = "analysis.yml"
@@ -314,7 +312,7 @@ def main(
             msg_err("Analysis provided without a default config file.")
             sys.exit(1)
         if not config.endswith(suffix_config_default):
-            msg_err(f"Provided default config file does not end with \"{suffix_config_default}\".")
+            msg_err(f'Provided default config file does not end with "{suffix_config_default}".')
             sys.exit(1)
 
     with open(yaml_in, "r", encoding="utf-8") as file_in:
@@ -416,7 +414,9 @@ def main(
                 if analysis:
                     if do_processor and not delete_output_dirs(dic_new, analysis, varstring):
                         sys.exit(1)
-                    config_final = config if do_processor else config.replace(suffix_config_default, suffix_config_analyser)
+                    config_final = (
+                        config if do_processor else config.replace(suffix_config_default, suffix_config_analyser)
+                    )
                     print(
                         "Starting the analysis \x1b[1;32m%s\x1b[0m for the variation "
                         "\x1b[1;32m%s: %s\x1b[0m" % (analysis, label_cat, format_varlabel(label_var, index, n_var))
@@ -433,14 +433,14 @@ def main(
                     if script_name:
                         script_lines.append(
                             "mlhep "
-                            "-a %s -r %s -d %s -b --delete-force > %s 2>&1\n" % (analysis, config_final, yaml_out, logfile)
+                            "-a %s -r %s -d %s -b --delete-force > %s 2>&1\n"
+                            % (analysis, config_final, yaml_out, logfile)
                         )
                     else:
                         with open(logfile, "w", encoding="utf-8") as ana_out:
                             subprocess.Popen(  # pylint: disable=consider-using-with
                                 shlex.split(
-                                    "mlhep "
-                                    "-a %s -r %s -d %s -b --delete-force" % (analysis, config_final, yaml_out)
+                                    "mlhep " "-a %s -r %s -d %s -b --delete-force" % (analysis, config_final, yaml_out)
                                 ),
                                 stdout=ana_out,
                                 stderr=ana_out,
