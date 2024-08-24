@@ -300,7 +300,6 @@ class ProcesserJets(Processer):
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
                                    for bin in self.active_bins_skim)
-
             df = self._calculate_variables(dfgen_orig)
             df = df.rename(lambda name: name + '_gen', axis=1)
             dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
