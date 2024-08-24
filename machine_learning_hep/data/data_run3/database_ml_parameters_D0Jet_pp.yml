@@ -250,8 +250,11 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      # prefix_dir: /data2/MLhep/real/train_235436/
-      prefix_dir: /data2/MLhep/real/train_240309/
+      prefix_dir: /data2/MLhep/real/train_240309/ # Andrea's model
+      # prefix_dir: /data2/MLhep/real/train_245508/ # pass7
+      # prefix_dir: /data2/MLhep/real/train_245509/ # no TOF
+      # prefix_dir: /data2/MLhep/real/train_245510/ # no PID
+      # prefix_dir: /data2/MLhep/real/train_245511/ # full PID
       unmerged_tree_dir: [/alice/] #list of periods
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
@@ -268,8 +271,10 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24d3a] #list of periods
       select_period: [1]
-      # prefix_dir: /data2/MLhep/sim/train_235437/
-      prefix_dir: /data2/MLhep/sim/train_239774/
+      prefix_dir: /data2/MLhep/sim/train_239774/ # Andrea's model
+      # prefix_dir: /data2/MLhep/sim/train_244893/ # no TOF
+      # prefix_dir: /data2/MLhep/sim/train_244894/ # no PID
+      # prefix_dir: /data2/MLhep/sim/train_244895/ # full PID
       unmerged_tree_dir: [alice/]
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
@@ -353,7 +358,7 @@ D0jet_pp:
     anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp # used in analysis/analyzerdhadrons_mult.py
     fd_method: "Nb" #fc, Nb
     cctype: "pp"
-    inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root # used in /home/vkucera/alice/MachineLearningHEP/machine_learning_hep/hf_pt_spectrum.py
+    inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root # used in machine_learning_hep/hf_pt_spectrum.py
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
@@ -363,6 +368,7 @@ D0jet_pp:
       # TODO: split rec and gen binning
       bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70]
 
+      cand_collidx: fIndexHfD0CollBases
       # sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
 
       observables:
@@ -662,13 +668,13 @@ D0jet_pp:
         correction_method: run3
 
       unfolding_iterations: 8 # used, maximum iteration
-      unfolding_iterations_sel: 4 # not used, selected iteration # systematics
+      unfolding_iterations_sel: 4 # used, selected iteration # systematics
       closure:
-        pure_signal: true
-        exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
-        exclude_feeddown_gen: 'ismcsignal_gen==1 & ismcprompt_gen==1'
-        filter_reflections: '(isd0 & seld0) or (isd0bar & seld0bar)'
-        use_matched: false
+        pure_signal: false
+        # exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
+        # exclude_feeddown_gen: 'ismcsignal_gen==1 & ismcprompt_gen==1'
+        # filter_reflections: '(isd0 & seld0) or (isd0bar & seld0bar)'
+        use_matched: true
 
       frac_mcana: .2 # fraction of MC sample for the closure
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root' # systematics
@@ -689,10 +695,10 @@ D0jet_pp:
       var_binning2: pt_jet
       # var_binning2_gen: pt_gen_jet
       latexbin2var: "#it{p}_{T}^{jet ch}"
-      sel_binmin2_reco: [5, 7, 15, 30] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen: [5, 7, 15, 30] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_gen:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
+      # sel_binmin2_reco: [5, 7, 15, 30] # rec jet pt bins (sel_binmin2_reco bins)
+      # sel_binmax2_reco:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
+      # sel_binmin2_gen: [5, 7, 15, 30] # rec jet pt bins (sel_binmin2_reco bins)
+      # sel_binmax2_gen:     [7, 15, 30, 50] # rec jet pt bins (sel_binmin2_reco bins)
       # var_binningshape: zg_jet
       # var_binningshape_gen: zg_gen_jet
       # var_shape_latex: "shape"
@@ -727,7 +733,7 @@ D0jet_pp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
 
-      # simple fitter START # used in /home/vkucera/alice/MachineLearningHEP/cplusutilities/mass_fitter.C
+      # simple fitter START # used in cplusutilities/mass_fitter.C
       # sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
       # bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
       # masspeak: 1.864
