@@ -11,12 +11,11 @@
 #   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 """
-main script for doing final stage analysis
+Calculate and plot systematic uncertainties
 """
 import argparse
 import logging
 
-# pylint: disable=too-many-lines, line-too-long
 import os
 from array import array
 from math import sqrt
@@ -24,7 +23,6 @@ from pathlib import Path
 
 import yaml
 
-# pylint: disable=import-error, no-name-in-module
 from ROOT import (
     TH1F,
     TCanvas,
@@ -78,7 +76,6 @@ x_range = {
 }
 
 
-# pylint: disable=too-many-instance-attributes, too-many-statements
 class AnalyzerJetSystematics:
     def __init__(self, path_database_analysis: str, typean: str, var: str):
         self.logger = get_logger()
@@ -354,7 +351,7 @@ class AnalyzerJetSystematics:
 
         input_histograms_sys = []
         input_histograms_sys_eff = []
-        for ibin2 in range(self.n_bins_ptjet_gen):  # pylint: disable=:too-many-nested-blocks
+        for ibin2 in range(self.n_bins_ptjet_gen):
             name_eff = f"h_ptjet-pthf_effnew_pr_ptjet_{ibin2 + 1}"  # efficiency jetpt binning has offset
             input_histograms_syscat = []
             input_histograms_syscat_eff = []
@@ -740,7 +737,7 @@ class AnalyzerJetSystematics:
         sys_down = []  # list of absolute downward uncertainties for all categories, shape bins, pt_jet bins
         sys_up_full = []  # list of combined absolute upward uncertainties for all shape bins, pt_jet bins
         sys_down_full = []  # list of combined absolute downward uncertainties for all shape bins, pt_jet bins
-        for ibin2 in range(self.n_bins_ptjet_gen):  # pylint: disable=too-many-nested-blocks
+        for ibin2 in range(self.n_bins_ptjet_gen):
             sys_up_jetpt = []  # list of absolute upward uncertainties for all categories and shape bins in a given pt_jet bin
             sys_down_jetpt = []  # list of absolute downward uncertainties for all categories and shape bins in a given pt_jet bin
             sys_up_z_full = []  # list of combined absolute upward uncertainties for all shape bins in a given pt_jet bin
