@@ -20,7 +20,7 @@ import sys
 parser = argparse.ArgumentParser()
 parser.add_argument('--case', '-c', default='d0jet')
 parser.add_argument('--analysis', '-a', default='jet_obs')
-parser.add_argument('--steps', '-s', nargs='+', default=['ana'])
+parser.add_argument('--steps', '-s', nargs='+', default=['analyser'])
 parser.add_argument('--interactive', '-i', action='store_true')
 parser.add_argument('--delete', '-d', action='store_true')
 # parser.add_argument('--dryrun', '-n', action='store_true')
