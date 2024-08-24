@@ -1011,7 +1011,7 @@ def divide_graphs(gr_num, gr_den):
     return gr_rat
 
 
-def scale_graph(graph, number):
+def scale_graph(graph, number: float):
     """
     Scale TGraphAsymmErrors
     """
@@ -1023,7 +1023,7 @@ def scale_graph(graph, number):
         graph.SetPointEYlow(i, graph.GetErrorYhigh(i) * number)
 
 
-def reset_hist_outside_range(hist, x_min, x_max, val_reset=0):
+def reset_hist_outside_range(hist, x_min: float, x_max: float, val_reset=0.0):
     """Reset bins of histogram hist outside [x_min, x_max] to val_reset."""
     for i_bin in range(1, hist.GetNbinsX() + 1):
         if round(hist.GetBinLowEdge(i_bin + 1), 2) <= x_min or round(hist.GetBinLowEdge(i_bin), 2) >= x_max:
@@ -1031,7 +1031,7 @@ def reset_hist_outside_range(hist, x_min, x_max, val_reset=0):
             hist.SetBinError(i_bin, 0.0)
 
 
-def reset_graph_outside_range(graph, x_min, x_max, val_reset=0):
+def reset_graph_outside_range(graph, x_min: float, x_max: float, val_reset=0.0):
     """Reset points of graph outside [x_min, x_max] to val_reset."""
     for i_point in range(graph.GetN()):
         if (
