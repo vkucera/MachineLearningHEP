@@ -53,16 +53,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, typean, runlisttrigger, d_mcreweights):
         self.doml = datap["doml"]
-        self.case = case
+        self.case = case  # used in hadrons
         self.typean = typean
-        #directories
+        # directories
         self.d_prefix_ml = datap["ml"].get("prefix_dir_ml", "")
         self.d_root = d_root
         self.d_pkl = d_pkl
         self.d_pklsk = d_pklsk
         self.d_pkl_ml = d_pkl_ml
         self.d_results = d_results
-        self.d_mcreweights = d_mcreweights
+        self.d_mcreweights = d_mcreweights  # used in hadrons
         self.datap = datap
         self.mcordata = mcordata
 
@@ -82,8 +82,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         self.p_rd_merge = p_rd_merge
         self.period = p_period
-        self.i_period = i_period
-        self.select_period = datap["multi"][mcordata]["select_period"]
+        # self.i_period = i_period
+        # self.select_period = datap["multi"][mcordata]["select_period"]
         self.select_jobs = datap["multi"][mcordata].get("select_jobs", None)
         if self.select_jobs:
             self.select_jobs = [f"{job}/" for job in self.select_jobs[i_period]]
@@ -99,7 +99,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         #parameter names
         self.p_maxprocess = p_maxprocess
-        self.indexsample = None
+        # self.indexsample = None
         self.p_dofullevtmerge = datap["dofullevtmerge"]
         #namefile root
         self.n_root = datap["files_names"]["namefile_unmerged_tree"]
@@ -128,21 +128,21 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         #variables name
         self.v_train = datap["variables"]["var_training"]
-        # self.v_bitvar = datap["bitmap_sel"]["var_name"]
+        self.v_bitvar = datap["bitmap_sel"]["var_name"]
         # self.v_bitvar_gen = datap["bitmap_sel"]["var_name_gen"]
         # self.v_bitvar_origgen = datap["bitmap_sel"]["var_name_origgen"]
         # self.v_bitvar_origrec = datap["bitmap_sel"]["var_name_origrec"]
         # self.v_candtype = datap["var_cand"]
         # self.v_swap = datap.get("var_swap", None)
         # self.v_isstd = datap["bitmap_sel"]["var_isstd"]
-        # self.v_ismcsignal = datap["bitmap_sel"]["var_ismcsignal"]
+        self.v_ismcsignal = datap["bitmap_sel"]["var_ismcsignal"]
         # self.v_ismcprompt = datap["bitmap_sel"]["var_ismcprompt"]
         # self.v_ismcfd = datap["bitmap_sel"]["var_ismcfd"]
-        # self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
-        # self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]
+        self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]  # used in hadrons
+        self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]  # used in hadrons
         self.v_var_binning = datap["var_binning"]
         self.v_invmass = datap["variables"].get("var_inv_mass", "inv_mass")
-        self.v_rapy = datap["variables"].get("var_y", "y_cand")
+        # self.v_rapy = datap["variables"].get("var_y", "y_cand")
 
         #list of files names
         if os.path.isdir(self.d_root):
@@ -164,7 +164,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_collcnt = createlist(self.d_pkl, self.l_path, self.n_collcnt)
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
-        self.l_historesp = createlist(self.d_results, self.l_path, self.n_fileresp)
+        # self.l_historesp = createlist(self.d_results, self.l_path, self.n_fileresp)
 
         if self.mcordata == "mc":
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
@@ -278,8 +278,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
- #       if os.path.exists(self.d_root) is False:
- #           self.logger.warning("ROOT tree folder is not there. Is it intentional?")
+        # if os.path.exists(self.d_root) is False:
+        #     self.logger.warning("ROOT tree folder is not there. Is it intentional?")
 
         # Analysis cuts (loaded in self.process_histomass)
         self.analysis_cuts = None
