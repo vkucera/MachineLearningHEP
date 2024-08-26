@@ -30,8 +30,8 @@ D0jet_pp:
   # obsolete, to be removed
   # var_cand: fCandidateSelFlag
   # # var_swap: fIsCandidateSwapped
-  # bitmap_sel:
-  #   var_name: fFlagMcMatchRec
+  bitmap_sel:
+    var_name: fFlagMcMatchRec
   #   var_name_gen: fFlagMcMatchGen
   #   var_name_origgen: fOriginMcGen
   #   var_name_origrec: fOriginMcRec
@@ -785,7 +785,7 @@ D0jet_pp:
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: True  # systematics
-      cuts: ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"] # (sel_skim_binmin bins) systematics FIXME: Update for new model.
+      cuts: ["mlBkgScore < 0.02", "mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52", "mlBkgScore < 0.52"]  # (sel_an_binmin bins) systematics FIXME: Update for new model.
 
   systematics:  # used in machine_learning_hep/analysis/systematics.py
     probvariation:

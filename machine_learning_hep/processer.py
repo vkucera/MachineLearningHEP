@@ -128,7 +128,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         #variables name
         self.v_train = datap["variables"]["var_training"]
-        self.v_bitvar = datap["bitmap_sel"]["var_name"]
+        self.v_bitvar = datap["bitmap_sel"]["var_name"]  # used in hadrons
         # self.v_bitvar_gen = datap["bitmap_sel"]["var_name_gen"]
         # self.v_bitvar_origgen = datap["bitmap_sel"]["var_name_origgen"]
         # self.v_bitvar_origrec = datap["bitmap_sel"]["var_name_origrec"]
@@ -564,24 +564,24 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
 
     def load_cuts(self):
-        """Load cuts from database
+        """Load custom analysis cuts from the database.
         """
         raw_cuts = self.datap["analysis"][self.typean].get("cuts", None)
         if not raw_cuts:
             print("No custom cuts given, hence not cutting...")
-            self.analysis_cuts = [None] * self.p_nptbins
+            self.analysis_cuts = [None] * self.p_nptfinbins
             return
-        if len(raw_cuts) != self.p_nptbins:
-            print(f"You have {self.p_nptbins} but you passed {len(raw_cuts)} cuts. Exit...")
+        if len(raw_cuts) != self.p_nptfinbins:
+            print(f"You have {self.p_nptfinbins} but you passed {len(raw_cuts)} cuts. Exit...")
             sys.exit(1)
         self.analysis_cuts = deepcopy(raw_cuts)
 
 
-    def apply_cuts_ptbin(self, df_, ipt):
-        """Cut dataframe with cuts for a given skimming pT bin"""
+    def apply_cuts_ptbin(self, df_ipt, ipt):
+        """Cut dataframe with cuts for a given analysis pT bin"""
         if not self.analysis_cuts[ipt]:
-            return df_
-        return df_.query(self.analysis_cuts[ipt])
+            return df_ipt
+        return df_ipt.query(self.analysis_cuts[ipt])
 
 
     def apply_cuts_all_ptbins(self, df_):
@@ -589,11 +589,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
         if not self.do_custom_analysis_cuts or not any(self.analysis_cuts):
             return df_
 
-        def apply_cut_for_ipt(dff_, ipt: int):
-            df_ipt = seldf_singlevar(dff_, self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
+        def apply_cut_for_ipt(df_full, ipt: int):
+            df_ipt = seldf_singlevar(df_full, self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             return df_ipt.query(self.analysis_cuts[ipt]) if self.analysis_cuts[ipt] else df_ipt
 
-        return pd.concat(apply_cut_for_ipt(df_, ipt) for ipt in range(self.p_nptbins))
+        return pd.concat(apply_cut_for_ipt(df_, ipt) for ipt in range(self.p_nptfinbins))
 
 
     def process_histomass(self):

@@ -570,7 +570,7 @@ LcJet_pp:
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: True
-      cuts: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]
+      cuts: ["mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.8", "mlPromptScore > 0.6", "mlPromptScore > 0.6", null]  # (sel_an_binmin bins) systematics FIXME: Update for new model.
 
   systematics:  # used in machine_learning_hep/analysis/systematics.py
     probvariation:
