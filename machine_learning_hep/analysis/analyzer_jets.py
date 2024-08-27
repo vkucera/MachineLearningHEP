@@ -21,7 +21,7 @@ from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.fitting.roofitter import RooFitter
-from machine_learning_hep.utilities import folding
+from machine_learning_hep.utilities import folding, make_message_notfound
 from machine_learning_hep.utils.hist import (bin_array, create_hist,
                                              fill_hist_fast, get_axis, get_dim,
                                              get_nbins, project_hist, print_histogram,
@@ -35,21 +35,21 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         super().__init__(datap, case, typean, period)
 
         # output directories
-        self.d_resultsallpmc = (datap["analysis"][typean]["mc"]["results"][period]
-                                if period is not None else datap["analysis"][typean]["mc"]["resultsallp"])
-        self.d_resultsallpdata = (datap["analysis"][typean]["data"]["results"][period]
-                                  if period is not None else datap["analysis"][typean]["data"]["resultsallp"])
+        self.d_resultsallpmc = (self.cfg(f"mc.results.{period}")
+                                if period is not None else self.cfg("mc.resultsallp"))
+        self.d_resultsallpdata = (self.cfg(f"data.results.{period}")
+                                  if period is not None else self.cfg("data.resultsallp"))
 
         # input directories (processor output)
         self.d_resultsallpmc_proc = self.d_resultsallpmc
         self.d_resultsallpdata_proc = self.d_resultsallpdata
         # use a different processor output
         if "data_proc" in datap["analysis"][typean]:
-            self.d_resultsallpdata_proc = datap["analysis"][typean]["data_proc"]["results"][period] \
-                if period is not None else datap["analysis"][typean]["data_proc"]["resultsallp"]
+            self.d_resultsallpdata_proc = self.cfg(f"data_proc.results.{period}") \
+                if period is not None else self.cfg("data_proc.resultsallp")
         if "mc_proc" in datap["analysis"][typean]:
-            self.d_resultsallpmc_proc = datap["analysis"][typean]["mc_proc"]["results"][period] \
-                if period is not None else datap["analysis"][typean]["mc_proc"]["resultsallp"]
+            self.d_resultsallpmc_proc = self.cfg(f"mc_proc.results.{period}") \
+                if period is not None else self.cfg("mc_proc.resultsallp")
 
         # input files
         n_filemass_name = datap["files_names"]["histofilename"]
@@ -97,9 +97,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         self.roo_ws = {}
         self.roo_ws_ptjet = {}
         self.roows = {}
-
-        self.n_iter_unfold_sel = datap["analysis"][typean]["unfolding_iterations_sel"]
-        self.n_rebin = datap["analysis"][typean]["n_rebin"]
 
     #region helpers
     def _save_canvas(self, canvas, filename):
@@ -219,7 +216,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 h_eff_match.Divide(h_det[cat])
                 self._save_hist(h_eff_match, f'eff/h_effmatch_{cat}.png')
 
-                h_response = rfile.Get(f'h_response_{cat}_fPt')
+                if not (h_response := rfile.Get(f'h_response_{cat}_fPt')):
+                    self.logger.critical(make_message_notfound(f'h_response_{cat}_fPt', self.n_fileeff))
                 h_response_ptjet = project_hist(h_response, [0, 2], {})
                 h_response_pthf = project_hist(h_response, [1, 3], {})
                 self._save_hist(h_response_ptjet, f'eff/h_ptjet-pthf_responsematrix-ptjet_{cat}.png', 'colz')
@@ -414,8 +412,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                         jetptlabel = ''
                     h_invmass = project_hist(h, [0], cuts_proj)
                     # Rebin
-                    if self.n_rebin != 1:
-                        h_invmass.Rebin(self.n_rebin)
+                    if self.cfg("n_rebin", 1) != 1:
+                        h_invmass.Rebin(self.cfg("n_rebin"))
                     ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
                     if self.cfg('mass_fit'):
                         if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
@@ -800,7 +798,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                     f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
                                     f'jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}.png')
                                 # Save the default unfolding iteration separately.
-                                if i == self.n_iter_unfold_sel - 1:
+                                if i == self.cfg("unfolding_iterations_sel") - 1:
                                     hproj_sel = hproj.Clone(f"{hproj.GetName()}_sel")
                                     hproj_sel.Scale(1. / hproj_sel.Integral(), "width")
                                     print(f"Final histogram: {var}, jet pT {jetptrange[0]:g} to {jetptrange[1]:g})")
