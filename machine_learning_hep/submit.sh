@@ -5,6 +5,7 @@
 # Analysis stage
 
 STAGE="all_off"
+# STAGE="full_analysis"
 # STAGE="preprocess"
 # STAGE="data"
 # STAGE="mc"
