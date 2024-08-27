@@ -585,15 +585,26 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
 
     def apply_cuts_all_ptbins(self, df_):
-        """Apply cuts for all skimming pT bins."""
+        """Apply cuts for all analysis pT bins."""
         if not self.do_custom_analysis_cuts or not any(self.analysis_cuts):
             return df_
 
         def apply_cut_for_ipt(df_full, ipt: int):
-            df_ipt = seldf_singlevar(df_full, self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            return df_ipt.query(self.analysis_cuts[ipt]) if self.analysis_cuts[ipt] else df_ipt
+            in_range = False
+            if ipt < 0:  # below analysis pT range
+                pt_min = 0
+                pt_max = self.lpt_finbinmin[0]
+            elif ipt >= self.p_nptfinbins:  # above analysis pT range
+                pt_min = self.lpt_finbinmax[self.p_nptfinbins - 1]
+                pt_max = 10.0 * self.lpt_finbinmax[self.p_nptfinbins - 1]
+            else:  # inside analysis pT range
+                pt_min = self.lpt_finbinmin[ipt]
+                pt_max = self.lpt_finbinmax[ipt]
+                in_range = True
+            df_ipt = seldf_singlevar(df_full, self.v_var_binning, pt_min, pt_max)
+            return df_ipt.query(self.analysis_cuts[ipt]) if in_range and self.analysis_cuts[ipt] else df_ipt
 
-        return pd.concat(apply_cut_for_ipt(df_, ipt) for ipt in range(self.p_nptfinbins))
+        return pd.concat(apply_cut_for_ipt(df_, ipt) for ipt in range(-1, self.p_nptfinbins + 1))
 
 
     def process_histomass(self):
