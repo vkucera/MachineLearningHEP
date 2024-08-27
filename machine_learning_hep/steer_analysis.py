@@ -197,7 +197,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         if args.delete_force:
             delete = True
         if delete:
-            logger.warning("Deleting output directories")
+            logger.info("Deleting output directories")
             while len(exdirs) > 0:
                 shutil.rmtree(exdirs.pop())
         if len(exdirs) > 0:
