@@ -249,9 +249,3 @@ def sum_hists(hists, name = None):
 def ensure_sumw2(hist):
     if hist.GetSumw2N() < 1:
         hist.Sumw2()
-
-
-def print_histogram(hist):
-    n_bins = hist.GetNbinsX()
-    print(f"{hist.GetName()}, {n_bins} bins, {hist.GetXaxis().GetXmin()} to {hist.GetXaxis().GetXmax()}")
-    print([hist.GetBinContent(i + 1) for i in range(n_bins)])

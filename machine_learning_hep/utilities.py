@@ -1198,3 +1198,9 @@ def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n
         else:
             str_value += f" +{str_e_syst_plus} −{str_e_syst_minus} (syst.)"
     return str_value
+
+
+def print_histogram(hist):
+    n_bins = hist.GetNbinsX()
+    print(f"{hist.GetName()}, {n_bins} bins, {hist.GetXaxis().GetXmin()} to {hist.GetXaxis().GetXmax()}")
+    print([hist.GetBinContent(i + 1) for i in range(n_bins)])
