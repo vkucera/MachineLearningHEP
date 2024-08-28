@@ -412,8 +412,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                         jetptlabel = ''
                     h_invmass = project_hist(h, [0], cuts_proj)
                     # Rebin
-                    if self.cfg("n_rebin", 1) != 1:
-                        h_invmass.Rebin(self.cfg("n_rebin"))
+                    if (n_rebin := self.cfg("n_rebin", 1)) != 1:
+                        h_invmass.Rebin(n_rebin)
                     ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
                     if self.cfg('mass_fit'):
                         if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
