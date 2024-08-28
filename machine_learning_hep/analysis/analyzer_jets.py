@@ -801,7 +801,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                 if i == self.cfg("unfolding_iterations_sel") - 1:
                                     hproj_sel = hproj.Clone(f"{hproj.GetName()}_sel")
                                     hproj_sel.Scale(1. / hproj_sel.Integral(), "width")
-                                    self.logger.debug("Final histogram: %s, jet pT %g to %g", var, jetptrange[0], jetptrange[1])
+                                    self.logger.debug("Final histogram: %s, jet pT %g to %g",
+                                                      var, jetptrange[0], jetptrange[1])
                                     self.logger.debug(print_histogram(hproj_sel))
                                     self._save_hist(
                                         hproj_sel,
