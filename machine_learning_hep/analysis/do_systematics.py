@@ -45,6 +45,7 @@ from machine_learning_hep.utilities import (  # make_plot,
     get_y_window_gr,
     get_y_window_his,
     make_message_notfound,
+    print_histogram,
     reset_graph_outside_range,
     reset_hist_outside_range,
     setup_canvas,
@@ -52,7 +53,7 @@ from machine_learning_hep.utilities import (  # make_plot,
     setup_legend,
     setup_tgraph,
 )
-from machine_learning_hep.utils.hist import get_axis, print_histogram
+from machine_learning_hep.utils.hist import get_axis
 
 
 def shrink_err_x(graph, width=0.1):
