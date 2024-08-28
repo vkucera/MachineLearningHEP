@@ -595,8 +595,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 pt_min = 0
                 pt_max = self.lpt_finbinmin[0]
             elif ipt >= self.p_nptfinbins:  # above analysis pT range
-                pt_min = self.lpt_finbinmax[self.p_nptfinbins - 1]
-                pt_max = 10.0 * self.lpt_finbinmax[self.p_nptfinbins - 1]
+                pt_min = self.lpt_finbinmax[-1]
+                pt_max = 10.0 * pt_min
             else:  # inside analysis pT range
                 pt_min = self.lpt_finbinmin[ipt]
                 pt_max = self.lpt_finbinmax[ipt]
