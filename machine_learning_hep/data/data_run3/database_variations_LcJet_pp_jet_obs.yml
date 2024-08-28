@@ -36,7 +36,7 @@ categories:
         rms_both_sides: true
         variations:
             bkgfunc:
-                activate: [no]
+                activate: [yes]
                 label: ["bkg. func."]
                 diffs:
                     analysis:
@@ -81,16 +81,16 @@ categories:
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
             sigfunc: # TODO: mass_roofit
-                activate: [no]
+                activate: [yes]
                 label: ["sig. func."]
                 diffs:
                     analysis:
                         jet_obs:
                             todo: [0]
-            massmin: # TODO
+            massmin: # TODO?
                 activate: [no]
                 label:
-                    - "#it{m} min. 1.75"
+                    - "#it{m} min. ?"
                 diffs:
                     analysis:
                         jet_obs:
@@ -134,14 +134,14 @@ categories:
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
             rebin:
-                activate: [no, no, no]
+                activate: [yes, yes, yes]
                 label: ["rebin 2", "rebin 3", "rebin 4"]
                 diffs:
                     analysis:
                         jet_obs:
                             n_rebin: [2, 3, 4]
             # reflections:
-            #     activate: [yes]
+            #     activate: [no]
             #     label: ["w/o refl."]
             #     diffs:
             #         analysis:
@@ -293,7 +293,7 @@ categories:
         rms_both_sides: true
         variations:
             flat:
-                activate: [no]
+                activate: [yes]
                 label: ["flat"]
                 diffs:
                     analysis:
@@ -360,7 +360,7 @@ categories:
         rms_both_sides: true
         variations:
             efficiency:
-                activate: [no]
+                activate: [yes]
                 label: ["eff. down"]
                 diffs:
                   multi:
@@ -412,7 +412,7 @@ categories:
                             bins_ptjet: [[4, 7, 15, 30, 50]]
                             bins_ptjet_eff: [[2, 4, 7, 15, 30, 50, 70]]
             observable:
-                activate: [no]
+                activate: [yes]
                 label:
                     - "obs. 1"
                 diffs:

@@ -36,7 +36,7 @@ categories:
         rms_both_sides: true
         variations:
             bkgfunc:
-                activate: [no]
+                activate: [yes]
                 label: ["bkg. func."]
                 diffs:
                     analysis:
@@ -255,14 +255,14 @@ categories:
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
             sigfunc: # TODO: mass_roofit
-                activate: [no]
+                activate: [yes]
                 label: ["sig. func."]
                 diffs:
                     analysis:
                         jet_obs:
                             todo: [0]
             massmin:
-                activate: [no]
+                activate: [yes]
                 label:
                     - "#it{m} min. 1.75"
                 diffs:
@@ -482,7 +482,7 @@ categories:
                                       model:
                                         fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
             rebin:
-                activate: [yes, no, yes]
+                activate: [yes, yes, yes]
                 label: ["rebin 2", "rebin 3", "rebin 4"]
                 diffs:
                     analysis:
@@ -506,7 +506,7 @@ categories:
         rms_both_sides: true
         variations:
             sigma:
-                activate: [no, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 label:
                     - "S 1.5 #it{#sigma}"
                     - "S 1.6 #it{#sigma}"
@@ -761,7 +761,7 @@ categories:
         rms_both_sides: true
         variations:
             flat:
-                activate: [no]
+                activate: [yes]
                 label: ["flat"]
                 diffs:
                     analysis:
@@ -828,7 +828,7 @@ categories:
         rms_both_sides: true
         variations:
             efficiency:
-                activate: [no]
+                activate: [yes]
                 label: ["eff. down"]
                 diffs:
                   multi:
@@ -911,8 +911,8 @@ categories:
                     - "null"  # no cuts (for tests, whatever was applied on Hyperloop)
                     - "loosest"  # same cuts as Hyperloop (for tests, should be same as null)
                     - "loose"  # to increase efficiency by 20 %
-                    - "tighter 2"
-                    - "tighter 4"
+                    - "tight 2"
+                    - "tight 4"
                     - "tight"  # to decrease efficiency by 20 %
                 diffs:
                     analysis:
