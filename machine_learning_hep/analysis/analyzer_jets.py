@@ -21,7 +21,7 @@ from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.fitting.roofitter import RooFitter
-from machine_learning_hep.utilities import folding, make_message_notfound, print_histogram
+from machine_learning_hep.utilities import folding, make_message_notfound,
 from machine_learning_hep.utils.hist import (bin_array, create_hist,
                                              fill_hist_fast, get_axis, get_dim,
                                              get_nbins, project_hist,
@@ -803,7 +803,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                     hproj_sel.Scale(1. / hproj_sel.Integral(), "width")
                                     self.logger.debug("Final histogram: %s, jet pT %g to %g",
                                                       var, jetptrange[0], jetptrange[1])
-                                    self.logger.debug(print_histogram(hproj_sel))
+                                    # self.logger.debug(print_histogram(hproj_sel))
                                     self._save_hist(
                                         hproj_sel,
                                         f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
