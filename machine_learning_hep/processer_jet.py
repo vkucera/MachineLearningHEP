@@ -1,16 +1,14 @@
-#############################################################################
-##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
-##                                                                         ##
-## This program is free software: you can redistribute it and/or modify it ##
-##  under the terms of the GNU General Public License as published by the  ##
-## Free Software Foundation, either version 3 of the License, or (at your  ##
-## option) any later version. This program is distributed in the hope that ##
-##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
-##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
-##           See the GNU General Public License for more details.          ##
-##    You should have received a copy of the GNU General Public License    ##
-##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
-#############################################################################
+#  © Copyright CERN 2024. All rights not expressly granted are reserved.  #
+#                                                                         #
+# This program is free software: you can redistribute it and/or modify it #
+#  under the terms of the GNU General Public License as published by the  #
+# Free Software Foundation, either version 3 of the License, or (at your  #
+# option) any later version. This program is distributed in the hope that #
+#  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  #
+#     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+#           See the GNU General Public License for more details.          #
+#    You should have received a copy of the GNU General Public License    #
+#   along with this program. if not, see <https://www.gnu.org/licenses/>. #
 
 import copy
 import functools
@@ -188,6 +186,9 @@ class ProcesserJets(Processer):
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
 
+            # Custom skimming cuts
+            df = self.apply_cuts_all_ptbins(df)
+
             if col_evtidx := self.cfg('cand_collidx'):
                 h = create_hist('h_ncand', ';N_{cand}', 20, 0., 20.)
                 fill_hist(h, df.groupby([col_evtidx]).size(), write=True)
@@ -232,7 +233,8 @@ class ProcesserJets(Processer):
                 h = create_hist(
                     f'h_mass-ptjet-pthf-{obs}',
                     f';M (GeV/#it{{c}}^{{2}});p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{obs}',
-                    self.binarray_mass, self.binarray_ptjet, self.binarray_pthf, *[self.binarrays_obs['det'][v] for v in var])
+                    self.binarray_mass, self.binarray_ptjet, self.binarray_pthf,
+                    *[self.binarrays_obs['det'][v] for v in var])
                 for i, v in enumerate(var):
                     get_axis(h, 3+i).SetTitle(self.cfg(f'observables.{v}.label', v))
 
@@ -308,6 +310,10 @@ class ProcesserJets(Processer):
                 cols.append(idx)
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index], columns=cols)
                            for bin in self.active_bins_skim)
+
+            # Custom skimming cuts
+            df = self.apply_cuts_all_ptbins(df)
+
             dfquery(df, self.cfg('efficiency.filter_det'), inplace=True)
             if idx := self.cfg('efficiency.index_match'):
                 df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
