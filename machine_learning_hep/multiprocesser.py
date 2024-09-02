@@ -204,7 +204,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         for indexp, _ in enumerate(self.process_listsample):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_histomass()
-        self.logger.debug('merging all')
+        self.logger.debug('Merging all')
         with tempfile.TemporaryDirectory() as tmp_merged_dir:
             mergerootfiles(self.lper_filemass, self.filemass_mergedall, tmp_merged_dir)
 

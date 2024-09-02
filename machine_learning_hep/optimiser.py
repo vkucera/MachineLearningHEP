@@ -215,7 +215,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.f_mltest_applied = f"{self.dirmlout}/testsample_{self.s_suffix}_mldecision.pkl"
         self.df_mltest_applied = None
 
-        self.logger.info('training variables: %s', training_var)
+        self.logger.info('Training variables: %s', training_var)
 
     def create_suffix(self):
         string_selection = createstringselection(self.v_bin, self.p_binmin, self.p_binmax)
@@ -249,7 +249,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
 
     def preparesample(self): # pylint: disable=too-many-branches
-        self.logger.info("Prepare Sample")
+        self.logger.info("Prepare sample")
 
         filename_train = \
                 os.path.join(self.dirmlout, f"df_train_{self.p_binmin}_{self.p_binmax}.pkl")

@@ -106,7 +106,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
     def _save_hist(self, hist, filename, option = '', logy = False):
         if not hist:
-            self.logger.error('no histogram for <%s>', filename)
+            self.logger.error('No histogram for <%s>', filename)
             # TODO: remove file if it exists?
             return
         c = TCanvas()
@@ -283,7 +283,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
     def _correct_efficiency(self, hist, ipt):
         if not hist:
-            self.logger.error('no histogram to correct for efficiency')
+            self.logger.error('No histogram to correct for efficiency')
             return
 
         if self.cfg('efficiency.correction_method') == 'run3':
@@ -292,9 +292,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             self.logger.info('Using Run 3 efficiency %g instead of %g', eff, eff_old)
             hist.Scale(1. / eff)
         elif self.cfg('efficiency.correction_method') == 'run2_2d':
-            self.logger.info('using Run 2 efficiencies per jet pt bin')
+            self.logger.info('Using Run 2 efficiencies per jet pt bin')
             if not self.h_eff_ptjet_pthf['pr']:
-                self.logger.error('no efficiency available for %s', hist.GetName())
+                self.logger.error('No efficiency available for %s', hist.GetName())
                 return
 
             for iptjet in range(get_nbins(hist, 0)):
@@ -308,7 +308,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         else:
             self.logger.info('Correcting with Run 2 efficiencies')
             if not self.hcandeff['pr']:
-                self.logger.error('no efficiency available for %s', hist.GetName())
+                self.logger.error('No efficiency available for %s', hist.GetName())
                 return
 
             eff = self.hcandeff['pr'].GetBinContent(ipt + 1)
@@ -319,7 +319,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                       hist.GetName(), ipt)
                 return
 
-            self.logger.debug('scaling hist %s (ipt %i) with 1. / %g', hist.GetName(), ipt, eff)
+            self.logger.debug('Scaling hist %s (ipt %i) with 1. / %g', hist.GetName(), ipt, eff)
             hist.Scale(1. / eff)
 
 
@@ -408,7 +408,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     self.logger.critical("Histogram %s not found.", name_histo)
                 for iptjet, ipt in itertools.product(itertools.chain((None,), range(get_nbins(h, 1))),
                                                      range(get_nbins(h, 2))):
-                    self.logger.debug('fitting %s: %s, %i', level, iptjet, ipt)
+                    self.logger.debug('Fitting %s: %s, %i', level, iptjet, ipt)
                     axis_ptjet = get_axis(h, 1)
                     cuts_proj = {2: (ipt+1, ipt+1)}
                     if iptjet is not None:
@@ -460,7 +460,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             continue
                         roows = self.roows.get(ipt) if iptjet is None else self.roows_ptjet.get((iptjet, ipt))
                         if roows is None and level != self.fit_levels[0]:
-                            self.logger.warning('missing previous fit result, skipping %s iptjet %s ipt %d',
+                            self.logger.warning('Missing previous fit result, skipping %s iptjet %s ipt %d',
                                                 level, iptjet, ipt)
                             continue
                         for par in fitcfg.get('fix_params', []):
@@ -499,7 +499,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                                 self.fit_func_bkg[level][ipt] = roo_ws.pdf("bkg").asTF(roo_ws.var(varname_m))
                             self.fit_range[level][ipt] = (roo_ws.var(varname_m).getMin('fit'),
                                                           roo_ws.var(varname_m).getMax('fit'))
-                            self.logger.debug('fit range for %s-%i: %s', level, ipt, self.fit_range[level][ipt])
+                            self.logger.debug('Fit range for %s-%i: %s', level, ipt, self.fit_range[level][ipt])
 
     #region sidebands
     # pylint: disable=too-many-branches,too-many-statements,too-many-locals
@@ -508,19 +508,19 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         Subtract sideband distributions, assuming mass on first axis
         """
         if not hist:
-            self.logger.error('no histogram for %s bin %d', var, ipt)
+            self.logger.error('No histogram for %s bin %d', var, ipt)
             return None
         label = f'-{var}' if var else ''
         ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
         self._save_hist(hist, f'sideband/h_mass-ptjet{label}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
 
         mean = self.fit_mean[mcordata][ipt]
-        # self.logger.info('means %g, %g', mean, self.roows[ipt].var('mean').getVal())
+        # self.logger.info('Means %g, %g', mean, self.roows[ipt].var('mean').getVal())
         sigma = self.fit_sigma[mcordata][ipt]
-        # self.logger.info('sigmas %g, %g', sigma, self.roows[ipt].var('sigma_g1').getVal())
+        # self.logger.info('Sigmas %g, %g', sigma, self.roows[ipt].var('sigma_g1').getVal())
         fit_range = self.fit_range[mcordata][ipt]
         if mean is None or sigma is None or fit_range is None:
-            self.logger.error('no fit parameters for %s bin %s-%d', var or 'none', mcordata, ipt)
+            self.logger.error('No fit parameters for %s bin %s-%d', var or 'none', mcordata, ipt)
             return None
 
         for entry in self.cfg('sidesub', []):
@@ -538,15 +538,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             'sideband_right': (mean + regcfg['right'][0] * sigma, mean + regcfg['right'][1] * sigma)
         }
         if regions['sideband_left'][1] < fit_range[0] or regions['sideband_right'][0] > fit_range[1]:
-            self.logger.critical('sidebands %s for %s-%i not in fit range %s, fix regions in DB!',
+            self.logger.critical('Sidebands %s for %s-%i not in fit range %s, fix regions in DB!',
                                  regions, mcordata, ipt, fit_range)
         for reg, lim in regions.items():
             if lim[0] < fit_range[0] or lim[1] > fit_range[1]:
                 regions[reg] = (max(lim[0], fit_range[0]), min(lim[1], fit_range[1]))
-                self.logger.warning('region %s for %s bin %d (%s) extends beyond fit range: %s, clipping to %s',
+                self.logger.warning('Region %s for %s bin %d (%s) extends beyond fit range: %s, clipping to %s',
                                     reg, mcordata, ipt, ptrange, lim, regions[reg])
                 if regions[reg][1] < regions[reg][0]:
-                    self.logger.error('region limits inverted, reducing to zero width')
+                    self.logger.error('Region limits inverted, reducing to zero width')
                     regions[reg] = (regions[reg][0], regions[reg][0])
         axis = get_axis(hist, 0)
         bins = {key: (axis.FindBin(region[0]), axis.FindBin(region[1]) - 1) for key, region in regions.items()}
@@ -581,7 +581,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                     self.logger.error('Could not retrieve roows for %s-%i-%i', mcordata, iptjet, ipt)
                     continue
                 area = {region: f.Integral(*limits[region]) for region in regions}
-                self.logger.info('areas for %s-%s: %g, %g, %g',
+                self.logger.info('Areas for %s-%s: %g, %g, %g',
                                  mcordata, ipt, area['signal'], area['sideband_left'], area['sideband_right'])
                 if (area['sideband_left'] + area['sideband_right']) > 0.:
                     subtract_sidebands = True
@@ -594,7 +594,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
                 area[region] = f.Integral(*limits[region])
 
-            self.logger.info('areas for %s-%s: %g, %g, %g',
+            self.logger.info('Areas for %s-%s: %g, %g, %g',
                              mcordata, ipt, area['signal'], area['sideband_left'], area['sideband_right'])
 
             if (area['sideband_left'] + area['sideband_right']) > 0.:
@@ -683,7 +683,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         frac_sig = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal()
         if pdf_peak := self.roows[ipt].pdf('peak'):
             frac_peak = pdf_peak.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal()
-            self.logger.info('correcting %s-%i for fractional signal area: %g (Gaussian: %g)',
+            self.logger.info('Correcting %s-%i for fractional signal area: %g (Gaussian: %g)',
                              mcordata, ipt, frac_sig, frac_peak)
 
         fh_subtracted.Scale(1. / frac_sig)
@@ -701,7 +701,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 for var in [None] + self.observables['all']:
                     self.logger.info('Running analysis for %s using %s', var, method)
                     label = f'-{var}' if var else ''
-                    self.logger.debug('looking for %s', f'h_mass-ptjet-pthf{label}')
+                    self.logger.debug('Looking for %s', f'h_mass-ptjet-pthf{label}')
                     if fh := rfile.Get(f'h_mass-ptjet-pthf{label}'):  # TODO: add sanity check
                         axes_proj = list(range(get_dim(fh)))
                         axes_proj.remove(2)
@@ -716,23 +716,23 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                             elif method == 'sigextr':
                                 h = self._extract_signal(h_in, var, mcordata, ipt)
                             else:
-                                self.logger.critical('invalid method %s', method)
+                                self.logger.critical('Invalid method %s', method)
                             self._save_hist(h, f'h_ptjet{label}_{method}_noeff_{mcordata}_pt{ipt}.png')
                             if mcordata == 'mc':
                                 h_proj = project_hist(h_in, axes_proj[1:], {})
                                 h_proj_lim = project_hist(h_in, axes_proj[1:], {0: (1, get_nbins(h_in, 0))})
                                 self._save_hist(h_proj, f'h_ptjet{label}_proj_noeff_{mcordata}_pt{ipt}.png')
                                 if h and h_proj:
-                                    self.logger.debug('signal loss %s-%i: %g, fraction in under-/overflow: %g',
+                                    self.logger.debug('Signal loss %s-%i: %g, fraction in under-/overflow: %g',
                                                       mcordata, ipt,
                                                       1. - h.Integral()/h_proj.Integral(),
                                                       1. - h_proj_lim.Integral()/h_proj.Integral())
                                 if self.cfg('closure.pure_signal'):
-                                    self.logger.debug('assuming pure signal, using projection')
+                                    self.logger.debug('Assuming pure signal, using projection')
                                     h = h_proj
                             # Efficiency correction
                             if mcordata == 'data' or not self.cfg('closure.use_matched'):
-                                self.logger.info('correcting efficiency')
+                                self.logger.info('Correcting efficiency')
                                 self._correct_efficiency(h, ipt)
                             fh_sub.append(h)
                         fh_sum = sum_hists(fh_sub)
@@ -839,13 +839,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         Extract signal through inv. mass fit (first axis) in bins of other axes
         """
         if not hist:
-            self.logger.warning('no histogram for %s bin %d', var, ipt)
+            self.logger.warning('No histogram for %s bin %d', var, ipt)
             return None
         ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
         self._save_hist(hist, f'signalextr/h_mass-{var}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
 
         if self.fit_mean[mcordata][ipt] is None or self.fit_sigma[mcordata][ipt] is None:
-            self.logger.warning('no fit parameters for %s bin %s-%d', var, mcordata, ipt)
+            self.logger.warning('No fit parameters for %s bin %s-%d', var, mcordata, ipt)
             return None # TODO: should we continue nonetheless?
 
         axes = list(range(get_dim(hist)))
@@ -887,9 +887,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
         with TFile(self.cfg('fd_root')) as rfile:
             powheg_xsection = rfile.Get('fHistXsection')
             powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
-        self.logger.info('powheg scale factor %g', powheg_xsection_scale_factor)
-        self.logger.info('number of collisions in data: %g', self.n_colls['data'])
-        self.logger.info('number of collisions in MC: %g', self.n_colls['mc'])
+        self.logger.info('POWHEG scale factor %g', powheg_xsection_scale_factor)
+        self.logger.info('Number of collisions in data: %g', self.n_colls['data'])
+        self.logger.info('Number of collisions in MC: %g', self.n_colls['mc'])
 
         df = pd.read_parquet(self.cfg('fd_parquet'))
         col_mapping = {'dr': 'delta_r_jet', 'zpar': 'z'} # TODO: check mapping
@@ -907,14 +907,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             elif binning := self.cfg(f'observables.{var}.bins_fix'):
                 bins_tmp = bin_array(*binning)
             else:
-                self.logger.error('no binning specified for %s, using defaults', var)
+                self.logger.error('No binning specified for %s, using defaults', var)
                 bins_tmp = bin_array(10, 0., 1.)
             bins_obs[var] = bins_tmp
 
             colname = col_mapping.get(var, f'{var}_jet')
             if f'{colname}' not in df:
                 if var is not None:
-                    self.logger.error('No feeddown information for %s (%s), cannot estimate feeddown', var, colname)
+                    self.logger.error('No feed-down information for %s (%s), cannot estimate feeddown', var, colname)
                 continue
 
             # TODO: derive histogram
@@ -1000,7 +1000,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
                 np.asarray([hbin[0][0], hbin[1][0], hbin[2][0], hbin[3][0], hbin[4][0]], 'i'))
             eff = h_eff.GetBinContent(hbin[4][0]) if h_eff else 1.
             if np.isclose(eff, 0.):
-                self.logger.error('efficiency 0 for %s', hbin[4])
+                self.logger.error('Efficiency 0 for %s', hbin[4])
                 continue
             for _ in range(int(n)):
                 rm.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1], 1./eff)
@@ -1011,7 +1011,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
     def _subtract_feeddown(self, hist, var, mcordata):
         if var not in self.hfeeddown_det[mcordata]:
             if var is not None:
-                self.logger.error('No feeddown information available for %s, cannot subtract', var)
+                self.logger.error('No feed-down information available for %s, cannot subtract', var)
             return
         if h_fd := self.hfeeddown_det[mcordata][var]:
             if get_dim(hist) == 1:
@@ -1019,7 +1019,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
             assert get_dim(h_fd) == get_dim(hist)
             hist.Add(h_fd, -1)
         else:
-            self.logger.error('No feeddown estimation available for %s (%s)', var, mcordata)
+            self.logger.error('No feed-down estimation available for %s (%s)', var, mcordata)
 
 
     #region unfolding
@@ -1043,7 +1043,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes,too
 
             fh_unfolding_input = hist.Clone('fh_unfolding_input')
             if get_dim(fh_unfolding_input) != get_dim(h_effkine_det):
-                self.logger.error('histograms with different dimensions, cannot unfold')
+                self.logger.error('Histograms with different dimensions, cannot unfold')
                 return []
             ensure_sumw2(fh_unfolding_input)
             fh_unfolding_input.Multiply(h_effkine_det)

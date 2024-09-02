@@ -187,7 +187,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         exdirs.extend(checkdirs(dirresultsdatatot))
 
     if len(exdirs) > 0:
-        logger.info('existing directories must be deleted')
+        logger.info('Existing directories must be deleted')
         for d in exdirs:
             print(f'rm -rf {d}')
         delete = False

@@ -230,7 +230,7 @@ class Fitter:
         return ""
 
     def derive_yields(self):
-        self.logger.info("calculate signal, backgroud, S/B, significance")
+        self.logger.info("Calculate signal, backgroud, S/B, significance")
         self.mean_fit = self.sig_fit_func.GetParameter(1)
         self.mean_err_fit = self.sig_fit_func.GetParError(1)
         # Could be negative together with the integral pre-factor
@@ -393,7 +393,7 @@ class Fitter:
         self.logger.info("Initial parameters for signal fit are")
         print(f"mean = {self.mean}\nsigma = {self.sigma}")
 
-        self.logger.debug("fit background (just side bands)")
+        self.logger.debug("Fit background (just side bands)")
         self.histo_to_fit.Fit(self.bkg_sideband_fit_func, ("R,%s,+,0" % (self.fit_options)))
 
         # Prepare a function to store the signal parameters which will finally be extracted
@@ -413,7 +413,7 @@ class Fitter:
         self.sig_fit_func.SetParameter(1, self.mean)
         self.sig_fit_func.SetParameter(2, self.sigma)
 
-        self.logger.info("fit all (signal + background)")
+        self.logger.info("Fit all (signal + background)")
         self.tot_fit_func.SetLineColor(4)
         parmin = Double()
         parmax = Double()

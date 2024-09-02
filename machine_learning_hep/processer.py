@@ -328,7 +328,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             try:
                 return pd.merge(dfl, dfr, **kwargs)
             except Exception as e:
-                self.logger.error('merging failed: %s', str(e))
+                self.logger.error('Merging failed: %s', str(e))
                 dfl.info()
                 dfr.info()
                 raise e
@@ -339,20 +339,20 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     (level in ('mc', 'gen', 'det') and self.mcordata == 'mc') or
                     (level in ('data') and self.mcordata == 'data'))
 
-        self.logger.info('unpacking: %s', self.l_root[file_index])
+        self.logger.info('Unpacking: %s', self.l_root[file_index])
         dfs = {}
         self.logger.debug(' -> reading')
         with uproot.open(self.l_root[file_index]) as rfile:
             df_processed = set()
             keys = rfile.keys(recursive=False, filter_name='DF_*')
-            self.logger.info('found %d dataframes, reading %s', len(keys), max_no_keys or "all")
+            self.logger.info('Found %d dataframes, reading %s', len(keys), max_no_keys or "all")
             for (idx, key) in enumerate(keys[:max_no_keys]):
                 if not (df_key := re.match('^DF_(\\d+);', key)):
                     continue
                 if (df_no := int(df_key.group(1))) in df_processed:
-                    self.logger.warning('multiple versions of DF %d', df_no)
+                    self.logger.warning('Multiple versions of DF %d', df_no)
                     continue
-                self.logger.debug('processing DF %d - %d / %d', df_no, idx, len(keys))
+                self.logger.debug('Processing DF %d - %d / %d', df_no, idx, len(keys))
                 df_processed.add(df_no)
                 rdir = rfile[key]
 
@@ -410,19 +410,19 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 out = m_spec.get('out', base)
                 if all([dfuse(self.df_read[base]), dfuse(self.df_read[ref])]):
                     if (on := m_spec.get('use', None)) is not None:
-                        self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
+                        self.logger.info('Merging %s with %s on %s into %s', base, ref, on, out)
                         if not isinstance(on, list) or 'df' not in on:
                             on = ['df', on]
                         dfs[out] = dfmerge(dfs[base], dfs[ref], on=on)
                     elif (on := m_spec.get('left_on', None)) is not None:
-                        self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
+                        self.logger.info('Merging %s with %s on %s into %s', base, ref, on, out)
                         if not is_numeric_dtype(dfs[base][on]):
-                            self.logger.info('exploding dataframe %s on variable %s', base, on)
+                            self.logger.info('Exploding dataframe %s on variable %s', base, on)
                             dfs[base] = dfs[base].explode(on)
                         dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', on], right_index=True)
                     else:
                         var = self.df_read[ref]['index']
-                        self.logger.info('merging %s with %s on %s (default) into %s', base, ref, var, out)
+                        self.logger.info('Merging %s with %s on %s (default) into %s', base, ref, var, out)
                         dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', var], right_index=True)
                     if 'extra' in m_spec:
                         self.logger.debug(' %s -> extra', out)
@@ -432,7 +432,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         if self.df_write:
             for df_name, df_spec in self.df_write.items():
                 if dfuse(df_spec):
-                    self.logger.info('writing %s to %s', df_name, df_spec['file'])
+                    self.logger.info('Writing %s to %s', df_name, df_spec['file'])
                     src = df_spec.get('source', df_name)
                     dfo = dfquery(dfs[src], df_spec.get('filter', None))
                     path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec['file'])
@@ -530,7 +530,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.parallelizer(self.applymodel, arguments, self.p_chunksizeskim)
 
     def process_mergeforml(self):
-        self.logger.info("doing merging for ml %s %s", self.mcordata, self.period)
+        self.logger.info("Doing merging for ml %s %s", self.mcordata, self.period)
         indices_for_evt = []
         for ipt in range(self.p_nptbins):
             nfiles = len(self.mptfiles_recosk[ipt])

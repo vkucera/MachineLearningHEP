@@ -128,7 +128,7 @@ class AnalyzerJetSystematics:
         elif binning := self.cfg(f'observables.{var}.bins_fix'):
             bins_tmp = bin_array(*binning)
         else:
-            self.logger.error('no binning specified for %s, using defaults', var)
+            self.logger.error('No binning specified for %s, using defaults', var)
             bins_tmp = bin_array(10, 0., 1.)
         binning_obs_rec = bins_tmp
         self.n_bins_obs_rec = len(binning_obs_rec) - 1
@@ -151,7 +151,7 @@ class AnalyzerJetSystematics:
         elif binning := self.cfg(f'observables.{var}.bins_fix'):
             bins_tmp = bin_array(*binning)
         else:
-            self.logger.error('no binning specified for %s, using defaults', var)
+            self.logger.error('No binning specified for %s, using defaults', var)
             bins_tmp = bin_array(10, 0., 1.)
         binning_obs_gen = bins_tmp
         self.n_bins_obs_gen = len(binning_obs_gen) - 1

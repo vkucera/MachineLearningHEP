@@ -76,7 +76,7 @@ class ProcesserJets(Processer):
                     elif binning := self.cfg(f'observables.{v}.bins_fix'):
                         self.binarrays_obs[level][v] = bin_array(*binning)
                     else:
-                        self.logger.error('no binning specified for %s, using defaults', v)
+                        self.logger.error('No binning specified for %s, using defaults', v)
                         self.binarrays_obs[level][v] = bin_array(10, 0., 1.)
 
                     if binning := self.cfg(f'observables.{v}.bins_ptjet'):
@@ -121,7 +121,7 @@ class ProcesserJets(Processer):
 
 
     def _calculate_variables(self, df, verify=False): # pylint: disable=invalid-name
-        self.logger.info('calculating variables')
+        self.logger.info('Calculating variables')
         if len(df) == 0:
             return df
         df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
@@ -150,7 +150,7 @@ class ProcesserJets(Processer):
             (lambda ar: np.log(ar.fPtSubLeading * np.sin(ar.fTheta))), axis=1)
         df['lntheta'] = df['fTheta'].apply(lambda x: -np.log(x))
         # df['lntheta'] = np.array(-np.log(df.fTheta))
-        self.logger.debug('done')
+        self.logger.debug('Done')
         if verify:
             self._verify_variables(df)
         return df
@@ -175,7 +175,7 @@ class ProcesserJets(Processer):
             dfcollcnt = read_df(self.l_collcnt[index])
             ser_collcnt = dfcollcnt[self.cfg('cnt_events_read', 'fReadSelectedCounts')]
             collcnt = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in ser_collcnt))
-            self.logger.info('sampled %g collisions', collcnt)
+            self.logger.info('Sampled %g collisions', collcnt)
             histonorm.SetBinContent(2, collcnt)
             get_axis(histonorm, 0).SetBinLabel(1, 'N_{evt}')
             get_axis(histonorm, 0).SetBinLabel(2, 'N_{coll}')
@@ -225,10 +225,10 @@ class ProcesserJets(Processer):
             self._calculate_variables(df)
 
             for obs, spec in self.cfg('observables', {}).items():
-                self.logger.debug('preparing histograms for %s', obs)
+                self.logger.debug('Preparing histograms for %s', obs)
                 var = obs.split('-')
                 if not all(v in df for v in var):
-                    self.logger.error('dataframe does not contain %s', var)
+                    self.logger.error('Dataframe does not contain %s', var)
                     continue
                 h = create_hist(
                     f'h_mass-ptjet-pthf-{obs}',
@@ -347,12 +347,12 @@ class ProcesserJets(Processer):
                 if '-' in var or self.cfg(f'observables.{var}.arraycols'):
                     continue
                 if self.cfg('closure.use_matched'):
-                    self.logger.info('using matched for truth')
+                    self.logger.info('Using matched for truth')
                     df_mcana, _ = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
                 else:
                     df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
                 if f := self.cfg('closure.exclude_feeddown_gen'):
-                    self.logger.debug('excluding feeddown gen')
+                    self.logger.debug('Excluding feeddown gen')
                     dfquery(df_mcana, f, inplace=True)
                 fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
 

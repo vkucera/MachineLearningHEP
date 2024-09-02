@@ -81,16 +81,16 @@ def openfile(filename, attr):
 
 
 def write_df(dfo, path):
-    logger.debug("writing df to <%s>", path)
+    logger.debug("Writing df to <%s>", path)
     if path.endswith(".parquet"):
         start = time.time()
         dfo.to_parquet(path)
-        logger.debug("written to parquet in %.2f s", time.time() - start)
+        logger.debug("Written to parquet in %.2f s", time.time() - start)
     else:
         start = time.time()
         with openfile(path, "wb") as file:
             pickle.dump(dfo, file, pickle.HIGHEST_PROTOCOL)
-        logger.debug("written to pickle in %.2f s", time.time() - start)
+        logger.debug("Written to pickle in %.2f s", time.time() - start)
 
 
 def read_df(path, **kwargs):
@@ -100,7 +100,7 @@ def read_df(path, **kwargs):
         else:
             df = pickle.load(openfile(path, "rb"))
     except Exception as e:  # pylint: disable=broad-except
-        logger.critical("failed to open file <%s>: %s", path, str(e))
+        logger.critical("Failed to open file <%s>: %s", path, str(e))
         sys.exit()
     return df
 
