@@ -292,7 +292,6 @@ def norm_response(response, dim_out):
     response_norm = response.Clone()
     for bin_in in itertools.product(*(range(1, get_nbins(response_norm, iaxis) + 1)
                                       for iaxis in range(dim_out, get_dim(response_norm)))):
-        print(f'{bin_in=}', flush=True)
         for iaxis, val in enumerate(bin_in, dim_out):
             get_axis(response_norm, iaxis).SetRange(val, val)
         norm = response_norm.Projection(0).Integral()
