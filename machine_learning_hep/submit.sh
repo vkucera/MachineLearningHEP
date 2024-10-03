@@ -33,6 +33,7 @@ DIR_THIS="$(dirname "$(realpath "$0")")"  # This directory
 DBDIR="data/data_run3"
 DB_DEFAULT="${DIR_THIS}/${DBDIR}/database_ml_parameters_${DATABASE}.yml"
 LOG="log_${STAGE}_${DATABASE}_${ANALYSIS}.log"
+LOG_ERR="${LOG/.log/_err.log}"
 
 ##### Execution
 
@@ -56,7 +57,6 @@ else
     ${CMD_ANA} > "${LOG}" 2>&1
 fi || echo "Error"
 
-LOG_ERR="${LOG/.log/_err.log}"
 echo "Grepping issues into ${LOG_ERR}"
 grep -e "Error in " -e "Failed " "${LOG}" > "${LOG_ERR}"
 grep -A 1 -e WARN -e ERROR -e FATAL -e CRITICAL "${LOG}" >> "${LOG_ERR}"
