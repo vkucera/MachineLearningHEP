@@ -272,7 +272,7 @@ D0Jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24d3b] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_318983/ # full stats new
+      prefix_dir: /data2/MLhep/sim/train_318983/ # full stats new (should be 316983)
       # prefix_dir: /data2/MLhep/sim/train_257228/ # full stats
       # prefix_dir: /data2/MLhep/sim/train_259454/ # 97 % tracking eff
       # prefix_dir: /data2/MLhep/sim/train_239774/ # Andrea's model
