@@ -49,7 +49,6 @@ def get_bin_limits(axis, i_bin: int):
     return (axis.GetBinLowEdge(i_bin), axis.GetBinUpEdge(i_bin))
 
 
-# pylint: disable=too-many-branches, too-many-statements
 def project_hist(hist, axes: list, limits: dict[int, tuple[int, int]]):
     # TODO: add consistent suffix for projections
     # TODO: add option for uncertainties ???
@@ -142,7 +141,6 @@ def create_hist(name, title, *bin_specs):
 
 
 # TODO: generalize which columns can contain arrays
-# pylint: disable=too-many-branches
 def fill_hist(hist, dfi: pd.DataFrame, weights=None, arraycols=None, write=False):
     """
     Fill histogram from dataframe

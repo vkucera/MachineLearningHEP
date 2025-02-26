@@ -18,7 +18,6 @@ import ROOT
 from ROOT import RooAddPdf, RooArgList, RooArgSet, RooFit, RooRealVar, TPaveText
 
 
-# pylint: disable=too-few-public-methods, too-many-statements
 # (temporary until we add more functionality)
 class RooFitter:
     def __init__(self):
@@ -91,7 +90,6 @@ class RooFitter:
                     )
                     # model.SetName("bkg")
                 model.plotOn(frame, ROOT.RooFit.Name("model"))
-            # pylint: disable=bare-except
             except:
                 pass
             # for comp in fit_spec.get('components', {}):

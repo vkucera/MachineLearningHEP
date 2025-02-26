@@ -222,7 +222,7 @@ def roc_train_test(
     x_train,
     y_train,
     x_test,
-    y_test,  # pylint: disable=too-many-arguments
+    y_test,
     nkfolds,
     folder,
     class_labels,

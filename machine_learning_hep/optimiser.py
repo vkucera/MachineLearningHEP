@@ -25,11 +25,11 @@ from math import sqrt
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import onnx  # pylint: disable=import-error
+import onnx
 import pandas as pd
-from onnxconverter_common.data_types import FloatTensorType  # pylint: disable=import-error
-from onnxmltools.convert import convert_xgboost  # pylint: disable=import-error
-from ROOT import TF1, TH1F, TCanvas, TFile, gROOT  # pylint: disable=import-error,no-name-in-module
+from onnxconverter_common.data_types import FloatTensorType
+from onnxmltools.convert import convert_xgboost
+from ROOT import TF1, TH1F, TCanvas, TFile, gROOT
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import label_binarize
 from sklearn.utils import shuffle
@@ -71,8 +71,7 @@ from machine_learning_hep.utilities import (
 from machine_learning_hep.utilities_files import checkdirs, checkmakedirlist
 
 
-# pylint: disable=too-many-instance-attributes, too-many-statements, unbalanced-tuple-unpacking, fixme
-class Optimiser:  # pylint: disable=too-many-public-methods, consider-using-f-string, unused-argument, too-many-arguments
+class Optimiser:
     # Class Attribute
     species = "optimiser"
 
@@ -266,7 +265,7 @@ class Optimiser:  # pylint: disable=too-many-public-methods, consider-using-f-st
         self.df_mcgen = seldf_singlevar(self.df_mcgen, self.v_bin, self.p_binmin, self.p_binmax)
         self.df_data = seldf_singlevar(self.df_data, self.v_bin, self.p_binmin, self.p_binmax)
 
-    def preparesample(self):  # pylint: disable=too-many-branches
+    def preparesample(self):
         self.logger.info("Prepare Sample")
 
         filename_train = os.path.join(self.dirmlout, f"df_train_{self.p_binmin}_{self.p_binmax}.pkl")
@@ -706,7 +705,6 @@ class Optimiser:  # pylint: disable=too-many-public-methods, consider-using-f-st
         with open(f"{self.dirmlplot}/Efficiency_{self.s_suffix}.pickle", "wb") as out:
             pickle.dump(fig_eff, out)
 
-    # pylint: disable=too-many-locals
     def do_significance(self):
         if self.step_done("significance"):
             return

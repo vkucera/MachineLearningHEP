@@ -17,14 +17,12 @@ Definition of FitterBase, Fitter and SystFitter classes
 Definition of FitBase, FitAliHF, FitROOT classes
 """
 
-# pylint: disable=too-many-lines
 
 from array import array
 from copy import deepcopy
 from ctypes import c_double
 from math import sqrt
 
-# pylint: disable=import-error, no-name-in-module, unused-import, f-string-without-interpolation
 try:
     from ROOT import AliHFInvMassFitter, AliHFInvMassMultiTrialFit, AliVertexingHFUtils
 except ImportError:
@@ -57,12 +55,12 @@ TYPE_GAUSS_1 = "kGaus"
 TYPE_GAUSS_2 = "k2Gaus"
 
 
-class FitBase:  # pylint: disable=too-many-instance-attributes
+class FitBase:
     """
     Common base class for FitAliHF and FitROOT.
     """
 
-    def __init__(self, init_pars, **kwargs):  # pylint: disable=unused-argument
+    def __init__(self, init_pars, **kwargs):
         self.logger = get_logger()
         # If nit/fitting attempt was made
         self.has_attempt = False
@@ -201,7 +199,7 @@ class FitBase:  # pylint: disable=too-many-instance-attributes
 
         self.draw_kernel(root_pad, **draw_args)
 
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args):  # pylint: disable=unused-argument, dangerous-default-value
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
         """
         Draw method specific to the used kernel. To be overwritten by the derivin class
         Args:
@@ -415,7 +413,7 @@ class FitAliHF(FitROOT):
         self.fit_pars["mean"] = self.kernel.GetMean()
         self.fit_pars["sigma"] = self.kernel.GetSigma()
 
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args):  # pylint: disable=too-many-locals, too-many-statements, dangerous-default-value
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
         n_sigma_signal = draw_args.pop("sigma_signal", 3)
         mean_dim = draw_args.pop("mean_dim", "GeV/#it{c}^{2}")
         mean_scale = draw_args.pop("mean_scale", 1.0)
@@ -575,7 +573,7 @@ class FitAliHF(FitROOT):
                 aro.Draw("same")
 
 
-class FitROOTGauss(FitROOT):  # pylint: disable=too-many-instance-attributes
+class FitROOTGauss(FitROOT):
     """
     Class with specific ROOT TF1 as core fitting utility
     """
@@ -732,7 +730,7 @@ class FitROOTGauss(FitROOT):  # pylint: disable=too-many-instance-attributes
         if self.type_gauss == TYPE_GAUSS_2:
             self.fit_pars["second_sigma"] = self.kernel.GetParameter(4)
 
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args):  # pylint: disable=too-many-statements, dangerous-default-value
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
         title = draw_args.pop("title", "")
         x_axis_label = draw_args.pop("x_axis_label", "#it{M}_{inv} (GeV/#it{c}^{2})")
         y_axis_label = draw_args.pop(
@@ -824,7 +822,7 @@ class FitROOTGauss(FitROOT):  # pylint: disable=too-many-instance-attributes
                 aro.Draw("same")
 
 
-class FitSystAliHF(FitROOT):  # pylint: disable=too-many-instance-attributes
+class FitSystAliHF(FitROOT):
     """
     Class with AliHFMassFitter as core fitting utility
     """
@@ -973,7 +971,7 @@ class FitSystAliHF(FitROOT):  # pylint: disable=too-many-instance-attributes
         # self.fit_pars["mean"] = self.kernel.GetMean()
         # self.fit_pars["sigma"] = self.kernel.GetSigma()
 
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args):  # pylint: disable=dangerous-default-value, too-many-branches, too-many-statements, too-many-locals
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
         if not self.results_path:
             self.logger.warning("Don't have a result file so cannot draw. Skip...")
             return

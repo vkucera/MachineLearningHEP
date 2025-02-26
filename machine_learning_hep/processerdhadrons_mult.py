@@ -12,7 +12,6 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-# pylint: disable=import-error, no-name-in-module, consider-using-f-string, too-many-statements, too-many-branches, too-many-arguments, too-many-instance-attributes, too-many-locals
 
 """
 main script for doing data processing, machine learning and analysis
@@ -38,7 +37,6 @@ from machine_learning_hep.utilities_files import create_folder_struc
 from machine_learning_hep.utils.hist import bin_array, fill_hist
 
 
-# pylint: disable=invalid-name
 class ProcesserDhadrons_mult(Processer):
     # Class Attribute
     species = "processer"
@@ -201,7 +199,7 @@ class ProcesserDhadrons_mult(Processer):
 
         df_ptmerged = pd.DataFrame()
 
-        for ipt in range(self.p_nptfinbins):  # pylint: disable=too-many-nested-blocks
+        for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = read_df(self.mptfiles_recoskmldec[bin_id][index])
             if self.s_evtsel is not None:
@@ -330,7 +328,6 @@ class ProcesserDhadrons_mult(Processer):
         #      .format(len(dfsel), math.sqrt(len(dfsel)), val, err, w.count(0.)))
         return val, err
 
-    # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         h_list = []

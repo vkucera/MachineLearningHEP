@@ -12,7 +12,6 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-# pylint: disable=import-error, no-name-in-module, consider-using-f-string
 
 """
 main script for doing data processing, machine learning and analysis
@@ -30,12 +29,11 @@ from machine_learning_hep.utilities import read_df, seldf_singlevar
 from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist
 
 
-class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attributes
+class ProcesserDhadrons(Processer):
     # Class Attribute
     species = "processer"
 
     # Initializer / Instance Attributes
-    # pylint: disable=too-many-statements, too-many-arguments
     def __init__(
         self,
         case,
@@ -102,7 +100,6 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
         self.binarray_mass = bin_array(nbins_mass, limits_mass[0], limits_mass[1])
         self.binarray_pthf = np.asarray(self.cfg("sel_an_binmin", []) + self.cfg("sel_an_binmax", [])[-1:], "d")
 
-    # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         dfevtorig = read_df(self.l_evtorig[index])
@@ -198,7 +195,6 @@ class ProcesserDhadrons(Processer):  # pylint: disable=too-many-instance-attribu
                 )
                 fill_hist(h, df_sel[["fM", "fPt"]], write=True)
 
-    # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
         # TO UPDATE TO DHADRON_MULT VERSION
         out_file = TFile.Open(self.l_histoeff[index], "recreate")

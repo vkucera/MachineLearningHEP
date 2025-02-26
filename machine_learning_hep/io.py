@@ -18,7 +18,7 @@ import os
 from inspect import isclass
 from numbers import Number
 
-import yaml  # pylint: disable=import-error
+import yaml
 
 from machine_learning_hep.logger import get_logger
 

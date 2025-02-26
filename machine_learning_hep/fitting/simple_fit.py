@@ -20,7 +20,7 @@ import argparse
 from os import makedirs
 from os.path import exists, join
 
-from ROOT import TCanvas, TFile  # pylint: disable=import-error, no-name-in-module
+from ROOT import TCanvas, TFile
 
 from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss
 from machine_learning_hep.fitting.utils import save_fit
@@ -73,7 +73,7 @@ def draw(fitter, save_name, **kwargs):
     # NOTE The broad-except is only used to make this script running under
     #      any circumstances and ignore any reason for which a fit could not
     #      be drawn.
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         print(f"Could not draw fit")
         print(fitter)
         print(e)
@@ -81,7 +81,6 @@ def draw(fitter, save_name, **kwargs):
     c.Close()
 
 
-# pylint: disable=too-many-locals, too-many-statements
 def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit"):
     """Doing the fit
 

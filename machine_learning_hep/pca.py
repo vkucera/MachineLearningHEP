@@ -45,7 +45,7 @@ def getdataframe_standardised(dataframe):
 
 
 def plotvariance_pca(pca_object, output_):
-    figure = plt.figure(figsize=(15, 10))  # pylint: disable=unused-variable
+    figure = plt.figure(figsize=(15, 10))
     plt.plot(np.cumsum(pca_object.explained_variance_ratio_))
     plt.plot([0, 10], [0.95, 0.95])
     plt.xlabel("number of components", fontsize=16)

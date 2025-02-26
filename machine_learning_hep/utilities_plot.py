@@ -19,15 +19,12 @@ Script also contains the "class Errors", used for systematic uncertainties (to
 replace AliHFSystErr from AliPhysics).
 """
 
-# pylint: disable=too-many-lines
 import math
 from array import array
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-# from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-# pylint: disable=import-error, no-name-in-module
 from ROOT import (
     TH1,
     TH1F,
@@ -475,7 +472,6 @@ def put_in_pad(pad, use_log_y, histos, title="", x_label="", y_label="", yrange=
         h.Draw(f"same {o}")
 
 
-# pylint: disable=too-many-statements
 def plot_histograms(
     histos,
     use_log_y=False,
@@ -582,7 +578,6 @@ def save_histograms(histos, save_path="./plot.root"):
     root_file.Close()
 
 
-# pylint: disable=too-many-branches
 def calc_systematic_multovermb(errnum_list, errden_list, n_bins, same_mc_used=False, justfd=-99):
     """
     Returns a list of total errors taking into account the defined correlations
@@ -675,7 +670,6 @@ def calc_systematic_multovermb(errnum_list, errden_list, n_bins, same_mc_used=Fa
     return tot_list
 
 
-# pylint: disable=too-many-branches
 def calc_systematic_mesonratio(errnum_list, errden_list, n_bins, justfd=-99):
     """
     Returns a list of total errors taking into account the defined correlations
@@ -924,7 +918,6 @@ def calc_systematic_mesondoubleratio(
     return tot_list
 
 
-# pylint: disable=too-many-locals
 def average_pkpi_pk0s(
     histo_pkpi,
     histo_pk0s,
@@ -1183,7 +1176,6 @@ def weight_systematic_lc_averaging(arr_errors, fprompt, fpromptlow, fprompthigh,
     return err_new, fpromptlownew, fprompthighnew
 
 
-# pylint: disable=too-many-nested-blocks
 class Errors:
     """
     Errors corresponding to one histogram

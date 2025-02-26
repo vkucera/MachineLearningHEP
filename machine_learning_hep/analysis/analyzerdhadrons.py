@@ -16,15 +16,12 @@
 main script for doing final stage analysis
 """
 
-# pylint: disable=too-many-lines
 import os
 from array import array
 from pathlib import Path
 
 import numpy as np
 
-# pylint: disable=unused-wildcard-import, wildcard-import
-# pylint: disable=import-error, no-name-in-module, unused-import, consider-using-f-string
 from ROOT import (
     TF1,
     TH1,
@@ -63,11 +60,9 @@ from machine_learning_hep.hf_pt_spectrum import hf_pt_spectrum
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utils.hist import get_dim, project_hist
 
-# pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
-# pylint: disable=consider-using-enumerate fixme
 
 
-class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
+class AnalyzerDhadrons(Analyzer):
     species = "analyzer"
 
     def __init__(self, datap, case, typean, period):
@@ -266,7 +261,6 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         return (fit_res, func_sig, func_bkg)
 
-    # pylint: disable=too-many-branches,too-many-statements
     def fit(self):
         self.logger.info("Fitting inclusive mass distributions")
         gStyle.SetOptFit(1111)
@@ -481,10 +475,8 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
     @staticmethod
     def calculate_norm(logger, hevents, hselevents):  # TO BE FIXED WITH EV SEL
         if not hevents:
-            # pylint: disable=undefined-variable
             logger.error("Missing hevents")
         if not hselevents:
-            # pylint: disable=undefined-variable
             logger.error("Missing hselevents")
 
         n_events = hevents.Integral()
@@ -492,7 +484,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
         return n_events, n_selevents
 
-    def makenormyields(self):  # pylint: disable=import-outside-toplevel, too-many-branches
+    def makenormyields(self):
         gROOT.SetBatch(True)
         self.loadstyle()
 

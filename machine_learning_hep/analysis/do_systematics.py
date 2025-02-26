@@ -15,8 +15,6 @@ Calculate and plot systematic uncertainties
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
-# pylint: disable=too-many-lines, too-many-instance-attributes, too-many-statements, too-many-locals
-# pylint: disable=too-many-nested-blocks, too-many-branches, consider-using-f-string
 
 import argparse
 import logging

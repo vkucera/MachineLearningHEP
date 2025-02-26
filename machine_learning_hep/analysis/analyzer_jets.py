@@ -44,7 +44,6 @@ from machine_learning_hep.utils.hist import (
     sum_hists,
 )
 
-# pylint: disable=too-many-instance-attributes,too-many-lines,too-many-nested-blocks
 
 
 def string_range_ptjet(range_pt):
@@ -173,7 +172,7 @@ class AnalyzerJets(Analyzer):
                 self.logger.info("Number of TVX collisions for %s: %g", mcordata, self.n_colls_tvx[mcordata])
                 self.logger.info("Number of TVX BCs for %s: %g", mcordata, self.n_bcs_tvx[mcordata])
 
-    def qa(self):  # pylint: disable=invalid-name
+    def qa(self):
         self.logger.info("Producing basic QA histograms")
         for mcordata in ["mc", "data"]:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
@@ -204,7 +203,6 @@ class AnalyzerJets(Analyzer):
                     self._save_hist(h_response_shape, f"qa/h_ptjet-{var}_responsematrix-shape_{cat}.png", "colz")
 
     # region efficiency
-    # pylint: disable=too-many-statements
     def calculate_efficiencies(self):
         self.logger.info("Calculating efficiencies")
         cats = {"pr", "np"}
@@ -454,7 +452,6 @@ class AnalyzerJets(Analyzer):
 
         return (fit_res, func_sig, func_bkg)
 
-    # pylint: disable=too-many-branches,too-many-statements
     def fit(self):
         if not self.cfg("hfjet", True):
             self.logger.info("Not fitting mass distributions for inclusive jets")
@@ -587,7 +584,6 @@ class AnalyzerJets(Analyzer):
                             self.logger.debug("fit range for %s-%i: %s", level, ipt, self.fit_range[level][ipt])
 
     # region sidebands
-    # pylint: disable=too-many-branches,too-many-statements,too-many-locals
     def _subtract_sideband(self, hist, var, mcordata, ipt):
         """
         Subtract sideband distributions, assuming mass on first axis
@@ -1051,7 +1047,6 @@ class AnalyzerJets(Analyzer):
         return hres
 
     # region feeddown
-    # pylint: disable=too-many-statements
     def estimate_feeddown(self):
         self.logger.info("Estimating feeddown")
 

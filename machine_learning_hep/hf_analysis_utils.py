@@ -23,7 +23,6 @@ https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 import numpy as np
 
 
-# pylint: disable=too-many-arguments
 def compute_crosssection(
     rawy,
     rawy_unc,
@@ -72,7 +71,6 @@ def compute_crosssection(
     return crosssection, crosssec_unc
 
 
-# pylint: disable=too-many-branches,too-many-arguments,too-many-locals
 def compute_fraction_fc(
     acc_eff_prompt,
     acc_eff_fd,
@@ -145,7 +143,6 @@ def compute_fraction_fc(
     return frac_prompt, frac_fd
 
 
-# pylint: disable=too-many-branches,too-many-arguments,too-many-locals,invalid-name
 def compute_fraction_nb(
     rawy,
     acc_eff_same,

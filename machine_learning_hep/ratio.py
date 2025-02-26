@@ -16,16 +16,12 @@
 main script for doing final stage analysis
 """
 
-# pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
 
-# pylint: disable=import-error, no-name-in-module, unused-import
 import yaml
 from ROOT import TH1F, TCanvas, TFile, TLegend, TStyle, gROOT, gStyle
 
 
-# pylint: disable=import-error, no-name-in-module, unused-import
-# pylint: disable=too-many-statements
 def ratio(imult):
     gROOT.SetStyle("Plain")
     gStyle.SetOptStat(0)

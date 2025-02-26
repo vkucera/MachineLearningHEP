@@ -24,8 +24,6 @@ Providing and storing fitters
 import inspect
 from math import ceil
 from os.path import join
-
-# pylint: disable=import-error, no-name-in-module, unused-import
 from ROOT import TFile
 
 from machine_learning_hep.io import checkdir, dump_yaml_from_dict, parse_yaml
@@ -89,10 +87,8 @@ def load_fit(save_dir):
 
     yaml_path = join(save_dir, "init_pars.yaml")
 
-    # pylint: disable=import-outside-toplevel
     import machine_learning_hep.fitting.fitters as search_module
 
-    # pylint: enable=import-outside-toplevel
     fit_classes = {
         f[0]: getattr(search_module, f[0])
         for f in inspect.getmembers(search_module, inspect.isclass)

@@ -20,7 +20,7 @@ import array
 import ast
 
 import numpy as np
-from ROOT import TFile, TNtuple  # pylint: disable=import-error,no-name-in-module
+from ROOT import TFile, TNtuple
 
 from machine_learning_hep.logger import get_logger
 

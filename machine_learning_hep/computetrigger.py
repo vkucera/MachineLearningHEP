@@ -14,14 +14,14 @@
 
 import argparse
 
-from ROOT import TF1, TCanvas, TFile, TLegend, TLine, gPad  # pylint: disable=import-error, no-name-in-module
+from ROOT import TF1, TCanvas, TFile, TLegend, TLine, gPad
 
 from machine_learning_hep.utilities_plot import buildbinning, buildhisto, load_root_style, rebin_histogram
 
 
 def main(
     input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/"
-    "376_20200304-2028/resultsSPDvspt_ntrkl_trigger/masshisto.root",  # pylint: disable=too-many-statements
+    "376_20200304-2028/resultsSPDvspt_ntrkl_trigger/masshisto.root",
     input_mb="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/"
     "376_20200304-2028/resultsMBvspt_ntrkl_trigger/masshisto.root",
     output_path="../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018/",
@@ -140,7 +140,6 @@ def main(
     funcd.Draw("same")
     # Draw both fitting functions
     ctrigger.cd(6)
-    # pylint: disable=unused-variable
     hframe = gPad.DrawFrame(min_draw_range, 0, max_draw_range, 1, ";n_tracklets_corr;Efficiency")
     funcnorm = func.Clone("funcSPDvspt_ntrkl_norm")
     funcnorm.FixParameter(0, funcnorm.GetParameter(0) / funcnorm.GetMaximum())

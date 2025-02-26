@@ -24,7 +24,7 @@ from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities import merge_method, mergerootfiles
 
 
-class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-statements, consider-using-f-string, too-many-branches
+class MultiProcesser:
     species = "multiprocesser"
     logger = get_logger()
 

@@ -21,7 +21,7 @@ from .logger import get_logger
 logger = get_logger()
 
 
-def list_folders(main_dir: str, filenameinput: str, maxfiles: int, select=None):  # pylint: disable=too-many-branches
+def list_folders(main_dir: str, filenameinput: str, maxfiles: int, select=None):
     """
     Return folders under main_dir which contain filenameinput
 

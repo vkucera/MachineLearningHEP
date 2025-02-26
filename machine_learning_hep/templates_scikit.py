@@ -25,7 +25,7 @@ def scikit_random_forest_classifier(model_config):
     )
 
 
-def scikit_adaboost_classifier(model_config):  # pylint: disable=W0613
+def scikit_adaboost_classifier(model_config):
     return AdaBoostClassifier()
 
 
@@ -33,7 +33,7 @@ def scikit_decision_tree_classifier(model_config):
     return DecisionTreeClassifier(max_depth=model_config["max_depth"])
 
 
-def scikit_linear_regression(model_config):  # pylint: disable=W0613
+def scikit_linear_regression(model_config):
     return LinearRegression()
 
 

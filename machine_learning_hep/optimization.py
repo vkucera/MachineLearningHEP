@@ -19,7 +19,7 @@ Methods to: utility methods to conpute efficiency and study expected significanc
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import MultipleLocator
-from ROOT import TH1F, TFile  # pylint: disable=import-error,no-name-in-module
+from ROOT import TH1F, TFile
 
 from machine_learning_hep.logger import get_logger
 
@@ -53,7 +53,7 @@ def calc_bkg(
     bkg_func,
     bin_width,
     sig_region,
-    save_fit,  # pylint: disable=too-many-arguments
+    save_fit,
     out_dir,
     pt_lims,
     invmassvar,

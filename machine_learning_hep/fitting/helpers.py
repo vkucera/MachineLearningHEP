@@ -20,7 +20,6 @@ from ctypes import c_double
 from glob import glob
 from os.path import join
 
-# pylint: disable=too-many-lines, too-few-public-methods, consider-using-f-string, too-many-statements
 from ROOT import TF1, TH1F, TCanvas, TFile, gStyle  # pylint: disable=import-error, no-name-in-module
 
 from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss, FitSystAliHF

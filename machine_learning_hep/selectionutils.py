@@ -18,7 +18,7 @@ utilities for fiducial acceptance, pid, single topological variable selections a
 
 import numba
 import numpy as np
-from ROOT import TH1F  # pylint: disable=import-error, no-name-in-module
+from ROOT import TH1F
 
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 
@@ -64,7 +64,6 @@ def selectfidacc(array_pt, array_y):
     return array_is_sel
 
 
-# pylint: disable=too-many-arguments
 # @numba.njit
 def selectpid_dstokkpi(
     array_nsigma_tpc_pi_0,

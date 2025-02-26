@@ -23,7 +23,7 @@ import sys
 
 # unclear why shap needs to be imported from here,
 # segfaults when imported from within other modules
-import shap  # pylint: disable=unused-import
+import shap
 import yaml
 
 from .analysis.analyzer_manager import AnalyzerManager
@@ -32,7 +32,7 @@ from .logger import configure_logger, get_logger
 from .utilities_files import checkdirs, checkmakedir, checkmakedirlist, delete_dirlist
 
 
-def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def do_entire_analysis(
     data_config: dict,
     data_param: dict,
     data_param_overwrite: dict,
@@ -261,13 +261,13 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     def mlhepmod(name):
         return importlib.import_module(f"..{name}", __name__)
 
-    import ROOT  # pylint: disable=import-outside-toplevel, import-error
+    import ROOT
 
-    ROOT.gROOT.SetBatch(args.batch)  # pylint: disable=no-member
-    ROOT.TDirectory.AddDirectory(False)  # pylint: disable=no-member
+    ROOT.gROOT.SetBatch(args.batch)
+    ROOT.TDirectory.AddDirectory(False)
     ROOT.TH1.AddDirectory(False)
-    ROOT.gErrorIgnoreLevel = ROOT.kWarning  # pylint: disable=no-member
-    from machine_learning_hep.multiprocesser import MultiProcesser  # pylint: disable=import-outside-toplevel
+    ROOT.gErrorIgnoreLevel = ROOT.kWarning
+    from machine_learning_hep.multiprocesser import MultiProcesser
 
     syst_class = mlhepmod("analysis.systematics").SystematicsMLWP
     if proc_type == "Dhadrons":
@@ -333,7 +333,7 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
         mymultiprocessdata.multi_mergeml_allinone()
 
     if doml:
-        from machine_learning_hep.optimiser import Optimiser  # pylint: disable=import-outside-toplevel
+        from machine_learning_hep.optimiser import Optimiser
 
         for index, (binmin, binmax) in enumerate(zip(binminarray, binmaxarray)):
             myopt = Optimiser(
@@ -397,7 +397,6 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     if dohistomassdata:
         # After-burner in case of a mult analysis to obtain "correctionsweight.root"
         # for merged-period data
-        # pylint: disable=fixme
         # FIXME Can only be run here because result directories are constructed when histomass
         #       is run. If this step was independent, histomass would always complain that the
         #       result directory already exists.

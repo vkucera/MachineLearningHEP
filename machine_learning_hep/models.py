@@ -18,7 +18,6 @@ Methods to: choose, train and apply ML models
             obtain control plots
 """
 
-# pylint: disable=too-many-branches
 import pickle
 from os.path import exists
 

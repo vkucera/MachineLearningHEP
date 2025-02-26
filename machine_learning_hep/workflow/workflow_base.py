@@ -15,14 +15,12 @@
 from functools import reduce
 from os.path import join
 
-# pylint: disable=import-error, no-name-in-module
 from ROOT import gStyle
 
 # HF specific imports
 from machine_learning_hep.logger import get_logger
 
 
-# pylint: disable=too-few-public-methods
 class WorkflowBase:
     """
     Base class for all workflows related classes including systematics

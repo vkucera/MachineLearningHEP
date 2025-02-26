@@ -15,7 +15,6 @@ Script to run the analysis with variations of the database parameters
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
-# pylint: disable=consider-using-f-string
 
 import argparse
 import datetime
@@ -26,7 +25,7 @@ import subprocess
 import sys
 from copy import deepcopy
 
-import yaml  # pylint: disable=import-error
+import yaml
 
 
 def msg_err(message: str):
@@ -217,7 +216,7 @@ def slice_dic(dic: dict, index: int):
             slice_dic(val, index)
 
 
-def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statements, too-many-branches
+def healthy_structure(dic_diff: dict):
     """Check correct structure of the variation dictionary."""
     if not isinstance(dic_diff, dict):
         msg_err("No dictionary found.")
@@ -302,7 +301,7 @@ def healthy_structure(dic_diff: dict):  # pylint: disable=too-many-return-statem
     return True
 
 
-def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, proc: int, script_name: str):
     """Main function"""
 
     suffix_config_default = "analysis.yml"
@@ -438,7 +437,7 @@ def main(yaml_in: str, yaml_diff: str, analysis: str, config: str, clean: bool, 
                         )
                     else:
                         with open(logfile, "w", encoding="utf-8") as ana_out:
-                            subprocess.Popen(  # pylint: disable=consider-using-with
+                            subprocess.Popen(
                                 shlex.split(f"mlhep -a {analysis} -r {config_final} -d {yaml_out} -b --delete-force"),
                                 stdout=ana_out,
                                 stderr=ana_out,

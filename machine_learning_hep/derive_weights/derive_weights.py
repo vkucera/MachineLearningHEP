@@ -21,9 +21,9 @@ from glob import glob
 
 import pandas as pd
 import yaml
-from lz4 import frame  # pylint: disable=unused-import
-from ROOT import TH1F, TH2F, TFile  # pylint: disable=import-error, no-name-in-module
-from root_numpy import fill_hist  # pylint: disable=import-error
+from lz4 import frame
+from ROOT import TH1F, TH2F, TFile
+from root_numpy import fill_hist
 
 from machine_learning_hep.do_variations import modify_dictionary
 from machine_learning_hep.io import parse_yaml
@@ -72,7 +72,7 @@ def derive(
     in_top_dirs,
     gen_file_name,
     required_columns,
-    use_mass_window,  # pylint: disable=too-many-arguments, too-many-branches
+    use_mass_window,
     distribution_column,
     distribution_x_range,
     file_name_mlwp_map,
@@ -102,7 +102,7 @@ def derive(
 
     merge_on = [required_columns[:3]]
 
-    for period, dir_applied, query_period in zip(periods, in_top_dirs, queries_periods):  # pylint: disable=too-many-nested-blocks
+    for period, dir_applied, query_period in zip(periods, in_top_dirs, queries_periods):
         query_tmp = None
         if query_all:
             query_tmp = query_all
@@ -163,7 +163,7 @@ def derive(
     file_out.Close()
 
 
-def make_distributions(args, inv_mass, inv_mass_window):  # pylint: disable=too-many-statements
+def make_distributions(args, inv_mass, inv_mass_window):
     config = parse_yaml(args.config)
 
     database_path = config["database"]
@@ -254,7 +254,7 @@ def make_distributions(args, inv_mass, inv_mass_window):  # pylint: disable=too-
     )
 
 
-def make_weights(args, *ignore):  # pylint: disable=unused-argument
+def make_weights(args, *ignore):
     file_data = TFile.Open(args.data, "READ")
     file_mc = TFile.Open(args.mc, "READ")
 
@@ -327,7 +327,7 @@ def multi_proc(function, argument_list, kw_argument_list, maxperchunk, max_n_pro
     res_list = None
     try:
         res_list = [r.get() for r in res_all]
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         print("EXCEPTION")
         print(e)
     return res_list

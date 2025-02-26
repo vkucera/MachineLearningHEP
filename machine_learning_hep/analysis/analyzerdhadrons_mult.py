@@ -16,15 +16,12 @@
 main script for doing final stage analysis
 """
 
-# pylint: disable=too-many-lines
-# pylint: disable=unused-wildcard-import, wildcard-import
 import os
 from array import array
 from pathlib import Path
 
 import numpy as np
 
-# pylint: disable=import-error, no-name-in-module, unused-import, consider-using-f-string
 from ROOT import (
     TF1,
     TH1,
@@ -66,9 +63,7 @@ from machine_learning_hep.root import save_root_object
 from machine_learning_hep.utils.hist import get_dim, project_hist
 
 
-# pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
-# pylint: disable=consider-using-enumerate, fixme
-class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
+class AnalyzerDhadrons_mult(Analyzer):
     species = "analyzer"
 
     def __init__(self, datap, case, typean, period):
@@ -186,7 +181,6 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
         self.p_performval = datap["analysis"].get("event_cand_validation", None)
 
-    # pylint: disable=import-outside-toplevel
     # region helpers
     def _save_canvas(self, canvas, filename):
         # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
@@ -296,7 +290,6 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
         return (fit_res, func_sig, func_bkg)
 
-    # pylint: disable=too-many-branches,too-many-statements,too-many-nested-blocks
     def fit(self):
         self.logger.info("Fitting inclusive mass distributions")
         gStyle.SetOptFit(1111)
@@ -726,10 +719,8 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
     @staticmethod
     def calculate_norm(logger, hevents, hselevents):  # TO BE FIXED WITH EV SEL
         if not hevents:
-            # pylint: disable=undefined-variable
             logger.error("Missing hevents")
         if not hselevents:
-            # pylint: disable=undefined-variable
             logger.error("Missing hselevents")
 
         n_events = hevents.Integral()
@@ -737,7 +728,7 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
         return n_events, n_selevents
 
-    def makenormyields(self):  # pylint: disable=import-outside-toplevel, too-many-branches
+    def makenormyields(self):
         gROOT.SetBatch(True)
         self.loadstyle()
         yield_filename = self.make_file_path(
@@ -776,7 +767,6 @@ class AnalyzerDhadrons_mult(Analyzer):  # pylint: disable=invalid-name
 
             # Bin1 is all events. Bin2 is all sel events. Mult bins start from Bin3.
             norm = histonorm.GetBinContent(imult + 3)
-            # pylint: disable=logging-not-lazy
             self.logger.warning("Number of events %d for mult bin %d" % (norm, imult))
 
             if self.p_fprompt_from_mb:

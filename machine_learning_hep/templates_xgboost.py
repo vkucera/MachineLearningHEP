@@ -23,7 +23,7 @@ from machine_learning_hep.optimisation.bayesian_opt import BayesianOpt
 from machine_learning_hep.optimisation.metrics import get_scorers
 
 
-def xgboost_classifier(model_config):  # pylint: disable=W0613
+def xgboost_classifier(model_config):
     return XGBClassifier(
         verbosity=1,
         # n_gpus=0,

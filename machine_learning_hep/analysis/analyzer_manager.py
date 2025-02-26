@@ -13,7 +13,6 @@
 from machine_learning_hep.logger import get_logger
 
 
-# pylint: disable=too-many-instance-attributes
 class AnalyzerManager:
     """
     Manager class handling analysis and systematic objects

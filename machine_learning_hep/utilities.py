@@ -27,9 +27,9 @@ import time
 from array import array
 from datetime import datetime
 
-import lz4  # pylint: disable=import-error
-import numpy as np  # pylint: disable=import-error
-import pandas as pd  # pylint: disable=import-error
+import lz4
+import numpy as np
+import pandas as pd
 from ROOT import (
     TH1,
     TH1F,
@@ -74,7 +74,6 @@ from ROOT import (
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.selectionutils import select_runs
 
-# pylint: disable=too-many-lines
 
 logger = get_logger()
 
@@ -132,7 +131,7 @@ def read_df(path, **kwargs):
             df = pd.read_parquet(path, **kwargs)
         else:
             df = pickle.load(openfile(path, "rb"))
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         logger.critical("failed to open file <%s>: %s", path, str(e))
         sys.exit()
     return df
@@ -172,7 +171,7 @@ def mask_df(df_to_mask, mask_config):
         df_to_mask.loc[mask_indices, [mc["column"]]] = conv_none(mc["mask_with"])
 
 
-def dfquery(df, selection, **kwargs):  # pylint: disable=invalid-name
+def dfquery(df, selection, **kwargs):
     return df.query(selection, **kwargs) if selection is not None else df
 
 
@@ -745,7 +744,7 @@ def count_graphs(l_obj: list) -> int:
     return sum(is_graph(o) for o in l_obj)
 
 
-def make_plot(  # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
+def make_plot(
     name,
     can=None,
     pad=0,
@@ -1308,7 +1307,7 @@ def format_number_prec(num, prec):
     return f"{round(num, prec):.{max(0, prec)}f}"
 
 
-def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n_sig=2):  # pylint: disable=invalid-name
+def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n_sig=2):
     """Format a value with uncertainties so that the main value is reported with a decimal precision
     given by the number of significant figures of the smallest uncertainty."""
     mag_y = math.floor(math.log10(y))

@@ -24,7 +24,7 @@ from machine_learning_hep.logger import get_logger
 
 # disable pylint unused-argument because this is done already in view of updating the
 # database depending on info in there
-def update_config(database: dict, run_config: dict, database_overwrite=None):  # pylint: disable=unused-argument
+def update_config(database: dict, run_config: dict, database_overwrite=None):
     """Update database before usage
 
     1. overwrite with potential additional user configuration

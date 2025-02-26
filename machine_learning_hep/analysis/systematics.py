@@ -19,8 +19,6 @@ At the moment includes: Cut variation and MC pT shape
 The raw yield systematic is done within analyzer.py
 """
 
-# pylint: disable=no-name-in-module
-# pylint: disable=import-error
 import sys
 from copy import copy, deepcopy
 from operator import itemgetter
@@ -38,7 +36,7 @@ from machine_learning_hep.multiprocesser import MultiProcesser
 from machine_learning_hep.utilities_plot import load_root_style
 
 
-class SystematicsMLWP:  # pylint: disable=too-few-public-methods, too-many-instance-attributes
+class SystematicsMLWP:
     species = "systematicsmlwp"
 
     def __init__(self, datap, case, typean, analyzers, multiprocesser_mc, multiprocesser_data, multi_class_opt=None):
@@ -125,7 +123,7 @@ class SystematicsMLWP:  # pylint: disable=too-few-public-methods, too-many-insta
                 self.nominal_means[ibin2][ibin1] = fit.kernel.GetMean()
                 self.nominal_sigmas[ibin2][ibin1] = fit.kernel.GetSigma()
 
-    def __define_cutvariation_limits(self):  # pylint: disable=too-many-statements
+    def __define_cutvariation_limits(self): 
         """obtain ML WP limits (lower/upper) keeping required efficiency variation
 
         This runs a MultiProcesser and an Analyzer both derived from the nominal

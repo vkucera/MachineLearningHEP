@@ -51,20 +51,19 @@ from .utilities_files import appendmainfoldertolist, create_folder_struc, create
 pd.options.mode.chained_assignment = None
 
 
-class Processer:  # pylint: disable=too-many-instance-attributes
+class Processer:
     # Class Attribute
     species = "processer"
     logger = get_logger()
 
     # Initializer / Instance Attributes
-    # pylint: disable=too-many-statements, too-many-arguments, consider-using-f-string
     def __init__(
         self,
         case,
         datap,
         run_param,
         mcordata,
-        p_maxfiles,  # pylint: disable=too-many-branches
+        p_maxfiles,
         d_root,
         d_pkl,
         d_pklsk,
@@ -365,7 +364,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
             self.datap["analysis"][self.typean],
         )
 
-    def unpack(self, file_index, max_no_keys=None):  # pylint: disable=too-many-branches, too-many-locals
+    def unpack(self, file_index, max_no_keys=None):
         def dfread(rdir, trees, cols, idx_name=None):
             """Read DF from multiple (joinable) O2 tables"""
             try:
@@ -379,7 +378,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                         data = tree.arrays(expressions=col, library="np")
                         dfnew = pd.DataFrame(columns=col, data=data)
                         df = pd.concat([df, dfnew], axis=1)
-                    except Exception as e:  # pylint: disable=broad-except
+                    except Exception as e:
                         tree.show(name_width=50)
                         self.logger.critical("Failed to read data frame from tree %s: %s", tree.name, str(e))
                         sys.exit()
@@ -556,7 +555,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
             if self.p_mask_values:
                 mask_df(dfrecosk, self.p_mask_values)
             if self.doml is True:
-                from machine_learning_hep.models import apply  # pylint: disable=import-error, import-outside-toplevel
+                from machine_learning_hep.models import apply
 
                 if os.path.isfile(self.lpt_model[ipt]) is False:
                     print("Model file not present in bin %d" % ipt)
@@ -707,7 +706,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
-        self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp)  # pylint: disable=no-member
+        self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp)
         with tempfile.TemporaryDirectory() as tmp_merged_dir:
             mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged_dir)
 
@@ -723,6 +722,6 @@ class Processer:  # pylint: disable=too-many-instance-attributes
 
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
-        self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp)  # pylint: disable=no-member
+        self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp)
         with tempfile.TemporaryDirectory() as tmp_merged_dir:
             mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged_dir)

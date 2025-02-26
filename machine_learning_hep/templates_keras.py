@@ -67,7 +67,7 @@ def keras_classifier_bayesian_space():
     }
 
 
-class KerasClassifierBayesianOpt(BayesianOpt):  # pylint: disable=too-many-instance-attributes
+class KerasClassifierBayesianOpt(BayesianOpt):
     def __init__(self, model_config, space, input_length):
         super().__init__(model_config, space)
         self.input_length = input_length

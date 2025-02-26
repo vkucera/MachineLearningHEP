@@ -68,7 +68,7 @@ def vardistplot_probscan(
     dataframe_,
     mylistvariables_,
     modelname_,
-    thresharray_,  # pylint: disable=too-many-statements
+    thresharray_,
     output_,
     suffix_,
     opt=1,
@@ -144,7 +144,7 @@ def efficiency_cutscan(
     dataframe_,
     mylistvariables_,
     modelname_,
-    threshold,  # pylint: disable=too-many-statements
+    threshold,
     output_,
     suffix_,
     plot_options_=None,
@@ -225,7 +225,7 @@ def efficiency_cutscan(
     plt.close(figure)
 
 
-def picklesize_cutscan(dataframe_, mylistvariables_, output_, suffix_, plot_options_=None):  # pylint: disable=too-many-statements
+def picklesize_cutscan(dataframe_, mylistvariables_, output_, suffix_, plot_options_=None):
     plot_type_name = "picklesize_cut_scan"
     plot_options = {}
     if isinstance(plot_options_, dict):
@@ -294,7 +294,7 @@ def picklesize_cutscan(dataframe_, mylistvariables_, output_, suffix_, plot_opti
 
 
 def scatterplot(dfs_input_, mylistvariablesx_, mylistvariablesy_, output_, binmin, binmax):
-    figurecorr = plt.figure(figsize=(30, 20))  # pylint: disable=unused-variable
+    figurecorr = plt.figure(figsize=(30, 20))
     for ind, (var_x, var_y) in enumerate(zip(mylistvariablesx_, mylistvariablesy_), start=1):
         axcorr = plt.subplot(3, int(len(mylistvariablesx_) / 3 + 1), ind)
         plt.xlabel(var_x, fontsize=11)

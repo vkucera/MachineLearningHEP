@@ -24,7 +24,6 @@ from machine_learning_hep.utilities import dfquery, read_df
 from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist, get_axis, get_range, project_hist
 
 
-# pylint: disable=too-many-instance-attributes, too-many-statements
 class ProcesserJets(Processer):
     species = "processer"
 
@@ -34,7 +33,7 @@ class ProcesserJets(Processer):
         datap,
         run_param,
         mcordata,
-        p_maxfiles,  # pylint: disable=too-many-arguments
+        p_maxfiles,
         d_root,
         d_pkl,
         d_pklsk,
@@ -130,7 +129,6 @@ class ProcesserJets(Processer):
         self.binarrays_ptjet["det"]["fPt"] = np.asarray(self.cfg("bins_ptjet_eff"), "d")
 
     # region observables
-    # pylint: disable=invalid-name
     def _verify_variables(self, dfi):
         """
         Explicit (slow) implementation, use for reference/validation only
@@ -159,7 +157,7 @@ class ProcesserJets(Processer):
                 print(df[~mask][var], flush=True)
                 print(dfi[~mask][var], flush=True)
 
-    def _calculate_variables(self, df, verify=False):  # pylint: disable=invalid-name
+    def _calculate_variables(self, df, verify=False):
         self.logger.info("calculating variables")
         if len(df) == 0:
             df["nsub21"] = None
@@ -218,7 +216,6 @@ class ProcesserJets(Processer):
         return dfi[mask], dfi[~mask]
 
     # region histomass
-    # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         self.logger.info("Processing (histomass) %s", self.l_evtorig[index])
 
@@ -319,7 +316,6 @@ class ProcesserJets(Processer):
     # - priors (reweight response matrix)
 
     # region efficiency
-    # pylint: disable=too-many-branches,too-many-statements,too-many-locals
     def process_efficiency_single(self, index):
         self.logger.info("Processing (efficiency) %s", self.l_evtorig[index])
 
@@ -527,7 +523,7 @@ class ProcesserJets(Processer):
             ):
                 try:
                     rfile.WriteObject(obj, obj.GetName())
-                except Exception as ex:  # pylint: disable=broad-exception-caught
+                except Exception as ex:
                     self.logger.error("Writing of <%s> (%s) failed: %s", name, str(obj), str(ex))
 
     def _explode_arraycols(self, df: pd.DataFrame, arraycols: "list[str]") -> pd.DataFrame:
