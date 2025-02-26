@@ -553,10 +553,10 @@ class BayesianOpt:
         ax.set_ylabel("parameters", fontsize=20)
         ax.set_xlabel(self.scoring_opt, fontsize=20)
 
-        fig.suptitle(f"Parameter - Score dependence", fontsize=35)
+        fig.suptitle("Parameter - Score dependence", fontsize=35)
 
         fig.tight_layout()
-        out_file = join(out_dir, f"par_score_dependence.png")
+        out_file = join(out_dir, "par_score_dependence.png")
         fig.savefig(out_file)
         plt.close(fig)
 

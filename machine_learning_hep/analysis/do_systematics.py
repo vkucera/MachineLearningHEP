@@ -15,7 +15,6 @@ Calculate and plot systematic uncertainties
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
-
 import argparse
 import logging
 import os
