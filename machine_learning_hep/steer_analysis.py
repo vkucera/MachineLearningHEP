@@ -23,7 +23,6 @@ import sys
 
 # unclear why shap needs to be imported from here,
 # segfaults when imported from within other modules
-import shap
 import yaml
 
 from .analysis.analyzer_manager import AnalyzerManager

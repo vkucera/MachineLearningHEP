@@ -74,7 +74,7 @@ def draw(fitter, save_name, **kwargs):
     #      any circumstances and ignore any reason for which a fit could not
     #      be drawn.
     except Exception as e:
-        print(f"Could not draw fit")
+        print("Could not draw fit")
         print(fitter)
         print(e)
     c.SaveAs(save_name)

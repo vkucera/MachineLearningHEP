@@ -21,23 +21,13 @@ from array import array
 from pathlib import Path
 
 import numpy as np
-
 from ROOT import (
     TF1,
     TH1,
     TH1F,
-    TH2F,
-    TArrow,
     TCanvas,
-    TDirectory,
     TFile,
     TLegend,
-    TLine,
-    TPad,
-    TPaveLabel,
-    TPaveText,
-    TText,
-    gInterpreter,
     gPad,
     gROOT,
     gStyle,
@@ -59,7 +49,6 @@ from machine_learning_hep.fitting.roofitter import (
 from machine_learning_hep.hf_pt_spectrum import hf_pt_spectrum
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utils.hist import get_dim, project_hist
-
 
 
 class AnalyzerDhadrons(Analyzer):

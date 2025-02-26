@@ -15,7 +15,6 @@ Script to run the analysis with variations of the database parameters
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
-
 import argparse
 import datetime
 import os

@@ -19,7 +19,7 @@ main script for doing final stage analysis
 from array import *
 
 import yaml
-from ROOT import TH1F, TCanvas, TFile, TLegend, TStyle, gROOT, gStyle
+from ROOT import TCanvas, TFile, TLegend, gROOT, gStyle
 
 
 def ratio(imult):

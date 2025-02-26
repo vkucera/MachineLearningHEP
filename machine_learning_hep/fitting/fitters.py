@@ -17,7 +17,6 @@ Definition of FitterBase, Fitter and SystFitter classes
 Definition of FitBase, FitAliHF, FitROOT classes
 """
 
-
 from array import array
 from copy import deepcopy
 from ctypes import c_double
@@ -1180,7 +1179,7 @@ class FitSystAliHF(FitROOT):
 
         # Create histograms for fit and bin count yield to be plotted in the end
         h_raw_yield_all_bc0 = TH1F(
-            f"hRawYieldAllBC0",
+            "hRawYieldAllBC0",
             " ; Trial # ; raw yield BC0",
             tot_trials_bc0 * n_bc_ranges,
             0.0,
@@ -1188,7 +1187,7 @@ class FitSystAliHF(FitROOT):
         )
 
         h_raw_yield_all_bc1 = TH1F(
-            f"hRawYieldAllBC1",
+            "hRawYieldAllBC1",
             " ; Trial # ; raw yield BC1",
             tot_trials_bc1 * n_bc_ranges,
             0.0,

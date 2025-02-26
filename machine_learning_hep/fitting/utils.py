@@ -24,6 +24,7 @@ Providing and storing fitters
 import inspect
 from math import ceil
 from os.path import join
+
 from ROOT import TFile
 
 from machine_learning_hep.io import checkdir, dump_yaml_from_dict, parse_yaml

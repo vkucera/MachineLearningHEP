@@ -21,7 +21,6 @@ from glob import glob
 
 import pandas as pd
 import yaml
-from lz4 import frame
 from ROOT import TH1F, TH2F, TFile
 from root_numpy import fill_hist
 
@@ -371,7 +370,7 @@ def fill_from_pickles(
     for hp, qu in zip(histo_params, queries):
         n_cols = len(hp[0])
         if n_cols > 2:
-            print(f"ERROR: Cannot handle plots with dimension > 2")
+            print("ERROR: Cannot handle plots with dimension > 2")
             sys.exit(1)
         histo_func = TH1F if n_cols == 1 else TH2F
 

@@ -15,7 +15,6 @@ Script for plotting figures of the Run 3 HF-jet substructure analyses
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
-
 import argparse
 import logging
 import os

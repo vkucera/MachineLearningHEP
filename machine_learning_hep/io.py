@@ -55,7 +55,7 @@ def parse_yaml(filepath):
     """
     if not os.path.isfile(filepath):
         get_logger().critical("YAML file %s does not exist.", filepath)
-    with open(filepath, "r", encoding="utf-8") as f:
+    with open(filepath, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 

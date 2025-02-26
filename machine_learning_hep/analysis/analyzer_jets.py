@@ -45,7 +45,6 @@ from machine_learning_hep.utils.hist import (
 )
 
 
-
 def string_range_ptjet(range_pt):
     return f"ptjet-{range_pt[0]:g}-{range_pt[1]:g}"
 

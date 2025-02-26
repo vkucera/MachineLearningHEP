@@ -123,7 +123,7 @@ class SystematicsMLWP:
                 self.nominal_means[ibin2][ibin1] = fit.kernel.GetMean()
                 self.nominal_sigmas[ibin2][ibin1] = fit.kernel.GetSigma()
 
-    def __define_cutvariation_limits(self): 
+    def __define_cutvariation_limits(self):
         """obtain ML WP limits (lower/upper) keeping required efficiency variation
 
         This runs a MultiProcesser and an Analyzer both derived from the nominal

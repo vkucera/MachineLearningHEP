@@ -74,7 +74,6 @@ from ROOT import (
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.selectionutils import select_runs
 
-
 logger = get_logger()
 
 
