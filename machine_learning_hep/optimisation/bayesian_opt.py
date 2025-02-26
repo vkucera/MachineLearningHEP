@@ -23,10 +23,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from hyperopt import STATUS_OK, fmin, tpe
 from matplotlib.lines import Line2D
+from shap.plots.colors import red_blue as shap_cmap_red_blue
 from sklearn.model_selection import cross_validate
 from yaml.representer import RepresenterError
 
-# from shap.plots.colors import red_blue as shap_cmap_red_blue
 from machine_learning_hep.io import dict_yamlable, dump_yaml_from_dict, parse_yaml
 
 # Change to that backend to not have problems with saving fgures
