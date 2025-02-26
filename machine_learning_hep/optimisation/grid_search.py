@@ -86,7 +86,6 @@ def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, ou
         savemodels((clf_name,), (grid_search.best_estimator_,), out_dir, "")
 
 
-# pylint: disable=too-many-locals, too-many-statements
 def perform_plot_gridsearch(names, out_dirs):
     """
     Function for grid scores plotting (working with scikit 0.20)

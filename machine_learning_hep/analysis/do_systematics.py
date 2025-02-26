@@ -806,10 +806,10 @@ class AnalyzerJetSystematics:
                     error = 0.0
                     for sys_var in range(self.systematic_variations[sys_cat]):
                         out_sys = False
-                        # FIXME exception for the untagged bin pylint: disable=fixme
+                        # FIXME exception for the untagged bin
                         bin_first = 1
                         # bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
-                        # FIXME exception for the untagged bin pylint: disable=fixme
+                        # FIXME exception for the untagged bin
                         if input_histograms_sys[iptjet][sys_cat][sys_var].Integral() == 0:
                             error = 0.0
                             out_sys = True

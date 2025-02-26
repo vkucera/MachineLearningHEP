@@ -20,7 +20,7 @@ from ctypes import c_double
 from glob import glob
 from os.path import join
 
-from ROOT import TF1, TH1F, TCanvas, TFile, gStyle  # pylint: disable=import-error, no-name-in-module
+from ROOT import TF1, TH1F, TCanvas, TFile, gStyle
 
 from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss, FitSystAliHF
 from machine_learning_hep.fitting.utils import load_fit, save_fit
@@ -29,7 +29,7 @@ from machine_learning_hep.utilities import make_file_path
 from machine_learning_hep.utilities_plot import plot_histograms
 
 
-class MLFitParsFactory:  # pylint: disable=too-many-instance-attributes
+class MLFitParsFactory:
     """
     Managing MLHEP specific fit parameters and is used to collect and retrieve all information
     required to initialise a (systematic) fit
@@ -38,7 +38,7 @@ class MLFitParsFactory:  # pylint: disable=too-many-instance-attributes
     SIG_FUNC_MAP = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
     BKG_FUNC_MAP = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
 
-    def __init__(self, database: dict, ana_type: str, file_data_name: str, file_mc_name: str):  # pylint: disable=too-many-branches
+    def __init__(self, database: dict, ana_type: str, file_data_name: str, file_mc_name: str):
         """
         Initialize MLFitParsFactory
         Args:
@@ -451,7 +451,7 @@ class MLFitParsFactory:  # pylint: disable=too-many-instance-attributes
                 yield ibin1, ibin2, self.get_syst_pars(ibin1, ibin2)
 
 
-class MLFitter:  # pylint: disable=too-many-instance-attributes
+class MLFitter:
     """
     Wrapper around all available fits insatntiated and used in an MLHEP analysis run.
     """
@@ -829,7 +829,7 @@ class MLFitter:  # pylint: disable=too-many-instance-attributes
             bins2.append(ibin2)
         return bins2
 
-    def draw_fits(self, save_dir, root_dir=None):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+    def draw_fits(self, save_dir, root_dir=None):
         """
         Draw all fits one-by-one
         Args:
@@ -1143,7 +1143,7 @@ class MLFitter:  # pylint: disable=too-many-instance-attributes
             save_name,
         )
 
-    def draw_syst(self, save_dir, results_dir, root_dir=None):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+    def draw_syst(self, save_dir, results_dir, root_dir=None):
         """Draw all fits one-by-one
 
         Args:

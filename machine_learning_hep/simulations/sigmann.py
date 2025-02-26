@@ -13,8 +13,8 @@
 #############################################################################
 from array import array
 
-import ROOT  # pylint: disable=import-error,no-name-in-module
-from ROOT import (  # pylint: disable=import-error,no-name-in-module  # pylint: disable=import-error,no-name-in-module
+import ROOT
+from ROOT import (
     TF1,
     TCanvas,
     TFile,
@@ -26,7 +26,6 @@ from ROOT import (  # pylint: disable=import-error,no-name-in-module  # pylint: 
 )
 
 gROOT.SetBatch(True)
-# pylint: disable=invalid-name
 
 energy = [
     0.20,

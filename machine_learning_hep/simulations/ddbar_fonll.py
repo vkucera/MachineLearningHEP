@@ -19,12 +19,11 @@ preliminary studies for cross section estimation
 from array import array
 
 import pandas as pd
-from ROOT import TH1F, TCanvas, TLatex, gPad, gROOT  # pylint: disable=import-error,no-name-in-module
+from ROOT import TH1F, TCanvas, TLatex, gPad, gROOT
 
 from machine_learning_hep.utilities import draw_latex, setup_histogram
 from machine_learning_hep.utilities_plot import load_root_style
 
-# pylint: disable=invalid-name
 p_fonllband = "max"
 ptmin = 0
 ptmax = 30

@@ -34,7 +34,7 @@ from machine_learning_hep.io import dict_yamlable, dump_yaml_from_dict, parse_ya
 matplotlib.use("agg")
 
 
-class BayesianOpt:  # pylint: disable=too-many-instance-attributes
+class BayesianOpt:
     """Base/utilitiy class for Bayesian model optimisation
 
     This class utilises the hyperopt package to perform Bayesian model optimisation independent
@@ -128,7 +128,7 @@ class BayesianOpt:  # pylint: disable=too-many-instance-attributes
         self.best_scores = None
         self.trial_id = 0
 
-    def yield_model_(self, model_config, space):  # pylint: disable=unused-argument, useless-return, no-self-use
+    def yield_model_(self, model_config, space):
         """Yield next model
 
         Next model constructed from space. To be overwritten for concrete implementation
@@ -176,7 +176,7 @@ class BayesianOpt:  # pylint: disable=too-many-instance-attributes
         if self.yield_model_custom:
             model, params = self.yield_model_custom(self.model_config, space_drawn)
         else:
-            model, params = self.yield_model_(self.model_config, space_drawn)  # pylint: disable=assignment-from-none
+            model, params = self.yield_model_(self.model_config, space_drawn)
 
         # Collect parameters
         # self.params.append(params)
@@ -211,7 +211,7 @@ class BayesianOpt:  # pylint: disable=too-many-instance-attributes
         # Collect results
         res_tmp = {}
         for t in ("train", "test"):
-            for sc in self.scoring:  # pylint: disable=not-an-iterable
+            for sc in self.scoring:
                 res_tmp[f"{t}_{sc}"] = float(np.mean(res[f"{t}_{sc}"]))
                 res_tmp[f"{t}_{sc}_std"] = float(np.std(res[f"{t}_{sc}"]))
         self.results.append(res_tmp)
@@ -312,7 +312,7 @@ class BayesianOpt:  # pylint: disable=too-many-instance-attributes
             "score_opt_name": self.scoring_opt,
         }
 
-    def save_model_(self, model, out_dir):  # pylint: disable=unused-argument, no-self-use
+    def save_model_(self, model, out_dir):
         """Save a model
 
         Routine to save a model, to be implemented for concrete model
@@ -331,7 +331,7 @@ class BayesianOpt:  # pylint: disable=too-many-instance-attributes
 
         try:
             pickle.dump(results, open(join(out_dir, "results.pkl"), "wb"))
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             print("Cannot pickle optimisation results")
 
         save_func = self.save_model_
@@ -346,7 +346,7 @@ class BayesianOpt:  # pylint: disable=too-many-instance-attributes
                 out_dir_model = join(out_dir, f"model_{i}")
                 save_func(m, out_dir_model)
 
-    def __extract_param_evolution(self):  # pylint: disable=too-many-branches
+    def __extract_param_evolution(self):
         def __extract_branches(search, branch_list, __branch=None):
             """helper function to collect all branches in dictionary
 
@@ -613,7 +613,7 @@ class BayesianOpt:  # pylint: disable=too-many-instance-attributes
             fig.savefig(out_file)
             plt.close(fig)
 
-    def __plot_summary(self, out_dir, from_yaml=None, from_pickle=None):  # pylint: disable=too-many-statements
+    def __plot_summary(self, out_dir, from_yaml=None, from_pickle=None):
         """Plot results
 
         Results are plotted to out_dir/results.png
