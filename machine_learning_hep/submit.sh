@@ -5,13 +5,13 @@
 # Analysis stage
 
 # STAGE="all_off"        # all steps disabled
-STAGE="full_analysis"    # stage preprocess + stage analysis (requires train output in "(data|mc)/prefix_dir")
+# STAGE="full_analysis"    # stage preprocess + stage analysis (requires train output in "(data|mc)/prefix_dir")
 # STAGE="preprocess"     # conversion, skimming (requires train output in "(data|mc)/prefix_dir")
 # STAGE="data"           # stage preprocess: data (requires train output in "data/prefix_dir")
 # STAGE="mc"             # stage preprocess: mc (requires train output in "mc/prefix_dir")
 # STAGE="mltrain"        # ml_study
 # STAGE="mlapp"          # mlapplication
-# STAGE="analysis"       # stage processor + stage analyzer (requires stage preprocess done)
+STAGE="analysis"       # stage processor + stage analyzer (requires stage preprocess done)
 # STAGE="processor"      # analysis/(data|mc)/(histomass|efficiency) (requires stage preprocess done)
 # STAGE="analyzer"       # analysis/steps (requires stage processor done)
 # STAGE="variations"     # run analysis variations (requires stage analyzer done)
