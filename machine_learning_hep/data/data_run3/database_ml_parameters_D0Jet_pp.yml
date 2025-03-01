@@ -732,28 +732,28 @@ D0Jet_pp:
                     arraycols: [3]
                 lntheta-lnkt:
                     arraycols: [3, 4]
-                # new variables
-                fEnergyMother:
-                    bins_gen_fix: [1, 0., 100.]
-                    bins_det_fix: [1, 0., 100.]
-                    arraycols: [3]
-                # lntheta-lnkt-fEnergyMother:
-                #     arraycols: [3, 4, 5]
-                fJetNConstituents:
-                    bins_gen_fix: [5, 0., 20.]
-                    bins_det_fix: [5, 0., 20.]
-                zpar-fJetNConstituents: {}
-                nsub21:
-                    # TODO: check for 1-track jets
-                    bins_gen_fix: [11, -1., 1.]
-                    bins_det_fix: [11, -1., 1.]
-                eecweight:
-                    # TODO: adjust binning
-                    bins_gen_fix: [10, 0., 1.]
-                    bins_det_fix: [10, 0., 1.]
-                    arraycols: [3]
-                fPairTheta-eecweight:
-                    arraycols: [3, 4]
+                # # new variables
+                # fEnergyMother:
+                #     bins_gen_fix: [1, 0., 100.]
+                #     bins_det_fix: [1, 0., 100.]
+                #     arraycols: [3]
+                # # lntheta-lnkt-fEnergyMother:
+                # #     arraycols: [3, 4, 5]
+                # fJetNConstituents:
+                #     bins_gen_fix: [5, 0., 20.]
+                #     bins_det_fix: [5, 0., 20.]
+                # zpar-fJetNConstituents: {}
+                # nsub21:
+                #     # TODO: check for 1-track jets
+                #     bins_gen_fix: [11, -1., 1.]
+                #     bins_det_fix: [11, -1., 1.]
+                # eecweight:
+                #     # TODO: adjust binning
+                #     bins_gen_fix: [10, 0., 1.]
+                #     bins_det_fix: [10, 0., 1.]
+                #     arraycols: [3]
+                # fPairTheta-eecweight:
+                #     arraycols: [3, 4]
 
             data_selections:
                 mcsig:
