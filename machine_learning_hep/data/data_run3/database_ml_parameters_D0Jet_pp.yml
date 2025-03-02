@@ -1149,15 +1149,15 @@ D0Jet_pp:
             data: &data_out_default
                 runselection: [null] #FIXME # used but useless
                 results: [
-                        "/home/${USER}/mlhep/d0jet/jet_obs_before/default/default/data/results",
+                        "/home/${USER}/mlhep/d0jet/jet_obs_after_edit_1/default/default/data/results",
                     ] #list of periods
-                resultsallp: "/home/${USER}/mlhep/d0jet/jet_obs_before/default/default/data/results_all"
+                resultsallp: "/home/${USER}/mlhep/d0jet/jet_obs_after_edit_1/default/default/data/results_all"
             mc: &mc_out_default
                 runselection: [null] #FIXME # used but useless
                 results: [
-                        "/home/${USER}/mlhep/d0jet/jet_obs_before/default/default/mc/results",
+                        "/home/${USER}/mlhep/d0jet/jet_obs_after_edit_1/default/default/mc/results",
                     ] #list of periods
-                resultsallp: "/home/${USER}/mlhep/d0jet/jet_obs_before/default/default/mc/results_all"
+                resultsallp: "/home/${USER}/mlhep/d0jet/jet_obs_after_edit_1/default/default/mc/results_all"
             data_proc: # alternative processor output used as the analyzer input
                 <<: *data_out_default
             mc_proc: # alternative processor output used as the analyzer input
