@@ -343,7 +343,7 @@ class ProcesserJets(Processer):
             # TODO: avoid hard-coding values here (check if restriction is needed at all)
             cols = None if not self.cfg('hfjet', True) else ['ismcprompt', 'ismcsignal', 'ismcfd',
                     'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi', 'fPtLeading', 'fPtSubLeading', 'fTheta',
-                    'fNSub2DR', 'fNSub1', 'fNSub2', 'fJetNConstituents', 'fEnergyMother', 'fPairTheta', 'fPairPt']
+                    'fNSub2DR', 'fNSub1', 'fNSub2']
 
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
