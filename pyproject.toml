@@ -226,9 +226,13 @@ logging-modules = ["logging"]
 # Valid levels: HIGH, CONTROL_FLOW, INFERENCE, INFERENCE_FAILURE, UNDEFINED.
 confidence = ["HIGH", "CONTROL_FLOW", "INFERENCE", "INFERENCE_FAILURE", "UNDEFINED"]
 
-disable = ["raw-checker-failed", "bad-inline-option", "locally-disabled", "file-ignored", "suppressed-message", "useless-suppression", "deprecated-pragma", "use-symbolic-message-instead", "missing-module-docstring", "missing-class-docstring", "missing-function-docstring"]
+disable = [
+  "too-few-public-methods", "too-many-arguments", "too-many-branches", "too-many-instance-attributes",
+  "too-many-lines", "too-many-locals", "too-many-nested-blocks", "too-many-public-methods",
+  "too-many-return-statements", "too-many-statements"
+]
 
-enable = ["c-extension-no-member"]
+enable = ["useless-suppression"]
 
 [tool.pylint.miscellaneous]
 # List of note tags to take in consideration, separated by a comma.
