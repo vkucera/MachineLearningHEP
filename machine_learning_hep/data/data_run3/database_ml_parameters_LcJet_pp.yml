@@ -358,21 +358,21 @@ LcJet_pp:
       branching_ratio: 6.24e-2 # used
 
       observables:
-        zg:
-          bins_gen_fix: [6, -.1, .5]
-          bins_det_fix: [6, -.1, .5]
-          label: "#it{z}_{g}"
-          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{g}"
-        nsd:
-          bins_gen_fix: [10, -.5, 9.5]
-          bins_det_fix: [10, -.5, 9.5]
-          label: "#it{n}_{SD}"
-          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{n}_{SD}"
-        rg:
-          bins_gen_fix: [11, -.1, 1.]
-          bins_det_fix: [11, -.1, 1.]
-          label: "#it{R}_{g}"
-          label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{R}_{g}"
+        # zg:
+        #   bins_gen_fix: [6, -.1, .5]
+        #   bins_det_fix: [6, -.1, .5]
+        #   label: "#it{z}_{g}"
+        #   label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{g}"
+        # nsd:
+        #   bins_gen_fix: [10, -.5, 9.5]
+        #   bins_det_fix: [10, -.5, 9.5]
+        #   label: "#it{n}_{SD}"
+        #   label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{n}_{SD}"
+        # rg:
+        #   bins_gen_fix: [11, -.1, 1.]
+        #   bins_det_fix: [11, -.1, 1.]
+        #   label: "#it{R}_{g}"
+        #   label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{R}_{g}"
         zpar:
           # bins_gen_fix: [10, 0., 1.]
           # bins_det_fix: [10, 0., 1.]
@@ -380,22 +380,22 @@ LcJet_pp:
           bins_det_var: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.]
           label: "#it{z}_{#parallel}"
           label_y: "(1/#it{N}_{jet ch}) d#it{N}/d#it{z}_{#parallel}"
-        dr:
-          bins_gen_fix: [10, 0., 1.]
-          bins_det_fix: [10, 0., 1.]
-          label: "#Delta#it{r}"
-        lntheta:
-          bins_gen_fix: [10, 0., 5.]
-          bins_det_fix: [10, 0., 5.]
-          label: "#minusln(#it{#theta})"
-          arraycols: [3]
-        lnkt:
-          bins_gen_fix: [10, -8., 2.]
-          bins_det_fix: [10, -8., 2.]
-          label: "ln(#it{k}_{T}/(GeV/#it{c}))"
-          arraycols: [3]
-        lntheta-lnkt:
-          arraycols: [3, 4]
+          # dr:
+          #   bins_gen_fix: [10, 0., 1.]
+          #   bins_det_fix: [10, 0., 1.]
+          #   label: "#Delta#it{r}"
+          # lntheta:
+          #   bins_gen_fix: [10, 0., 5.]
+          #   bins_det_fix: [10, 0., 5.]
+          #   label: "#minusln(#it{#theta})"
+          #   arraycols: [3]
+          # lnkt:
+          #   bins_gen_fix: [10, -8., 2.]
+          #   bins_det_fix: [10, -8., 2.]
+          #   label: "ln(#it{k}_{T}/(GeV/#it{c}))"
+          #   arraycols: [3]
+          # lntheta-lnkt:
+          #   arraycols: [3, 4]
 
       #n_rebin: [4,4,5,5,6,6,7,7,9,9]
       pdf_names:
@@ -490,7 +490,6 @@ LcJet_pp:
         #reweight: [[0.86,0.89], [0.89,0.91], [0.90,0.93], [0.92,0.93], [0.93,0.93], [0.94,0.93], [0.95,0.93], [0.95,0.94], [0.95,0.94], [0.95,0.94]] #70-100
         #reweight: [[1.03,1.05], [1.02,1.04], [1.02,1.04], [1.02,1.04], [1.01,1.03], [1.01,1.03], [1.01,1.03], [1.01,1.03], [1.00,1.03], [1.01,1.02]] #20-70
         #reweight: [[1.15,1.16], [1.11,1.13], [1.10,1.10], [1.08,1.10], [1.07,1.10], [1.06,1.09], [1.06,1.08], [1.05,1.08], [1.05,1.08], [1.05,1.08]] #0-20
-
 
       unfolding_iterations: 8 # used, maximum iteration
       unfolding_iterations_sel: 5 # used, selected iteration # systematics
