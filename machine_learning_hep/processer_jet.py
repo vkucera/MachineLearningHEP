@@ -195,7 +195,7 @@ class ProcesserJets(Processer):
 
         if "eecweight" in observables:
             self.logger.debug("EEC")
-            df["eecweight"] = df[["fPairPt", "fJetPt"]].apply((lambda ar: ar.fPairPt / ar.fJetPt**2), axis=1)
+            df["eecweight"] = df[["fPairJetPt", "fJetPt"]].apply((lambda ar: ar.fPairJetPt / ar.fJetPt**2), axis=1)
 
         if self.cfg("hfjet", True):
             if "dr" in observables:
@@ -237,17 +237,21 @@ class ProcesserJets(Processer):
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
             if self.l_collcnt:
                 dfcollcnt = read_df(self.l_collcnt[index])
+                def counter_sum(series):
+                    return sum(float(ar[0]) if hasattr(ar, "__getitem__") else float(ar) for ar in series)
                 ser_collcnt = dfcollcnt[self.cfg(f"counter_read_{self.mcordata}")]
-                collcnt_read = functools.reduce(lambda x, y: float(x) + float(y), (ar[0] for ar in ser_collcnt))
+                collcnt_read = counter_sum(ser_collcnt)
                 self.logger.info("sampled %g collisions", collcnt_read)
                 histonorm.SetBinContent(2, collcnt_read)
                 ser_collcnt = dfcollcnt[self.cfg("counter_tvx")]
-                collcnt_tvx = functools.reduce(lambda x, y: float(x) + float(y), (ar[0] for ar in ser_collcnt))
+                collcnt_tvx = counter_sum(ser_collcnt)
                 histonorm.SetBinContent(3, collcnt_tvx)
             if self.l_bccnt:
                 dfbccnt = read_df(self.l_bccnt[index])
                 ser_bccnt = dfbccnt[self.cfg("counter_tvx")]
-                bccnt_tvx = functools.reduce(lambda x, y: float(x) + float(y), (ar[0] for ar in ser_bccnt))
+                def counter_sum(series):
+                    return sum(float(ar[0]) if hasattr(ar, "__getitem__") else float(ar) for ar in series)
+                bccnt_tvx = counter_sum(ser_bccnt)
                 histonorm.SetBinContent(4, bccnt_tvx)
             get_axis(histonorm, 0).SetBinLabel(1, "N_{evt}")
             get_axis(histonorm, 0).SetBinLabel(2, "N_{coll}")
@@ -261,7 +265,15 @@ class ProcesserJets(Processer):
             df = df.loc[(df.fPt >= min(self.bins_analysis[:, 0])) & (df.fPt < max(self.bins_analysis[:, 1]))]
 
             # Custom skimming cuts
+            self.logger.warning("columns before cuts: %s", list(df.columns))
+            self.logger.warning("shape before cuts: %s", df.shape)
+            if "mlBkgScore" not in df.columns:
+                self.logger.error("missing mlBkgScore for index=%s", index)
+                self.logger.error("input files: %s", [self.mptfiles_recosk[bin][index] for bin in self.active_bins_skim])
+                return
+            self.logger.warning('applying cuts!!!!!!!!!!!!!!!!')
             df = self.apply_cuts_all_ptbins(df)
+            self.logger.warning('cuts applied!!!!!!!!!!!!!!!!')
 
             if col_evtidx := self.cfg("cand_collidx"):
                 h = create_hist("h_ncand", ";N_{cand}", 20, 0.0, 20.0)
@@ -433,8 +445,8 @@ class ProcesserJets(Processer):
                     "fNSub2",
                     "fJetNConstituents",
                     "fEnergyMother",
-                    "fPairTheta",
-                    "fPairPt",
+                    "fPairJetTheta",
+                    "fPairJetPt",
                 ]
             )
             cols = None
@@ -446,6 +458,20 @@ class ProcesserJets(Processer):
             df = self._calculate_variables(dfgen_orig)
             df = df.rename(lambda name: name + "_gen", axis=1)
             if self.cfg("hfjet", True):
+                required_cols = ["ismcsignal_gen", "ismcprompt_gen", "ismcfd_gen"]
+
+                if df.empty:
+                    self.logger.warning("Skipping empty response dataframe")
+                    return
+
+                missing = [c for c in required_cols if c not in df.columns]
+
+                if missing:
+                    self.logger.error("Skipping response dataframe because missing columns: %s", missing)
+                    self.logger.error("columns: %s", df.columns.tolist())
+                    self.logger.error("shape: %s", df.shape)
+                    return
+
                 dfgen = {
                     "pr": df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
                     "np": df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)],
@@ -461,7 +487,9 @@ class ProcesserJets(Processer):
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index], columns=cols) for bin in self.active_bins_skim)
 
             # Custom skimming cuts
+            self.logger.warning('applying cuts!!!!!!!!!!!!!!!!')
             df = self.apply_cuts_all_ptbins(df)
+            self.logger.warning('cuts applied!!!!!!!!!!!!!!!!')
 
             dfquery(df, self.cfg("efficiency.filter_det"), inplace=True)
             if idx := self.cfg("efficiency.index_match"):
