@@ -243,6 +243,9 @@ def mergerootfiles(listfiles, mergedfile, tmp_dir):
     Using ROOT's 'hadd' utility, to merge output rootfiles from analyses steps
     """
 
+    if len(listfiles) == 0:
+        raise ValueError("Empty list of files to merge.")
+
     def divide_chunks(list_to_split, chunk_size):
         for i in range(0, len(list_to_split), chunk_size):
             yield list_to_split[i : i + chunk_size]
@@ -267,7 +270,7 @@ def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
     """
     chunks = [argument_list[x : x + maxperchunk] for x in range(0, len(argument_list), maxperchunk)]
     for chunk in chunks:
-        print("Processing new chunck size=", maxperchunk)
+        print("Processing new chunk size=", maxperchunk)
         with mp.Pool(max_n_procs) as pool:
             _ = [pool.apply_async(function, args=chunk[i]) for i in range(len(chunk))]
             pool.close()
