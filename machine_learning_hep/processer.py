@@ -176,7 +176,9 @@ class Processer:  # pylint: disable=too-many-instance-attributes
         # self.v_rapy = datap["variables"].get("var_y", "y_cand")
 
         # list of files names
-        if os.path.isdir(self.d_root):
+        if self.d_root:
+            if not os.path.isdir(self.d_root):
+                self.logger.fatal("Directory %s does not exist.", self.d_root)
             self.l_path = list_folders(self.d_root, self.n_root, self.p_maxfiles, self.select_jobs)
         elif glob.glob(f"{self.d_pkl}/**/{self.n_reco}", recursive=True):
             self.l_path = list_folders(self.d_pkl, self.n_reco, self.p_maxfiles, self.select_jobs)
@@ -382,7 +384,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                     except Exception as e:  # pylint: disable=broad-except
                         tree.show(name_width=50)
                         self.logger.critical("Failed to read data frame from tree %s: %s", tree.name, str(e))
-                        sys.exit()
+                        sys.exit(1)
                 df["df"] = int(df_no)
                 if idx_name:
                     # df.rename_axis(idx_name, inplace=True)
