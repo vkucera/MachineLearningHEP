@@ -597,6 +597,7 @@ class Processer:  # pylint: disable=too-many-instance-attributes
                             hf_join=df_spec.get("hf_join"),
                         )
                         dfappend(df_name, df)
+                self.logger.debug("processed DF %d - %d / %d", df_no, idx, len(keys))
 
         for df_name, df_spec in self.df_read.items():
             if not dfuse(df_spec) or df_name not in dfs:
