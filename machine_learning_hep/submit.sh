@@ -54,7 +54,7 @@ elif [[ "${STAGE}" == "variations" ]]; then
 else
     echo "Log file: $LOG"
     CONFIG_FILE="${DIR_THIS}/submission/${STAGE}.yml"
-    CMD_ANA="mlhep -a ${ANALYSIS} -r ${CONFIG_FILE} -d ${DB_DEFAULT} -b --delete"
+    CMD_ANA="mlhep -a ${ANALYSIS} -r ${CONFIG_FILE} -d ${DB_DEFAULT} -b --delete --debug"
     ${CMD_ANA} > "${LOG}" 2>&1
 fi || echo "Error"
 
