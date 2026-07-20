@@ -565,10 +565,11 @@ def main():
 
         # Compare objects.
         if skip_comparison:
+            list_files = list(objects.keys())
             if common_only:
-                list_names = sorted(set(objects[0].keys()).intersection(objects[1].keys()))
+                list_names = sorted(set(objects[list_files[0]].keys()).intersection(objects[list_files[1]].keys()))
             else:
-                list_names = sorted(set(objects[0].keys()).union(objects[1].keys()))
+                list_names = sorted(set(objects[list_files[0]].keys()).union(objects[list_files[1]].keys()))
             dict_result = dict.fromkeys(list_names, True)
         else:
             same_structure, common_content, compared_all, same_content, dict_result = are_same_files(
