@@ -64,9 +64,9 @@ config: dict[str, dict[str, dict]] = {
         },
         "zpar": {
             "activate": 1,
-            "range": [0.0, 1.0],
+            "range": [0.4, 1.0],
             "label": "#it{z}_{#parallel}",
-            "leg": [0.15, 0.65, 0.4, 0.85],
+            "leg": [0.65, 0.65, 0.9, 0.85],
         },
     },
     "results": {
@@ -262,7 +262,7 @@ config: dict[str, dict[str, dict]] = {
             },
             "qm25_prv": {
                 "label": "QM25 preview",
-                "activate": 0,
+                "activate": 1,
                 "path_file": "/home/vkucera/mlhep/lcjet/jet_obs_nbkp/default/default/data/results_all/results.root",
                 "colour": 1,
                 "name_hist": {
@@ -271,10 +271,19 @@ config: dict[str, dict[str, dict]] = {
             },
             "qm25_pwg": {
                 "label": "QM25 PWG",
-                "activate": 1,
+                "activate": 0,
                 "path_file": "/home/ldellost/mlhep/lcjet_Crystal/jet_obs/"
                 "default/default/data/results_all_Jochen/results.root",
                 "colour": 2,
+                "name_hist": {
+                    "zpar": "h_zpar_sidesub_unfolded_data_ptjet-7-15_sel_selfnorm",
+                },
+            },
+            "current": {
+                "label": "current",
+                "activate": 1,
+                "path_file": "/home/vkucera/mlhep/lcjet/jet_obs/default/default/data/results_all/results.root",
+                "colour": 3,
                 "name_hist": {
                     "zpar": "h_zpar_sidesub_unfolded_data_ptjet-7-15_sel_selfnorm",
                 },
@@ -360,6 +369,7 @@ for obs in observables:
             title=f"{config['particles'][particle]['label']}"
             f";{config['observables'][obs]['label']}"
             f";(1/#it{{N}}_{{jet}}) d#it{{N}}/d{config['observables'][obs]['label']}",
+            suffix="pdf",
             list_obj=histograms,
             labels_obj=labels,
             colours=colours,
@@ -376,6 +386,7 @@ for obs in observables:
         title=f"all particles"
         f";{config['observables'][obs]['label']}"
         f";(1/#it{{N}}_{{jet}}) d#it{{N}}/d{config['observables'][obs]['label']}",
+        suffix="pdf",
         list_obj=histograms_obs,
         labels_obj=labels_obs,
         leg_pos=config["observables"][obs]["leg"],
