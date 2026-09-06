@@ -37,7 +37,12 @@ def find_ao2ds(ali: alien.AliEn, aliendir: str) -> list[str]:
     ret = ali.run(cmd_find)
     if ret.exitcode != 0:
         print(f"Failed to run search: {cmd_find}\n{ret.out}")
-        return []
+        cmd_find = f"find {PurePosixPath(aliendir)} AO2D.root"
+        print(cmd_find)
+        ret = ali.run(cmd_find)
+        if ret.exitcode != 0:
+            print(f"Failed to run search: {cmd_find}\n{ret.out}")
+            return []
     return ret.out.split()
 
 
@@ -49,20 +54,20 @@ def main():
     parser.add_argument("--dry-run", "-n", action="store_true", help="dry run")
     args = parser.parse_args()
 
-    print("Obtaining train spec ..")
+    print(f"Obtaining train spec for train {args.train_id}...")
     train_spec = get_train_spec(args.train_id)
     outputdirs = [d["outputdir"] for d in train_spec.json()["jobResults"]]
 
-    print("Finding AO2Ds ..")
+    print("Finding AO2Ds...")
     a = alien.AliEn()
     src = [d for outputdir in outputdirs for d in find_ao2ds(a, outputdir)]
     dst = ["file:" + str(PurePosixPath(args.prefix) / str(args.train_id) / file.lstrip("/")) for file in src]
     print("Files to copy:")
-    for s, d in zip(src, dst):
+    for s, d in zip(src, dst, strict=False):
         print(f"{s} -> {d}")
 
     if not args.dry_run:
-        print("Copying ..")
+        print("Copying...")
         xrd_core.DO_XrootdCp(a.wb(), api_src=src, api_dst=dst)
 
 
