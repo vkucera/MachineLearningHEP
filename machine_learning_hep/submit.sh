@@ -20,8 +20,8 @@
 
 # Suffix of the analysis database name
 
-DATABASE="D0Jet_pp"
-# DATABASE="LcJet_pp"
+# DATABASE="D0Jet_pp"
+DATABASE="LcJet_pp"
 
 # Name of the analysis section in the analysis database
 
