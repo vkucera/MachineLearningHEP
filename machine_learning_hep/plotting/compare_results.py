@@ -279,11 +279,21 @@ config: dict[str, dict[str, dict]] = {
                     "zpar": "h_zpar_sidesub_unfolded_data_ptjet-7-15_sel_selfnorm",
                 },
             },
-            "current": {
-                "label": "current",
+            "latest_23": {
+                "label": "latest 23",
+                "activate": 1,
+                "path_file": "/home/vkucera/mlhep/lcjet/jet_obs_23_latest/"
+                "default/default/data/results_all/results.root",
+                "colour": 3,
+                "name_hist": {
+                    "zpar": "h_zpar_sidesub_unfolded_data_ptjet-7-15_sel_selfnorm",
+                },
+            },
+            "latest_22": {
+                "label": "latest 22",
                 "activate": 1,
                 "path_file": "/home/vkucera/mlhep/lcjet/jet_obs/default/default/data/results_all/results.root",
-                "colour": 3,
+                "colour": 4,
                 "name_hist": {
                     "zpar": "h_zpar_sidesub_unfolded_data_ptjet-7-15_sel_selfnorm",
                 },
