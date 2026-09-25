@@ -64,9 +64,9 @@ config: dict[str, dict[str, dict]] = {
         },
         "zpar": {
             "activate": 1,
-            "range": [0.4, 1.0],
+            "range": [0.0, 1.0],
             "label": "#it{z}_{#parallel}",
-            "leg": [0.65, 0.65, 0.9, 0.85],
+            "leg": [0.15, 0.65, 0.4, 0.85],
         },
     },
     "results": {
@@ -122,7 +122,7 @@ config: dict[str, dict[str, dict]] = {
             },
             "2023_new_Nima": {
                 "label": "2023 Nima",
-                "activate": 1,
+                "activate": 0,
                 "path_file": "/home/nzardosh/mlhep/d0jet_QM25_New/jet_obs/"
                 "default/default/data/results_all/results.root",
                 "colour": 3,
@@ -135,8 +135,8 @@ config: dict[str, dict[str, dict]] = {
             },
             "2022_new_Nima": {
                 "label": "2022 Nima",
-                "activate": 1,
-                "path_file": "/home/nzardosh/mlhep/d0jet_HP24_New/jet_obs/"
+                "activate": 0,
+                "path_file": "/home/nzardosh/mlhep/d0jet_HP24_New/d0jet/jet_obs/"
                 "default/default/data/results_all/results.root",
                 "colour": 4,
                 "name_hist": {
@@ -148,7 +148,7 @@ config: dict[str, dict[str, dict]] = {
             },
             "ppRef_new_Nima": {
                 "label": "pp ref Nima",
-                "activate": 1,
+                "activate": 0,
                 "path_file": "/home/nzardosh/mlhep/d0jet_ppRef_New/jet_obs/"
                 "default/default/data/results_all/results.root",
                 "colour": 5,
@@ -200,7 +200,7 @@ config: dict[str, dict[str, dict]] = {
             },
             "2023_new_Nima_Fixed": {
                 "label": "2023 Nima Fixed",
-                "activate": 1,
+                "activate": 0,
                 "path_file": "/home/nzardosh/mlhep/d0jet_QM25_New_Fixed/jet_obs/"
                 "default/default/data/results_all/results.root",
                 "colour": 9,
@@ -213,7 +213,7 @@ config: dict[str, dict[str, dict]] = {
             },
             "2022_new_Nima_Fixed": {
                 "label": "2022 Nima Fixed",
-                "activate": 1,
+                "activate": 0,
                 "path_file": "/home/nzardosh/mlhep/d0jet_HP24_New_Fixed/jet_obs/"
                 "default/default/data/results_all/results.root",
                 "colour": 10,
@@ -226,7 +226,7 @@ config: dict[str, dict[str, dict]] = {
             },
             "ppRef_new_Nima_Fixed": {
                 "label": "pp ref Nima Fixed",
-                "activate": 1,
+                "activate": 0,
                 "path_file": "/home/nzardosh/mlhep/d0jet_ppRef_New_Fixed/jet_obs/"
                 "default/default/data/results_all/results.root",
                 "colour": 11,
@@ -235,6 +235,71 @@ config: dict[str, dict[str, dict]] = {
                     "rg": "h_rg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
                     "nsd": "h_nsd_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
                     "zpar": "h_zpar_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                },
+            },
+            "ppRef_new_Nima_Fixed_Old": {
+                "label": "pp ref Nima Fixed Old",
+                "activate": 0,
+                "path_file": "/home/nzardosh/mlhep/d0jet_ppRef_New_Fixed_Old/jet_obs/"
+                "default/default/data/results_all/results.root",
+                "colour": 12,
+                "name_hist": {
+                    "zg": "h_zg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "rg": "h_rg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "nsd": "h_nsd_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "zpar": "h_zpar_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                },
+            },
+            "QM25_new_Nima_Fixed_Old": {
+                "label": "QM 2025 Nima Fixed Old",
+                "activate": 0,
+                "path_file": "/home/nzardosh/mlhep/d0jet_QM25_New_Fixed_Old/jet_obs/"
+                "default/default/data/results_all/results.root",
+                "colour": 13,
+                "name_hist": {
+                    "zg": "h_zg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "rg": "h_rg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "nsd": "h_nsd_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "zpar": "h_zpar_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                },
+            },
+            "QM25_new_Nima_Fixed_Old_Original": {
+                "label": "QM 2025 Nima Fixed Old Original",
+                "activate": 0,
+                "path_file": "/home/nzardosh/mlhep/d0jet_QM25_New_Fixed_Old_Original/jet_obs/"
+                "default/default/data/results_all/results.root",
+                "colour": 14,
+                "name_hist": {
+                    "zg": "h_zg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "rg": "h_rg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "nsd": "h_nsd_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "zpar": "h_zpar_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                },
+            },
+            "2026_Nima": {
+                "label": "2026_Nima",
+                "activate": 1,
+                "path_file": "/home/nzardosh/mlhep/d0jet_2026/jet_obs/"
+                "default/default/data/results_all/results.root",
+                "colour": 15,
+                "name_hist": {
+                    "zg": "h_zg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "rg": "h_rg_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "nsd": "h_nsd_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                    "zpar": "h_zpar_sidesub_unfolded_data_ptjet-15-20_sel_selfnorm",
+                },
+            },
+            "2026_Nima_HPBinning": {
+                "label": "2026_Nima HP Binning",
+                "activate": 0,
+                "path_file": "/home/nzardosh/mlhep/d0jet_2026_HPBinning/jet_obs/"
+                "default/default/data/results_all/results.root",
+                "colour": 16,
+                "name_hist": {
+                    "zg": "h_zg_sidesub_unfolded_data_ptjet-15-30_sel_selfnorm",
+                    "rg": "h_rg_sidesub_unfolded_data_ptjet-15-30_sel_selfnorm",
+                    "nsd": "h_nsd_sidesub_unfolded_data_ptjet-15-30_sel_selfnorm",
+                    "zpar": "h_zpar_sidesub_unfolded_data_ptjet-15-30_sel_selfnorm",
                 },
             },
         },
@@ -262,7 +327,7 @@ config: dict[str, dict[str, dict]] = {
             },
             "qm25_prv": {
                 "label": "QM25 preview",
-                "activate": 1,
+                "activate": 0,
                 "path_file": "/home/vkucera/mlhep/lcjet/jet_obs_nbkp/default/default/data/results_all/results.root",
                 "colour": 1,
                 "name_hist": {
@@ -271,29 +336,10 @@ config: dict[str, dict[str, dict]] = {
             },
             "qm25_pwg": {
                 "label": "QM25 PWG",
-                "activate": 0,
+                "activate": 1,
                 "path_file": "/home/ldellost/mlhep/lcjet_Crystal/jet_obs/"
                 "default/default/data/results_all_Jochen/results.root",
                 "colour": 2,
-                "name_hist": {
-                    "zpar": "h_zpar_sidesub_unfolded_data_ptjet-7-15_sel_selfnorm",
-                },
-            },
-            "latest_23": {
-                "label": "latest 23",
-                "activate": 1,
-                "path_file": "/home/vkucera/mlhep/lcjet/jet_obs_23_latest/"
-                "default/default/data/results_all/results.root",
-                "colour": 3,
-                "name_hist": {
-                    "zpar": "h_zpar_sidesub_unfolded_data_ptjet-7-15_sel_selfnorm",
-                },
-            },
-            "latest_22": {
-                "label": "latest 22",
-                "activate": 1,
-                "path_file": "/home/vkucera/mlhep/lcjet/jet_obs/default/default/data/results_all/results.root",
-                "colour": 4,
                 "name_hist": {
                     "zpar": "h_zpar_sidesub_unfolded_data_ptjet-7-15_sel_selfnorm",
                 },
@@ -379,7 +425,6 @@ for obs in observables:
             title=f"{config['particles'][particle]['label']}"
             f";{config['observables'][obs]['label']}"
             f";(1/#it{{N}}_{{jet}}) d#it{{N}}/d{config['observables'][obs]['label']}",
-            suffix="pdf",
             list_obj=histograms,
             labels_obj=labels,
             colours=colours,
@@ -396,7 +441,6 @@ for obs in observables:
         title=f"all particles"
         f";{config['observables'][obs]['label']}"
         f";(1/#it{{N}}_{{jet}}) d#it{{N}}/d{config['observables'][obs]['label']}",
-        suffix="pdf",
         list_obj=histograms_obs,
         labels_obj=labels_obs,
         leg_pos=config["observables"][obs]["leg"],
