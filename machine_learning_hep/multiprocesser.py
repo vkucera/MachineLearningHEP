@@ -71,12 +71,12 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
         self.d_prefix_res = self.cfg(f"analysis.{self.typean}.{self.datatype.value}.prefix_dir_res", "")
 
         dp = datap["multi"][self.datatype.value]
-        self.dlper_root = [self.d_prefix + os.path.expandvars(p) for p in dp["unmerged_tree_dir"]]
-        self.dlper_pkl = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl"]]
-        self.dlper_pklsk = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl_skimmed"]]
-        self.dlper_pklml = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl_skimmed_merge_for_ml"]]
-        self.d_pklml_mergedallp = self.d_prefix + os.path.expandvars(dp["pkl_skimmed_merge_for_ml_all"])
-        self.d_pklevt_mergedallp = self.d_prefix + os.path.expandvars(dp["pkl_evtcounter_all"])
+        self.dlper_root = [os.path.expandvars(self.d_prefix + p) for p in dp["unmerged_tree_dir"]]
+        self.dlper_pkl = [os.path.expandvars(self.d_prefix + p) for p in dp["pkl"]]
+        self.dlper_pklsk = [os.path.expandvars(self.d_prefix + p) for p in dp["pkl_skimmed"]]
+        self.dlper_pklml = [os.path.expandvars(self.d_prefix + p) for p in dp["pkl_skimmed_merge_for_ml"]]
+        self.d_pklml_mergedallp = os.path.expandvars(self.d_prefix + dp["pkl_skimmed_merge_for_ml_all"])
+        self.d_pklevt_mergedallp = os.path.expandvars(self.d_prefix + dp["pkl_evtcounter_all"])
         self.dlper_mcreweights = datap["multi"][self.datatype.value]["mcreweights"]
 
         # namefiles pkl
@@ -121,8 +121,8 @@ class MultiProcesser:  # pylint: disable=too-many-instance-attributes, too-many-
         )
 
         dp = self.cfg(f"analysis.{self.typean}.{self.datatype.value}", {})
-        self.d_results = [self.d_prefix_res + os.path.expandvars(p) for p in dp["results"]]
-        self.d_resultsallp = self.d_prefix_res + os.path.expandvars(dp["resultsallp"])
+        self.d_results = [os.path.expandvars(self.d_prefix_res + p) for p in dp["results"]]
+        self.d_resultsallp = os.path.expandvars(self.d_prefix_res + dp["resultsallp"])
 
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)

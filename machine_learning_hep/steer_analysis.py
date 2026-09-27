@@ -104,16 +104,16 @@ def do_entire_analysis(  # pylint: disable=too-many-locals, too-many-statements,
     for dt in DataType:
         dp = data_param[case]["multi"][dt.value]
         dirprefix = dp.get("prefix_dir", "")
-        dirpkl[dt] = [dirprefix + os.path.expandvars(p) for p in dp["pkl"]]
-        dirpklsk[dt] = [dirprefix + os.path.expandvars(p) for p in dp["pkl_skimmed"]]
-        dirpklml[dt] = [dirprefix + os.path.expandvars(p) for p in dp["pkl_skimmed_merge_for_ml"]]
-        dirpklevtcounter_all[dt] = dirprefix + os.path.expandvars(dp["pkl_evtcounter_all"])
-        dirpklmltot[dt] = dirprefix + os.path.expandvars(dp["pkl_skimmed_merge_for_ml_all"])
+        dirpkl[dt] = [os.path.expandvars(dirprefix + p) for p in dp["pkl"]]
+        dirpklsk[dt] = [os.path.expandvars(dirprefix + p) for p in dp["pkl_skimmed"]]
+        dirpklml[dt] = [os.path.expandvars(dirprefix + p) for p in dp["pkl_skimmed_merge_for_ml"]]
+        dirpklevtcounter_all[dt] = os.path.expandvars(dirprefix + dp["pkl_evtcounter_all"])
+        dirpklmltot[dt] = os.path.expandvars(dirprefix + dp["pkl_skimmed_merge_for_ml_all"])
 
         dp = data_param[case]["analysis"][typean][dt.value]
         dirprefixres = dp.get("prefix_dir_res", "")
-        dirresults[dt] = [dirprefixres + os.path.expandvars(p) for p in dp["results"]]
-        dirresultstot[dt] = dirprefixres + os.path.expandvars(dp["resultsallp"])
+        dirresults[dt] = [os.path.expandvars(dirprefixres + p) for p in dp["results"]]
+        dirresultstot[dt] = os.path.expandvars(dirprefixres + dp["resultsallp"])
 
     dp = data_param[case]["mlapplication"]["mc"]
     dirprefixmcapp = dp.get("prefix_dir_app", "")
