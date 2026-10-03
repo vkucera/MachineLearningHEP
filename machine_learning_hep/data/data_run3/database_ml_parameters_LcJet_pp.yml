@@ -595,8 +595,8 @@ LcJet_pp:
 
       closure:
         pure_signal: false
-        exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
-        exclude_feeddown_gen: 'ismcsignal_gen==1 & ismcprompt_gen==1'
+        # exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
+        # exclude_feeddown_gen: 'ismcsignal_gen==1 & ismcprompt_gen==1'
         use_matched: true
 
       frac_mcana: .2 # fraction of MC sample for the closure
