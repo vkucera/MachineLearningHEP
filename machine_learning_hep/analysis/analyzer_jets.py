@@ -393,8 +393,6 @@ class AnalyzerJets(Analyzer):
                 continue
             if (ptspec := entry.get("ptrange")) and (ptspec[0] > range_pthf[0] or ptspec[1] < range_pthf[1]):
                 continue
-            if iptjet is not None and not entry.get("per_ptjet"):
-                continue
             return entry
         return None
 
@@ -498,10 +496,10 @@ class AnalyzerJets(Analyzer):
                 func_bkg.Draw("lsame")
                 self._save_canvas(c, filename)
         else:
-            self.logger.warning("Invalid fit result for %s", hist.GetName())
             # func_tot.Print('v')
             filename = filename.replace(".png", "_invalid.png")
             self._save_hist(hist, filename)
+            self.logger.critical("Invalid fit result for %s", hist.GetName())
             # TODO: how to deal with this
 
         return (fit_res, func_sig, func_bkg)
@@ -557,7 +555,8 @@ class AnalyzerJets(Analyzer):
                     if self.cfg("mass_roofit"):
                         fitcfg = self._select_mass_roofit_cfg(level, range_pthf, iptjet)
                         if fitcfg is None:
-                            self.logger.warning("No mass_roofit config for %s iptjet %s ipt %d", level, iptjet, ipt)
+                            self.logger.critical("No mass_roofit config for %s iptjet %s ipt %d", level, iptjet, ipt)
+                        if iptjet is not None and not fitcfg.get("per_ptjet"):
                             continue
                         self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
                         # TODO: link datasel to fit stage
@@ -1058,13 +1057,13 @@ class AnalyzerJets(Analyzer):
         Extract signal through inv. mass fit (first axis) in bins of other axes
         """
         if not hist:
-            self.logger.warning("no histogram for %s bin %d", var, ipt)
+            self.logger.critical("no histogram for %s bin %d", var, ipt)
             return None
         range_pthf = (self.bins_candpt[ipt], self.bins_candpt[ipt + 1])
         self._save_hist(hist, f"signalextr/h_mass-{var}_{string_range_pthf(range_pthf)}_{mcordata}.png")
 
         if self.fit_mean[mcordata][ipt] is None or self.fit_sigma[mcordata][ipt] is None:
-            self.logger.warning("no fit parameters for %s bin %s-%d", var, mcordata, ipt)
+            self.logger.critical("no fit parameters for %s bin %s-%d", var, mcordata, ipt)
             return None  # TODO: should we continue nonetheless?
 
         axes = list(range(get_dim(hist)))

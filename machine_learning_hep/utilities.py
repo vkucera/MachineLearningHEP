@@ -126,10 +126,6 @@ def write_df(dfo, path):
         logger.debug("written to pickle in %.2f s", time.time() - start)
 
 
-class ReadDfError(OSError):
-    """Raised when a dataframe file cannot be read."""
-
-
 def read_df(path, **kwargs):
     try:
         if path.endswith(".parquet"):
@@ -138,8 +134,7 @@ def read_df(path, **kwargs):
             df = pickle.load(openfile(path, "rb"))
     except Exception as e:  # pylint: disable=broad-except
         msg = f"failed to open file <{path}>: {e}"
-        logger.error(msg)
-        raise ReadDfError(msg) from e
+        logger.critical(msg)
     return df
 
 
