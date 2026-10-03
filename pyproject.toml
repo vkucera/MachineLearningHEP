@@ -89,6 +89,7 @@ select = [ # defaults: ["E4", "E7", "E9", "F"], see https://docs.astral.sh/ruff/
 ]
 ignore = [
   "PLR09", # too-many-...
+  "PLR2004", # magic-value-comparison
 ]
 
 [tool.pyright]
