@@ -110,7 +110,7 @@ LcJet_pp:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
           fM: 1.864
         tags:
-          ismcsignal: {var: fFlagMcMatchGen, req: 1, abs: true, level: mc}
+          ismcsignal: {var: fFlagMcMatchGen, req: 17, abs: true, level: mc}
           ismcbkg: {var: ismcsignal, req: 0, level: mc}
           ismcprompt: {var: fOriginMcGen, req: 1, level: mc}
           ismcfd: {var: fOriginMcGen, req: 2, level: mc}
@@ -137,7 +137,7 @@ LcJet_pp:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
           fM: 1.864
         tags:
-          ismcsignal: {var: fFlagMcMatchGen, req: 1, abs: true, level: mc}
+          ismcsignal: {var: fFlagMcMatchGen, req: 17, abs: true, level: mc}
           ismcbkg: {var: ismcsignal, req: 0, level: mc}
           ismcprompt: {var: fOriginMcGen, req: 1, level: mc}
           ismcfd: {var: fOriginMcGen, req: 2, level: mc}
@@ -171,7 +171,7 @@ LcJet_pp:
           islc: fFlagMcMatchRec == 1
           islcbar: fFlagMcMatchRec == -1
         tags:
-          ismcsignal: {var: fFlagMcMatchRec, req: 1, abs: true, level: mc}
+          ismcsignal: {var: fFlagMcMatchRec, req: 17, abs: true, level: mc}
           ismcbkg: {var: ismcsignal, req: 0, level: mc}
           ismcprompt: {var: fOriginMcRec, req: 1, level: mc}
           ismcfd: {var: fOriginMcRec, req: 2, level: mc}
@@ -340,8 +340,8 @@ LcJet_pp:
   #region multi
   multi:
     data:
-      nprocessesparallel: 1
-      maxfiles: [1] #list of periods
+      nprocessesparallel: 90
+      maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge: [1.] #list of periods
@@ -357,8 +357,8 @@ LcJet_pp:
       pkl_evtcounter_all: "${USER}/lcjet/pp_data_evttot"
       mcreweights: [../Analyses] #list of periods
     mc:
-      nprocessesparallel: 1
-      maxfiles: [1] #list of periods
+      nprocessesparallel: 90
+      maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
       fracmerge: [1.] #list of periods
@@ -374,8 +374,8 @@ LcJet_pp:
       pkl_evtcounter_all: "${USER}/lcjet/pp_mc_prod_evttot"
       mcreweights: [../Analyses] #list of periods
     fd:
-      nprocessesparallel: 1
-      maxfiles: [1] #list of periods
+      nprocessesparallel: 90
+      maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
       fracmerge: [1.] #list of periods
@@ -595,8 +595,8 @@ LcJet_pp:
 
       closure:
         pure_signal: false
-        # exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
-        # exclude_feeddown_gen: 'ismcsignal_gen==1 & ismcprompt_gen==1'
+        exclude_feeddown_det: 'ismcsignal==1 & ismcprompt==1'
+        exclude_feeddown_gen: 'ismcsignal_gen==1 & ismcprompt_gen==1'
         use_matched: true
 
       frac_mcana: .2 # fraction of MC sample for the closure

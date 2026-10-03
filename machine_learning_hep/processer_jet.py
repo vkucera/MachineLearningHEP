@@ -251,14 +251,14 @@ class ProcesserJets(Processer):
         df = df.copy()
         if level == "gen":
             if "ismcsignal" not in df.columns and "fFlagMcMatchGen" in df.columns:
-                df["ismcsignal"] = (df["fFlagMcMatchGen"].abs() == 1).astype(int)
+                df["ismcsignal"] = (df["fFlagMcMatchGen"].abs() == 17).astype(int)
             if "ismcprompt" not in df.columns and "fOriginMcGen" in df.columns:
                 df["ismcprompt"] = (df["fOriginMcGen"] == 1).astype(int)
             if "ismcfd" not in df.columns and "fOriginMcGen" in df.columns:
                 df["ismcfd"] = (df["fOriginMcGen"] == 2).astype(int)
         else:
             if "ismcsignal" not in df.columns and "fFlagMcMatchRec" in df.columns:
-                df["ismcsignal"] = (df["fFlagMcMatchRec"].abs() == 1).astype(int)
+                df["ismcsignal"] = (df["fFlagMcMatchRec"].abs() == 17).astype(int)
             if "ismcprompt" not in df.columns and "fOriginMcRec" in df.columns:
                 df["ismcprompt"] = (df["fOriginMcRec"] == 1).astype(int)
             if "ismcfd" not in df.columns and "fOriginMcRec" in df.columns:
