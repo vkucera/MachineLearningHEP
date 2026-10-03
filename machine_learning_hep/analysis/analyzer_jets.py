@@ -142,7 +142,7 @@ class AnalyzerJets(Analyzer):
 
     def _save_hist(self, hist, filename, option="", logy=False):
         if not hist:
-            self.logger.error("No histogram for <%s>", filename)
+            self.logger.critical("No histogram for <%s>", filename)
             # TODO: remove file if it exists?
             return
         c = TCanvas()
@@ -334,7 +334,7 @@ class AnalyzerJets(Analyzer):
 
     def _correct_efficiency(self, hist, ipt):
         if not hist:
-            self.logger.error("no histogram to correct for efficiency")
+            self.logger.critical("no histogram to correct for efficiency")
             return
 
         if self.cfg("efficiency.correction_method") == "run3":
@@ -345,13 +345,13 @@ class AnalyzerJets(Analyzer):
         elif self.cfg("efficiency.correction_method") == "run2_2d":
             self.logger.info("using Run 2 efficiencies per jet pt bin")
             if not self.h_eff_ptjet_pthf["pr"]:
-                self.logger.error("no efficiency available for %s", hist.GetName())
+                self.logger.critical("no efficiency available for %s", hist.GetName())
                 return
 
             for iptjet in range(get_nbins(hist, 0)):
                 eff = self.h_eff_ptjet_pthf["pr"].GetBinContent(iptjet + 1, ipt + 1)
                 if np.isclose(eff, 0):
-                    self.logger.error(
+                    self.logger.critical(
                         "Efficiency 0 for %s ipt %d iptjet %d, no correction possible", hist.GetName(), ipt, iptjet
                     )
                     continue
@@ -360,14 +360,14 @@ class AnalyzerJets(Analyzer):
         else:
             self.logger.info("Correcting with Run 2 efficiencies")
             if not self.hcandeff["pr"]:
-                self.logger.error("no efficiency available for %s", hist.GetName())
+                self.logger.critical("no efficiency available for %s", hist.GetName())
                 return
 
             eff = self.hcandeff["pr"].GetBinContent(ipt + 1)
             if np.isclose(eff, 0):
                 if hist.GetEntries() > 0:
                     # TODO: how should we handle this?
-                    self.logger.error("Efficiency 0 for %s ipt %d, no correction possible", hist.GetName(), ipt)
+                    self.logger.critical("Efficiency 0 for %s ipt %d, no correction possible", hist.GetName(), ipt)
                 return
 
             self.logger.debug("scaling hist %s (ipt %i) with 1. / %g", hist.GetName(), ipt, eff)
@@ -381,9 +381,7 @@ class AnalyzerJets(Analyzer):
                 continue
             if entry.get("level") is None and level != "data":
                 continue
-            if (ptspec := entry.get("ptrange")) and (
-                ptspec[0] > range_pthf[0] or ptspec[1] < range_pthf[1]
-            ):
+            if (ptspec := entry.get("ptrange")) and (ptspec[0] > range_pthf[0] or ptspec[1] < range_pthf[1]):
                 continue
             if iptjet is not None and not entry.get("per_ptjet"):
                 continue
@@ -396,7 +394,7 @@ class AnalyzerJets(Analyzer):
         try:
             res, ws, frame, residual_frame = self.fitter.fit_mass_new(hist, pdfnames, fitcfg, level, roows, True)
         except (ValueError, UserWarning) as exc:
-            self.logger.error("fit_mass_new failed for %s ipt %d: %s", level, ipt, exc)
+            self.logger.critical("fit_mass_new failed for %s ipt %d: %s", level, ipt, exc)
             return None, None
         if res is None or ws is None or frame is None or filename is None:
             self.logger.critical("fit_mass_new failed: missing fit result for %s ipt %d", level, ipt)
@@ -409,7 +407,7 @@ class AnalyzerJets(Analyzer):
             self.h_fit_results[level]["chi2"].SetBinContent(ipt + 1, chi2)
         chi2_limit = 5.0 if iptjet is None else 15.0
         if chi2 > chi2_limit and level != "predata":
-            self.logger.error(
+            self.logger.critical(
                 "Roofit fit is too bad: %s, ipt: %d, pthf: %g-%g, Chi2 = %g%s",
                 level,
                 ipt,
@@ -536,7 +534,7 @@ class AnalyzerJets(Analyzer):
                     range_pthf = (self.bins_candpt[ipt], self.bins_candpt[ipt + 1])
                     if self.cfg("mass_fit") and iptjet is None:
                         if h_invmass.GetEntries() < 100:  # TODO: reconsider criterion
-                            self.logger.error("Not enough entries to fit %s iptjet %s ipt %d", level, iptjet, ipt)
+                            self.logger.critical("Not enough entries to fit %s iptjet %s ipt %d", level, iptjet, ipt)
                             continue
                         fit_res, _, _ = self._fit_mass(
                             h_invmass, f"fit/h_mass_fitted_{string_range_pthf(range_pthf)}_{level}.png"
@@ -545,13 +543,11 @@ class AnalyzerJets(Analyzer):
                             self.fit_mean[level][ipt] = fit_res.Parameter(1)
                             self.fit_sigma[level][ipt] = fit_res.Parameter(2)
                         else:
-                            self.logger.error("Fit failed for %s bin %d", level, ipt)
+                            self.logger.critical("Fit failed for %s bin %d", level, ipt)
                     if self.cfg("mass_roofit"):
                         fitcfg = self._select_mass_roofit_cfg(level, range_pthf, iptjet)
                         if fitcfg is None:
-                            self.logger.warning(
-                                "No mass_roofit config for %s iptjet %s ipt %d", level, iptjet, ipt
-                            )
+                            self.logger.warning("No mass_roofit config for %s iptjet %s ipt %d", level, iptjet, ipt)
                             continue
                         self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
                         # TODO: link datasel to fit stage
@@ -561,7 +557,7 @@ class AnalyzerJets(Analyzer):
                                 self.logger.critical("Failed to get histogram %s", hist_name)
                             h_invmass = project_hist(hsel, [0], cuts_proj)
                         if h_invmass.GetEntries() < 100:  # TODO: reconsider criterion
-                            self.logger.error("Not enough entries to fit %s iptjet %s ipt %d", level, iptjet, ipt)
+                            self.logger.critical("Not enough entries to fit %s iptjet %s ipt %d", level, iptjet, ipt)
                             continue
                         roows = self.roows.get((iptjet, ipt))
                         if roows is None and level != self.fit_levels[0]:
@@ -593,7 +589,7 @@ class AnalyzerJets(Analyzer):
                             iptjet,
                         )
                         if roo_res is None or roo_ws is None:
-                            self.logger.error(
+                            self.logger.critical(
                                 "Roofit failed: %s, ipt: %d, pthf: %g-%g%s",
                                 level,
                                 ipt,
@@ -603,7 +599,7 @@ class AnalyzerJets(Analyzer):
                             )
                             continue
                         if roo_res.status() != 0:
-                            self.logger.error(
+                            self.logger.critical(
                                 "Roofit failed: %s, ipt: %d, pthf: %g-%g",
                                 level,
                                 ipt,
@@ -656,7 +652,7 @@ class AnalyzerJets(Analyzer):
         Subtract sideband distributions, assuming mass on first axis
         """
         if not hist:
-            self.logger.error("no histogram for %s bin %d", var, ipt)
+            self.logger.critical("no histogram for %s bin %d", var, ipt)
             return None
         label = f"-{var}" if var else ""
         range_pthf = (self.bins_candpt[ipt], self.bins_candpt[ipt + 1])
@@ -668,7 +664,7 @@ class AnalyzerJets(Analyzer):
         # self.logger.info('sigmas %g, %g', sigma, self.roows[ipt].var('sigma_g1').getVal())
         fit_range = self.fit_range[mcordata][ipt]
         if mean is None or sigma is None or fit_range is None:
-            self.logger.error("no fit parameters for %s bin %s-%d", var or "none", mcordata, ipt)
+            self.logger.critical("no fit parameters for %s bin %s-%d", var or "none", mcordata, ipt)
             return None
 
         for entry in self.cfg("sidesub", []):
@@ -702,7 +698,7 @@ class AnalyzerJets(Analyzer):
                     regions[reg],
                 )
                 if regions[reg][1] < regions[reg][0]:
-                    self.logger.error("region limits inverted, reducing to zero width")
+                    self.logger.critical("region limits inverted, reducing to zero width")
                     regions[reg] = (regions[reg][0], regions[reg][0])
         axis = get_axis(hist, 0)
         bins = {key: (axis.FindBin(region[0]), axis.FindBin(region[1]) - 1) for key, region in regions.items()}
@@ -739,7 +735,7 @@ class AnalyzerJets(Analyzer):
                         continue
                 rws = self.roo_ws.get((mcordata, iptjet, ipt))
                 if not rws:
-                    self.logger.error("Falling back to incl. roows for %s-iptjet%i-ipt%i", mcordata, iptjet, ipt)
+                    self.logger.critical("Falling back to incl. roows for %s-iptjet%i-ipt%i", mcordata, iptjet, ipt)
                     rws = self.roo_ws.get((mcordata, None, ipt))
                 if not rws:
                     self.logger.critical("Could not retrieve roows for %s-iptjet%i-ipt%i", mcordata, iptjet, ipt)
@@ -1001,7 +997,7 @@ class AnalyzerJets(Analyzer):
                                 hproj = project_hist(h, list(range(1, get_dim(h))), {0: (j + 1, j + 1)})
                                 empty = hproj.Integral() < 1.0e-7
                                 if empty and i == 0:
-                                    self.logger.error(
+                                    self.logger.critical(
                                         "Projection %s %s %s is empty.", var, mcordata, string_range_ptjet(range_ptjet)
                                     )
                                 self._save_hist(
@@ -1087,7 +1083,7 @@ class AnalyzerJets(Analyzer):
                     # TODO: consider adding scaling factor
                     hres.SetBinContent(*binid, func_sig.Integral(*range_int) / hmass.GetBinWidth(1))
                 else:
-                    self.logger.error("Could not extract signal for %s %s %i", var, mcordata, ipt)
+                    self.logger.critical("Could not extract signal for %s %s %i", var, mcordata, ipt)
         self._save_hist(
             hres, f"signalextr/h_{var}_signalextracted_{string_range_pthf(range_pthf)}_{label}_{mcordata}.png"
         )
@@ -1122,14 +1118,14 @@ class AnalyzerJets(Analyzer):
                     elif binning := self.cfg(f"observables.{var}.bins_fix"):
                         bins_tmp = bin_array(*binning)
                     else:
-                        self.logger.error("no binning specified for %s, using defaults", var)
+                        self.logger.critical("no binning specified for %s, using defaults", var)
                         bins_tmp = bin_array(10, 0.0, 1.0)
                     bins_obs[var] = bins_tmp
 
                     colname = col_mapping.get(var, f"{var}_jet")
                     if f"{colname}" not in df:
                         if var is not None:
-                            self.logger.error(
+                            self.logger.critical(
                                 "No feeddown information for %s (%s), cannot estimate feeddown", var, colname
                             )
                             # print(df.info(), flush=True)
@@ -1189,7 +1185,7 @@ class AnalyzerJets(Analyzer):
                 )
                 h_response = rfile.Get(f"h_response_fd_{var}")
                 if not h_response:
-                    self.logger.error("Could not find response matrix for fd estimation of %s", var)
+                    self.logger.critical("Could not find response matrix for fd estimation of %s", var)
                     # rfile.ls()
                     continue
                 h_response_norm = norm_response(h_response, 3)
@@ -1204,7 +1200,7 @@ class AnalyzerJets(Analyzer):
             for ipt in range(get_nbins(h3_fd_det, 1)):
                 eff_pr = self.h_effnew_pthf["pr"].GetBinContent(ipt + 1)
                 if np.isclose(eff_pr, 0.0):
-                    self.logger.error("Efficiency zero for %s in pt bin %d, continuing", var, ipt)
+                    self.logger.critical("Efficiency zero for %s in pt bin %d, continuing", var, ipt)
                     continue  # TODO: how should we handle this?
                 for iptjet, ishape in itertools.product(range(get_nbins(h3_fd_det, 0)), range(get_nbins(h3_fd_det, 2))):
                     scale_bin(h3_fd_det, 1.0 / eff_pr, iptjet + 1, ipt + 1, ishape + 1)
@@ -1220,7 +1216,7 @@ class AnalyzerJets(Analyzer):
                 eff_pr = self.hcandeff["pr"].GetBinContent(ipt + 1)
                 eff_np = self.hcandeff["np"].GetBinContent(ipt + 1)
                 if np.isclose(eff_pr, 0.0):
-                    self.logger.error("Efficiency zero for %s in pt bin %d, continuing", var, ipt)
+                    self.logger.critical("Efficiency zero for %s in pt bin %d, continuing", var, ipt)
                     continue  # TODO: how should we handle this?
                 for iptjet, ishape in itertools.product(range(get_nbins(h3_fd_gen, 0)), range(get_nbins(h3_fd_gen, 2))):
                     scale_bin(h3_fd_gen, eff_np / eff_pr, iptjet + 1, ipt + 1, ishape + 1)
@@ -1271,13 +1267,13 @@ class AnalyzerJets(Analyzer):
             )
             self.logger.info("Scaling feed-down with data luminosity (mb^{-1}): %g", luminosity_data)
             hfeeddown_det.Scale(luminosity_data)
-            #luminosity_mc = (
-                #self.n_colls_read["mc"]
-                #/ self.n_colls_tvx["mc"]
-                #* self.n_bcs_tvx["mc"]
-                #/ self.cfg("xsection_inel")
-                #* self.cfg("lumi_scale_mc")
-            #)
+            # luminosity_mc = (
+            # self.n_colls_read["mc"]
+            # / self.n_colls_tvx["mc"]
+            # * self.n_bcs_tvx["mc"]
+            # / self.cfg("xsection_inel")
+            # * self.cfg("lumi_scale_mc")
+            # )
             luminosity_mc = 1.0
             self.logger.info("Scaling feed-down with MC luminosity (mb^{-1}): %g", luminosity_mc)
             hfeeddown_det_mc.Scale(luminosity_mc)
@@ -1306,7 +1302,7 @@ class AnalyzerJets(Analyzer):
             n = h_response.GetBinContent(np.asarray([hbin[i][0] for i in range(2 * dim + 1)], "i"))
             eff = h_eff.GetBinContent(hbin[2 * dim][0]) if h_eff else 1.0
             if np.isclose(eff, 0.0):
-                self.logger.error("efficiency 0 for %s", hbin[2 * dim])
+                self.logger.critical("efficiency 0 for %s", hbin[2 * dim])
                 continue
             if (cnt_gen := h_gen.GetBinContent(*(hbin[i][0] for i in range(dim, 2 * dim)))) > 0.0:
                 fac = 1.0
@@ -1320,7 +1316,7 @@ class AnalyzerJets(Analyzer):
     def _subtract_feeddown(self, hist, var, mcordata):
         if var not in self.hfeeddown_det[mcordata]:
             if var is not None:
-                self.logger.error("No feeddown information available for %s, cannot subtract", var)
+                self.logger.critical("No feeddown information available for %s, cannot subtract", var)
             return
         if h_fd := self.hfeeddown_det[mcordata][var]:
             if get_dim(hist) == 1:
@@ -1328,7 +1324,7 @@ class AnalyzerJets(Analyzer):
             assert get_dim(h_fd) == get_dim(hist)
             hist.Add(h_fd, -1)
         else:
-            self.logger.error("No feeddown estimation available for %s (%s)", var, mcordata)
+            self.logger.critical("No feeddown estimation available for %s (%s)", var, mcordata)
 
     # region unfolding
     def _unfold(self, hist, var, mcordata):
@@ -1337,7 +1333,7 @@ class AnalyzerJets(Analyzer):
         with TFile(self.n_fileeff) as rfile:
             h_response = rfile.Get(f"h_response_pr_{var}{suffix}")
             if not h_response:
-                self.logger.error("Response matrix for %s not available, cannot unfold", var + suffix)
+                self.logger.critical("Response matrix for %s not available, cannot unfold", var + suffix)
                 return []
             response_matrix_pr = self._build_response_matrix(
                 h_response,
@@ -1355,7 +1351,7 @@ class AnalyzerJets(Analyzer):
 
             fh_unfolding_input = hist.Clone("fh_unfolding_input")
             if get_dim(fh_unfolding_input) != get_dim(h_effkine_det):
-                self.logger.error("histograms with different dimensions, cannot unfold")
+                self.logger.critical("histograms with different dimensions, cannot unfold")
                 return []
             ensure_sumw2(fh_unfolding_input)
             fh_unfolding_input.Multiply(h_effkine_det)
@@ -1404,7 +1400,7 @@ class AnalyzerJets(Analyzer):
                                 "texte",
                             )
                     else:
-                        self.logger.error("Could not find histogram %s", f"h_mctruth_pr_{var}")
+                        self.logger.critical("Could not find histogram %s", f"h_mctruth_pr_{var}")
                         rfile.ls()
 
                 h_refolding_input = fh_unfolding_output.Clone()

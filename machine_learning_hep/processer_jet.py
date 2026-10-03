@@ -119,7 +119,7 @@ class ProcesserJets(Processer):
                     elif binning := self.cfg(f"observables.{v}.bins_fix"):
                         self.binarrays_obs[level][v] = bin_array(*binning)
                     else:
-                        self.logger.error("no binning specified for %s, using defaults", v)
+                        self.logger.critical("no binning specified for %s, using defaults", v)
                         self.binarrays_obs[level][v] = bin_array(10, 0.0, 1.0)
 
                     if binning := self.cfg(f"observables.{v}.bins_ptjet"):
@@ -156,7 +156,7 @@ class ProcesserJets(Processer):
             if np.allclose(dfi[var], df[var]):
                 self.logger.info("%s check ok", var)
             else:
-                self.logger.error("%s check failed", var)
+                self.logger.critical("%s check failed", var)
                 mask = np.isclose(dfi[var], df[var])
                 print(df[~mask][var], flush=True)
                 print(dfi[~mask][var], flush=True)
@@ -276,8 +276,10 @@ class ProcesserJets(Processer):
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
             if self.l_collcnt:
                 dfcollcnt = read_df(self.l_collcnt[index])
+
                 def counter_sum(series):
                     return sum(float(ar[0]) if hasattr(ar, "__getitem__") else float(ar) for ar in series)
+
                 ser_collcnt = dfcollcnt[self.cfg(f"counter_read_{self.datatype}")]
                 collcnt_read = counter_sum(ser_collcnt)
                 self.logger.info("sampled %g collisions", collcnt_read)
@@ -288,8 +290,10 @@ class ProcesserJets(Processer):
             if self.l_bccnt:
                 dfbccnt = read_df(self.l_bccnt[index])
                 ser_bccnt = dfbccnt[self.cfg("counter_tvx")]
+
                 def counter_sum(series):
                     return sum(float(ar[0]) if hasattr(ar, "__getitem__") else float(ar) for ar in series)
+
                 bccnt_tvx = counter_sum(ser_bccnt)
                 histonorm.SetBinContent(4, bccnt_tvx)
             if self.l_wgt:
@@ -372,7 +376,7 @@ class ProcesserJets(Processer):
                 self.logger.info("preparing histograms for %s", obs)
                 var = obs.split("-")
                 if not all(v in df for v in var):
-                    self.logger.error("dataframe does not contain %s", var)
+                    self.logger.critical("dataframe does not contain %s", var)
                     continue
                 h = create_hist(
                     f"h_mass-ptjet-pthf-{obs}",
@@ -592,7 +596,7 @@ class ProcesserJets(Processer):
                     df = df.loc[(df.fPt_gen >= range_pthf_gen[0]) & (df.fPt_gen < range_pthf_gen[1])]
                     fill_hist(h_eff[(cat, "detmatch_gencuts")], df[["fJetPt", "fPt"]])
                 else:
-                    self.logger.error("No matching, could not fill matched detector-level histograms")
+                    self.logger.critical("No matching, could not fill matched detector-level histograms")
 
             cfg_observables = self.cfg("observables", {})
             for obs, cat in itertools.product(cfg_observables, cats):
@@ -641,7 +645,7 @@ class ProcesserJets(Processer):
                 try:
                     rfile.WriteObject(obj, obj.GetName())
                 except Exception as ex:  # pylint: disable=broad-exception-caught
-                    self.logger.error("Writing of <%s> (%s) failed: %s", name, str(obj), str(ex))
+                    self.logger.critical("Writing of <%s> (%s) failed: %s", name, str(obj), str(ex))
 
     def _explode_arraycols(self, df: pd.DataFrame, arraycols: "list[str]") -> pd.DataFrame:
         if len(arraycols) > 0:
