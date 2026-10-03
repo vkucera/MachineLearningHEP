@@ -140,6 +140,14 @@ class AnalyzerJets(Analyzer):
     def _save_canvas(self, canvas, filename):
         canvas.SaveAs(f"{self.path_fig}/{filename}")
 
+    def _get_hist(self, file, name, check_entries: bool = True):
+        h = file.Get(name)
+        if not h:
+            self.logger.critical("Invalid histogram %s", name)
+        if check_entries and h.GetEntries() < 1e-7:
+            self.logger.critical("Empty histogram %s", name)
+        return h
+
     def _save_hist(self, hist, filename, option="", logy=False):
         if not hist:
             self.logger.critical("No histogram for <%s>", filename)
@@ -183,16 +191,16 @@ class AnalyzerJets(Analyzer):
         for mcordata in ["mc", "data"]:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
-                h = rfile.Get("h_mass-ptjet-pthf")
+                h = self._get_hist(rfile, "h_mass-ptjet-pthf")
                 self._save_hist(project_hist(h, [0], {}), f"qa/h_mass_{mcordata}.png")
                 self._save_hist(project_hist(h, [1], {}), f"qa/h_ptjet_{mcordata}.png")
                 self._save_hist(project_hist(h, [2], {}), f"qa/h_ptcand_{mcordata}.png")
 
-                if h := rfile.Get("h_ncand"):
+                if h := self._get_hist(rfile, "h_ncand"):
                     self._save_hist(h, f"qa/h_ncand_{mcordata}.png", logy=True)
 
                 for var in self.observables["qa"]:
-                    if h := rfile.Get(f"h_mass-ptjet-pthf-{var}"):
+                    if h := self._get_hist(rfile, f"h_mass-ptjet-pthf-{var}"):
                         axes = list(range(get_dim(h)))
                         hproj = project_hist(h, axes[3:], {})
                         self._save_hist(hproj, f"qa/h_{var}_{mcordata}.png")
@@ -202,7 +210,7 @@ class AnalyzerJets(Analyzer):
                 if "-" in var:
                     continue
                 for cat in ("pr", "np"):
-                    h_response = rfile.Get(f"h_response_{cat}_{var}")
+                    h_response = self._get_hist(rfile, f"h_response_{cat}_{var}")
                     h_response_ptjet = project_hist(h_response, [0, 2], {})
                     h_response_shape = project_hist(h_response, [1, 3], {})
                     self._save_hist(h_response_ptjet, f"qa/h_ptjet-{var}_responsematrix-ptjet_{cat}.png", "colz")
@@ -214,11 +222,11 @@ class AnalyzerJets(Analyzer):
         self.logger.info("Calculating efficiencies from %s", self.n_fileeff)
         cats = {"pr", "np"}
         with TFile(self.n_fileeff) as rfile:
-            h_gen = {cat: rfile.Get(f"h_ptjet-pthf_{cat}_gen") for cat in cats}
-            h_det = {cat: rfile.Get(f"h_ptjet-pthf_{cat}_det") for cat in cats}
-            h_genmatch = {cat: rfile.Get(f"h_ptjet-pthf_{cat}_genmatch") for cat in cats}
-            h_detmatch = {cat: rfile.Get(f"h_ptjet-pthf_{cat}_detmatch") for cat in cats}
-            h_detmatch_gencuts = {cat: rfile.Get(f"h_ptjet-pthf_{cat}_detmatch_gencuts") for cat in cats}
+            h_gen = {cat: self._get_hist(rfile, f"h_ptjet-pthf_{cat}_gen") for cat in cats}
+            h_det = {cat: self._get_hist(rfile, f"h_ptjet-pthf_{cat}_det") for cat in cats}
+            h_genmatch = {cat: self._get_hist(rfile, f"h_ptjet-pthf_{cat}_genmatch") for cat in cats}
+            h_detmatch = {cat: self._get_hist(rfile, f"h_ptjet-pthf_{cat}_detmatch") for cat in cats}
+            h_detmatch_gencuts = {cat: self._get_hist(rfile, f"h_ptjet-pthf_{cat}_detmatch_gencuts") for cat in cats}
 
             # Run 2 efficiencies (only use ptjet bins used for analysis)
             bins_ptjet_ana = self.cfg("bins_ptjet", [])
@@ -264,7 +272,7 @@ class AnalyzerJets(Analyzer):
                 h_eff_match.Divide(h_det[cat])
                 self._save_hist(h_eff_match, f"eff/h_effmatch_{cat}.png")
 
-                if not (h_response := rfile.Get(f"h_response_{cat}_fPt")):
+                if not (h_response := self._get_hist(rfile, f"h_response_{cat}_fPt")):
                     self.logger.critical(make_message_notfound(f"h_response_{cat}_fPt", self.n_fileeff))
                 h_response_ptjet = project_hist(h_response, [0, 2], {})
                 h_response_pthf = project_hist(h_response, [1, 3], {})
@@ -272,11 +280,13 @@ class AnalyzerJets(Analyzer):
                 self._save_hist(h_response_pthf, f"eff/h_ptjet-pthf_responsematrix-pthf_{cat}.png", "colz")
                 rm = self._build_response_matrix(h_response, self.hcandeff["pr"])
                 h_effkine_gen = self._build_effkine(
-                    rfile.Get(f"h_effkine_{cat}_gen_nocuts_fPt"), rfile.Get(f"h_effkine_{cat}_gen_cut_fPt")
+                    self._get_hist(rfile, f"h_effkine_{cat}_gen_nocuts_fPt"),
+                    self._get_hist(rfile, f"h_effkine_{cat}_gen_cut_fPt"),
                 )
                 self._save_hist(h_effkine_gen, f"eff/h_effkine-ptjet-pthf_{cat}_gen.png", "text")
                 h_effkine_det = self._build_effkine(
-                    rfile.Get(f"h_effkine_{cat}_det_nocuts_fPt"), rfile.Get(f"h_effkine_{cat}_det_cut_fPt")
+                    self._get_hist(rfile, f"h_effkine_{cat}_det_nocuts_fPt"),
+                    self._get_hist(rfile, f"h_effkine_{cat}_det_cut_fPt"),
                 )
                 self._save_hist(h_effkine_det, f"eff/h_effkine-ptjet-pthf_{cat}_det.png", "text")
 
@@ -514,7 +524,7 @@ class AnalyzerJets(Analyzer):
                     self.logger.critical("File %s not found.", rfilename)
                 name_histo = "h_mass-ptjet-pthf"
                 self.logger.debug("Opening histogram %s.", name_histo)
-                if not (h := rfile.Get(name_histo)):
+                if not (h := self._get_hist(rfile, name_histo)):
                     self.logger.critical("Histogram %s not found.", name_histo)
                 for iptjet, ipt in itertools.product(
                     itertools.chain((None,), range(get_nbins(h, 1))), range(get_nbins(h, 2))
@@ -553,7 +563,7 @@ class AnalyzerJets(Analyzer):
                         # TODO: link datasel to fit stage
                         if datasel := fitcfg.get("datasel"):
                             hist_name = f"h_mass-ptjet-pthf_{datasel}"
-                            if not (hsel := rfile.Get(hist_name)):
+                            if not (hsel := self._get_hist(rfile, hist_name)):
                                 self.logger.critical("Failed to get histogram %s", hist_name)
                             h_invmass = project_hist(hsel, [0], cuts_proj)
                         if h_invmass.GetEntries() < 100:  # TODO: reconsider criterion
@@ -876,7 +886,7 @@ class AnalyzerJets(Analyzer):
                     self.logger.info("Running analysis for obs. %s, %s using %s", var, mcordata, method)
                     label = f"-{var}" if var else ""
                     self.logger.debug("looking for %s", f"h_mass-ptjet-pthf{label}")
-                    if fh := rfile.Get(f"h_mass-ptjet-pthf{label}"):  # TODO: add sanity check
+                    if fh := self._get_hist(rfile, f"h_mass-ptjet-pthf{label}"):  # TODO: add sanity check
                         axes_proj = list(range(get_dim(fh)))
                         axes_proj.remove(2)
                         fh_sub = []
@@ -1096,7 +1106,7 @@ class AnalyzerJets(Analyzer):
             case "tree":
                 self.logger.info("Reading feeddown information from trees")
                 with TFile(self.cfg("fd_root")) as rfile:
-                    powheg_xsection = rfile.Get("fHistXsection")
+                    powheg_xsection = self._get_hist(rfile, "fHistXsection")
                     powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
                 self.logger.info("POWHEG luminosity (mb^{-1}): %g", 1.0 / powheg_xsection_scale_factor)
 
@@ -1147,9 +1157,9 @@ class AnalyzerJets(Analyzer):
                     for var in self.observables["all"]:
                         self.logger.info("Running feeddown analysis for obs. %s", var)
                         label = f"-{var}" if var else ""
-                        if fh := rfile.Get(f"h_mass-ptjet-pthf{label}"):
+                        if fh := self._get_hist(rfile, f"h_mass-ptjet-pthf{label}"):
                             h3_fd_gen_orig[var] = project_hist(fh, list(range(1, get_dim(fh))), {})
-                    h_norm = rfile.Get("histonorm")
+                    h_norm = self._get_hist(rfile, "histonorm")
                     n_powheg = h_norm.GetBinContent(5)
                     sum_xs_powheg = h_norm.GetBinContent(6)
                     powheg_xsection_avg = sum_xs_powheg / n_powheg
@@ -1178,12 +1188,14 @@ class AnalyzerJets(Analyzer):
             # 3d folding incl. kinematic efficiencies
             with TFile(self.n_fileeff) as rfile:
                 h_effkine_gen = self._build_effkine(
-                    rfile.Get(f"h_effkine_fd_gen_nocuts_{var}"), rfile.Get(f"h_effkine_fd_gen_cut_{var}")
+                    self._get_hist(rfile, f"h_effkine_fd_gen_nocuts_{var}"),
+                    self._get_hist(rfile, f"h_effkine_fd_gen_cut_{var}"),
                 )
                 h_effkine_det = self._build_effkine(
-                    rfile.Get(f"h_effkine_fd_det_nocuts_{var}"), rfile.Get(f"h_effkine_fd_det_cut_{var}")
+                    self._get_hist(rfile, f"h_effkine_fd_det_nocuts_{var}"),
+                    self._get_hist(rfile, f"h_effkine_fd_det_cut_{var}"),
                 )
-                h_response = rfile.Get(f"h_response_fd_{var}")
+                h_response = self._get_hist(rfile, f"h_response_fd_{var}")
                 if not h_response:
                     self.logger.critical("Could not find response matrix for fd estimation of %s", var)
                     # rfile.ls()
@@ -1226,7 +1238,8 @@ class AnalyzerJets(Analyzer):
 
             with TFile(self.n_fileeff) as rfile:
                 h_effkine_gen = self._build_effkine(
-                    rfile.Get(f"h_effkine_np_gen_nocuts_{var}"), rfile.Get(f"h_effkine_np_gen_cut_{var}")
+                    self._get_hist(rfile, f"h_effkine_np_gen_nocuts_{var}"),
+                    self._get_hist(rfile, f"h_effkine_np_gen_cut_{var}"),
                 )
                 self._save_hist(h_effkine_gen, f"fd/h_effkine-ptjet-{var}_np_gen.png", "text")
 
@@ -1235,7 +1248,7 @@ class AnalyzerJets(Analyzer):
                 h_fd_gen.Multiply(h_effkine_gen)
                 self._save_hist(h_fd_gen, f"fd/h_ptjet-{var}_feeddown_gen_kineeffscaled.png")
 
-                h_response = rfile.Get(f"h_response_np_{var}")
+                h_response = self._get_hist(rfile, f"h_response_np_{var}")
                 response_matrix_np = self._build_response_matrix(h_response, self.hcandeff["pr"])
                 self._save_hist(response_matrix_np.Hresponse(), f"fd/h_ptjet-{var}_responsematrix_np_lin.png", "colz")
 
@@ -1246,7 +1259,8 @@ class AnalyzerJets(Analyzer):
                 self._save_hist(hfeeddown_det, f"fd/h_ptjet-{var}_feeddown_det.png")
 
                 h_effkine_det = self._build_effkine(
-                    rfile.Get(f"h_effkine_np_det_nocuts_{var}"), rfile.Get(f"h_effkine_np_det_cut_{var}")
+                    self._get_hist(rfile, f"h_effkine_np_det_nocuts_{var}"),
+                    self._get_hist(rfile, f"h_effkine_np_det_cut_{var}"),
                 )
                 self._save_hist(h_effkine_det, f"fd/h_effkine-ptjet-{var}_np_det.png", "text")
                 hfeeddown_det.Divide(h_effkine_det)
@@ -1331,7 +1345,7 @@ class AnalyzerJets(Analyzer):
         self.logger.info("Unfolding for %s", var)
         suffix = "_frac" if mcordata == "mc" else ""
         with TFile(self.n_fileeff) as rfile:
-            h_response = rfile.Get(f"h_response_pr_{var}{suffix}")
+            h_response = self._get_hist(rfile, f"h_response_pr_{var}{suffix}")
             if not h_response:
                 self.logger.critical("Response matrix for %s not available, cannot unfold", var + suffix)
                 return []
@@ -1345,7 +1359,8 @@ class AnalyzerJets(Analyzer):
             )
 
             h_effkine_det = self._build_effkine(
-                rfile.Get(f"h_effkine_pr_det_nocuts_{var}{suffix}"), rfile.Get(f"h_effkine_pr_det_cut_{var}{suffix}")
+                self._get_hist(rfile, f"h_effkine_pr_det_nocuts_{var}{suffix}"),
+                self._get_hist(rfile, f"h_effkine_pr_det_cut_{var}{suffix}"),
             )
             self._save_hist(h_effkine_det, f"uf/h_effkine-ptjet-{var}_pr_det_{mcordata}.png", "text")
 
@@ -1357,18 +1372,19 @@ class AnalyzerJets(Analyzer):
             fh_unfolding_input.Multiply(h_effkine_det)
 
             h_effkine_gen = self._build_effkine(
-                rfile.Get(f"h_effkine_pr_gen_nocuts_{var}{suffix}"), rfile.Get(f"h_effkine_pr_gen_cut_{var}{suffix}")
+                self._get_hist(rfile, f"h_effkine_pr_gen_nocuts_{var}{suffix}"),
+                self._get_hist(rfile, f"h_effkine_pr_gen_cut_{var}{suffix}"),
             )
             self._save_hist(h_effkine_gen, f"uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png", "text")
 
             # TODO: move, has nothing to do with unfolding
             if mcordata == "mc" and get_dim(hist) <= 2:
-                h_mctruth_pr = rfile.Get(f"h_ptjet-pthf-{var}_pr_gen")
+                h_mctruth_pr = self._get_hist(rfile, f"h_ptjet-pthf-{var}_pr_gen")
                 if h_mctruth_pr:
                     h_mctruth_pr = project_hist(h_mctruth_pr, [0, 2], {})
                     self._save_hist(h_mctruth_pr, f"h_ptjet-{var}_pr_mctruth.png", "texte")
                     h_mctruth_all = h_mctruth_pr.Clone()
-                    h_mctruth_np = rfile.Get(f"h_ptjet-pthf-{var}_np_gen")
+                    h_mctruth_np = self._get_hist(rfile, f"h_ptjet-pthf-{var}_np_gen")
                     if h_mctruth_np:
                         h_mctruth_np = project_hist(h_mctruth_np, [0, 2], {})
                         self._save_hist(h_mctruth_np, f"h_ptjet-{var}_np_mctruth.png", "texte")
