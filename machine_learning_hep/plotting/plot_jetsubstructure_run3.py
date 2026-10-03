@@ -651,6 +651,12 @@ class Plotter:
     def plot(self):
         self.logger.info("Observable: %s %s", self.species, self.var)
 
+        # Enable categories.
+        plot_efficiency = True
+        plot_sidebands = True
+        plot_feeddown = True
+        plot_unfolding = True
+
         with TFile.Open(self.path_input_file) as self.file_results:
             name_hist_unfold_2d = f"h_ptjet-{self.var}_{self.method}_unfolded_{self.mcordata}_0"
             hist_unfold = self.get_object(name_hist_unfold_2d)
@@ -661,7 +667,6 @@ class Plotter:
             line_1.SetLineWidth(3)
             self.leg_pos = self.leg_pos_default
 
-            plot_efficiency = False
             if plot_efficiency and self.mcordata == "data":
                 # Efficiency
                 self.logger.info("Plotting efficiency")
@@ -697,7 +702,7 @@ class Plotter:
                 list_iptjet = [2, 3]  # indices of jet pt bins to process
             if self.species == "Lc":
                 list_iptjet = [1]  # indices of jet pt bins to process
-            plot_lc_vs_d0 = True
+            plot_lc_vs_d0 = False
             list_stat_all = []
             list_syst_all = []
             list_labels_all = []
@@ -712,7 +717,6 @@ class Plotter:
                 self.range_x = None
 
                 # Sideband subtraction
-                plot_sidebands = False
                 if plot_sidebands and self.mcordata == "data":
                     self.logger.info("Plotting sideband subtraction")
                     # loop over hadron pt
@@ -742,7 +746,6 @@ class Plotter:
                         )
 
                 # Feed-down subtraction
-                plot_feeddown = False
                 if plot_feeddown:
                     self.logger.info("Plotting feed-down subtraction")
                     self.list_obj = self.get_objects(
@@ -771,7 +774,6 @@ class Plotter:
                     # TODO: feed-down (after 2D, fraction)
 
                 # Unfolding
-                plot_unfolding = False
                 if plot_unfolding:
                     self.logger.info("Plotting unfolding")
                     self.list_obj = [
@@ -826,6 +828,7 @@ class Plotter:
                 list_colours_stat_all += self.list_colours
                 list_markers_all += self.list_markers
                 path_syst = f"{os.path.expandvars(self.dir_input)}/systematics.root"
+                gr_syst = None
                 if os.path.exists(path_syst):
                     self.logger.info("Getting systematics from %s", path_syst)
                     if not (file_syst := TFile.Open(path_syst)):
@@ -1086,6 +1089,7 @@ class Plotter:
                     and self.var == "zpar"
                     and self.species == "Lc"
                     and plot_run2_d0_ff_data
+                    and gr_syst
                 ):
                     self.list_latex = [
                         self.text_alice,
@@ -1310,8 +1314,8 @@ def main():
 
     gROOT.SetBatch(True)
 
-    list_vars = ["zg", "nsd", "rg", "zpar"]
-    # list_vars = ["zpar"]
+    # list_vars = ["zg", "nsd", "rg", "zpar"]
+    list_vars = ["zpar"]
     for var in list_vars:
         print(f"Processing observable {var}")
         # for mcordata in ("data", "mc"):
