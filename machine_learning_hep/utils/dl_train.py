@@ -5,6 +5,7 @@
 import argparse
 import os
 from pathlib import PurePosixPath
+from time import localtime, strftime
 
 import requests  # pylint: disable=import-error
 
@@ -55,15 +56,22 @@ def main():
     parser.add_argument("--dry-run", "-n", action="store_true", help="dry run")
     args = parser.parse_args()
 
+    if args.print_specs:
+        print("Specs:\tID\tsubmitted\tO2Physics\tdataset")
+
     for train_id in args.train_id:
         print(f"Obtaining train spec for train {train_id}...")
-        train_spec = get_train_spec(train_id)
+        train_spec = get_train_spec(train_id).json()
         if args.print_specs:
-            dataset = train_spec.json()["dataset_name"]
-            print(f"ID:\t{train_id}\tdataset:\t{dataset}")
+            time_submitted = strftime("%Y-%m-%d", localtime(train_spec["train_submitted"] / 1000))
+            dataset = train_spec["dataset_name"]
+            package_tag = train_spec["package_tag"][26:34]
+            package_tag = f"{package_tag[:4]}-{package_tag[4:6]}-{package_tag[6:]}"
+            # output_size = train_spec["output_size"] # TODO: How to interpret the value?
+            print(f"Specs:\t{train_id}\t{time_submitted}\t{package_tag}\t{dataset}")
             continue
         print("Finding AO2Ds...")
-        outputdirs = [d["outputdir"] for d in train_spec.json()["jobResults"]]
+        outputdirs = [d["outputdir"] for d in train_spec["jobResults"]]
         a = alien.AliEn()
         src = [d for outputdir in outputdirs for d in find_ao2ds(a, outputdir)]
         dst = ["file:" + str(PurePosixPath(args.prefix) / str(train_id) / file.lstrip("/")) for file in src]
