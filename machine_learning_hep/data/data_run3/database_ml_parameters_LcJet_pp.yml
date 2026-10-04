@@ -471,10 +471,10 @@ LcJet_pp:
     dir_general_plots: "/data2/${USER}/data/analysis_plots"
 
     jet_obs: &jet_default
-      sel_an_binmin: [3, 4, 5, 6, 7, 8, 10, 12, 16] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax: [4, 5, 6, 7, 8, 10, 12, 16, 24] # hadron pt bins (sel_an_binmin bins)
-      bins_ptjet: [5, 7, 15, 30, 50] # systematics, TODO: split rec and gen binning
-      bins_ptjet_eff: [2, 5, 7, 15, 30, 50, 70] # systematics, TODO: split rec and gen binning
+      sel_an_binmin: [2, 3, 4, 5, 6, 7, 8, 10, 12, 16] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax: [3, 4, 5, 6, 7, 8, 10, 12, 16, 30] # hadron pt bins (sel_an_binmin bins)
+      bins_ptjet: [5, 7, 15, 30] # systematics, TODO: split rec and gen binning
+      bins_ptjet_eff: [2, 5, 7, 15, 30, 50] # systematics, TODO: split rec and gen binning
       cand_collidx: fIndexHFLCCOLLBASES
       counter_read_data: fCountsWithTVXAndZVertexAndSel8
       counter_read_mc: fCountsWithTVXAndZVertexAndSel8
@@ -714,7 +714,7 @@ LcJet_pp:
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: True
-      cuts: ["mlBkgScore < 0.04", "mlBkgScore < 0.07", "mlBkgScore < 0.09", "mlBkgScore < 0.11", "mlBkgScore < 0.15", "mlBkgScore < 0.18", "mlBkgScore < 0.25", "mlBkgScore < 0.35", "mlBkgScore < 0.35"] # (sel_an_binmin bins)
+      cuts: ["mlBkgScore < 0.03", "mlBkgScore < 0.04", "mlBkgScore < 0.07", "mlBkgScore < 0.09", "mlBkgScore < 0.11", "mlBkgScore < 0.15", "mlBkgScore < 0.18", "mlBkgScore < 0.25", "mlBkgScore < 0.35", "mlBkgScore < 0.35"] # (sel_an_binmin bins)
       #mult_cuts: ["fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100", "fCentFT0M >= 70 and fCentFT0M <= 100"] # (sel_an_binmin bins) #low mult
       #mult_cuts: ["fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70", "fCentFT0M >= 20 and fCentFT0M <= 70"] # (sel_an_binmin bins)  #intermediate mult
       #mult_cuts: ["fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20", "fCentFT0M >= 0 and fCentFT0M <= 20"] # (sel_an_binmin bins) #high mult
