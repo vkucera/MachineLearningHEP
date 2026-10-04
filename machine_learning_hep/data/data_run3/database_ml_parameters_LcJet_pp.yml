@@ -19,10 +19,10 @@ LcJet_pp:
   sel_cen_unp: null
   sel_good_evt_unp: null # "fIsEventReject == 0"
   # sel_reco_skim: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]  # (sel_skim_binmin bins)
-  sel_reco_skim: [null, null, null, null, null, null, null] # (sel_skim_binmin bins)
-  sel_gen_skim: [null, null, null, null, null, null, null] # (sel_skim_binmin bins)
-  sel_skim_binmin: [1, 2, 4, 6, 8, 12, 24] # skimming pt bins (sel_skim_binmin bins)
-  sel_skim_binmax: [2, 4, 6, 8, 12, 24, 48] # skimming pt bins (sel_skim_binmin bins)
+  sel_reco_skim: [null, null, null, null, null, null, null, null, null, null, null] # (sel_skim_binmin bins)
+  sel_gen_skim: [null, null, null, null, null, null, null, null, null, null, null] # (sel_skim_binmin bins)
+  sel_skim_binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12] # skimming pt bins (sel_skim_binmin bins)
+  sel_skim_binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 30] # skimming pt bins (sel_skim_binmin bins)
   var_binning: fPt
   dofullevtmerge: false
   var_cand: fCandidateSelFlag
@@ -410,8 +410,8 @@ LcJet_pp:
     rnd_splt: 12
     rnd_all: 12
     test_frac: 0.2
-    binmin: [1, 2, 4, 6, 8, 12, 24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax: [2, 4, 6, 8, 12, 24, 36] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax: [2, 3, 4, 5, 6, 7, 8, 10, 12, 24, 36] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: MultiClassification
     ncorescrossval: 10
     prefix_dir_ml: "/data2/${USER}/MLhep/"
@@ -432,7 +432,7 @@ LcJet_pp:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1, 1, 1, 1, 1, 1, 1] # sel_skim_binmin bins
+      raahp: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] # sel_skim_binmin bins
       presel_gen_eff: "fPt > 0. and abs(fY) < 0.8"
 
   mlapplication:
@@ -447,11 +447,14 @@ LcJet_pp:
     modelname: xgboost
     modelsperptbin: # sel_skim_binmin bins
       - xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav
-      - xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav
-      - xgboost_classifierLcpKpi_dfselection_fPt_4.0_6.0.sav
-      - xgboost_classifierLcpKpi_dfselection_fPt_6.0_8.0.sav
-      - xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav
-      - xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_2.0_3.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_3.0_4.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_4.0_5.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_5.0_6.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_6.0_7.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_7.0_8.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_8.0_10.0.sav
+      - xgboost_classifierLcpKpi_dfselection_fPt_10.0_12.0.sav
       - xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav
     probcutpresel:
       data: [[0.02, 0.0, 0.0], [0.03, 0.0, 0.0], [0.04, 0.0, 0.0], [0.07, 0.0, 0.0], [0.09, 0.0, 0.0], [0.11, 0.0, 0.0], [0.15, 0.0, 0.0], [0.18, 0.0, 0.0], [0.25, 0.0, 0.0], [0.35, 0.0, 0.0]] #list of nbins
