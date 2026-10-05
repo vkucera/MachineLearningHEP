@@ -18,7 +18,7 @@ except ImportError:
 def get_train_spec(train_id: int):
     """Retrieve train spec from hyperloop interface"""
     # https://alimonitor.cern.ch/hyperloop/train-run/131050
-    url = f"https://alimonitor.cern.ch/alihyperloop-data/trains/train.jsp?train_id={train_id}"
+    url = f"https://alimonitor.cern.ch/alihyperloop-data/trains/train.jsp?type=full&train_id={train_id}"
     try:
         return requests.get(
             url,
@@ -57,7 +57,7 @@ def main():
     args = parser.parse_args()
 
     if args.print_specs:
-        print("Specs:\tID\tsubmitted\tO2Physics\tdataset")
+        print("Specs:\tID\tsubmitted\tO2Physics\tdataset\toutput size [GB]")
 
     for train_id in args.train_id:
         print(f"Obtaining train spec for train {train_id}...")
@@ -67,8 +67,8 @@ def main():
             dataset = train_spec["dataset_name"]
             package_tag = train_spec["package_tag"][26:34]
             package_tag = f"{package_tag[:4]}-{package_tag[4:6]}-{package_tag[6:]}"
-            # output_size = train_spec["output_size"] # TODO: How to interpret the value?
-            print(f"Specs:\t{train_id}\t{time_submitted}\t{package_tag}\t{dataset}")
+            output_size = train_spec["statsResults"]["output_size_ao2d"] / 1e9
+            print(f"Specs:\t{train_id}\t{time_submitted}\t{package_tag}\t{dataset}\t{output_size:.1f}")
             continue
         print("Finding AO2Ds...")
         outputdirs = [d["outputdir"] for d in train_spec["jobResults"]]
